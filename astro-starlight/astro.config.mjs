@@ -6,6 +6,8 @@ import svelte from '@astrojs/svelte';
 
 // https://astro.build/config
 export default defineConfig({
+    site: 'https://project-vyasa.github.io',
+    base: '/vyasa-docs',
     integrations: [starlight({
         title: 'Vyasa',
         social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/project-vyasa/vyasa' }],
