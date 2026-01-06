@@ -9,13 +9,17 @@ This guide describes the formal specification of the Vyasa Markup Language and i
 
 For details on the reference implementation in Rust, see [Appendix A](#appendix-a-reference-implementation).
 
+:::note
+Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
+:::
+
 ## 1. Syntax Specification
 
 Vyasa uses a **Unified Command Model**. Every functional element (header, alignment identifier, metadata block) is a `Command`.
 
 ### 1.1 Grammar (EBNF)
 
-```ebnf
+```
 document        ::= ( node )*
 node            ::= command | text | comment | segment_break
 
