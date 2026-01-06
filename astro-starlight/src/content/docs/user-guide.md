@@ -7,6 +7,10 @@ description: Complete guide to using Vyasa for scriptural texts.
 
 Vyasa is a high-performance markup language designed for scriptural texts. This guide covers the syntax and features supported by the Vyasa parser.
 
+:::note
+Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
+:::
+
 ## Project Structure
 
 A Vyasa Project requires a specific directory structure to ensure correct building and URN generation.
