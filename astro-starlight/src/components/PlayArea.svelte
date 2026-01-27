@@ -1,5 +1,5 @@
 <script lang="ts">
-    console.log("Initializing Playarea.svelte");
+    console.log("Initializing PlayArea.svelte");
     import { onMount } from "svelte";
     import init, { compile_workspace, init_hooks } from "../pkg/vyasac.js";
     import JSZip from "jszip";
@@ -13,9 +13,16 @@
 
     let files = $state<Record<string, string>>({});
 
+    interface WorkspaceMeta {
+        id: string;
+        name: string;
+        file: string;
+        hash: string;
+    }
+
     // Workspace State
-    let availableWorkspaces = $state<string[]>([]);
-    let selectedWorkspace = $state("");
+    let availableWorkspaces = $state<WorkspaceMeta[]>([]);
+    let selectedWorkspaceId = $state("");
 
     // Template State
     let availableTemplates = $state<string[]>([]);
@@ -68,20 +75,38 @@
             const base = getBasePath();
             const res = await fetch(`${base}samples/index.json`);
             if (res.ok) {
-                availableWorkspaces = await res.json();
-                if (availableWorkspaces.length > 0) {
-                    selectedWorkspace = availableWorkspaces[0];
-                    await loadWorkspace(selectedWorkspace);
+                // Determine if new format (objects) or legacy (strings)
+                const data = await res.json();
+                if (data.length > 0) {
+                    if (typeof data[0] === "string") {
+                        // Legacy fallback
+                        availableWorkspaces = data.map((s: string) => ({
+                            id: s,
+                            name: s,
+                            file: `${s}.zip`,
+                            hash: "",
+                        }));
+                    } else {
+                        availableWorkspaces = data;
+                    }
+
+                    if (availableWorkspaces.length > 0) {
+                        selectedWorkspaceId = availableWorkspaces[0].id;
+                        await loadWorkspace(selectedWorkspaceId);
+                    }
                 }
             }
-        } catch (e) {
+        } catch (e: any) {
             logError("Failed to fetch workspace list:", e);
         }
     }
 
-    async function loadWorkspace(name: string) {
+    async function loadWorkspace(id: string) {
         try {
-            log(`Loading workspace: ${name}`);
+            const ws = availableWorkspaces.find((w) => w.id === id);
+            if (!ws) return;
+
+            log(`Loading workspace: ${ws.name}`);
 
             // Reset Output State
             outputFiles = [];
@@ -91,8 +116,12 @@
             fileError = "";
 
             const base = getBasePath();
-            const res = await fetch(`${base}samples/${name}.zip`);
-            if (!res.ok) throw new Error(`Failed to fetch ${name}.zip`);
+            // Append hash if available for cache busting
+            const url =
+                `${base}samples/${ws.file}` + (ws.hash ? `?v=${ws.hash}` : "");
+
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Failed to fetch ${ws.file}`);
 
             const blob = await res.blob();
             const zip = await JSZip.loadAsync(blob);
@@ -113,7 +142,7 @@
             files = newFiles;
             scanTemplates();
             runCompiler();
-        } catch (e) {
+        } catch (e: any) {
             logError("Error loading workspace:", e);
             fileError = e.toString();
         }
@@ -280,11 +309,11 @@
             <div class="selector">
                 <span class="label">Workspace:</span>
                 <select
-                    bind:value={selectedWorkspace}
-                    onchange={() => loadWorkspace(selectedWorkspace)}
+                    bind:value={selectedWorkspaceId}
+                    onchange={() => loadWorkspace(selectedWorkspaceId)}
                 >
                     {#each availableWorkspaces as ws}
-                        <option value={ws}>{ws}</option>
+                        <option value={ws.id}>{ws.name}</option>
                     {/each}
                 </select>
             </div>
