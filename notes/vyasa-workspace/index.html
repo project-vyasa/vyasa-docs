@@ -96,7 +96,7 @@
 <li><strong>Reasoning</strong>: “Sidecar” implies second-class citizenship. In reality, a translation or an audio alignment file is just another stream of information about the work.</li>
 <li><strong>Concept</strong>:
 <ul>
-<li><strong>Workspace</strong>: A collection of related streams defined by <code dir="auto">vyasa.toml</code>.</li>
+<li><strong>Workspace</strong>: A collection of related streams defined by <code dir="auto">vyasac.toml</code>.</li>
 <li><strong>Primary Stream</strong>: The definitive text source (defining valid reference IDs). Used for URN generation.</li>
 <li><strong>Secondary Streams</strong>: Other folders (formerly sidecars) that reference the primary stream.</li>
 </ul>
@@ -122,7 +122,7 @@
 <li><strong>Decision</strong>: Configuration should be hierarchical.</li>
 <li><strong>Mechanism</strong>:
 <ul>
-<li><code dir="auto">vyasa.toml</code> at root defines global context (Work=“Bible”).</li>
+<li><code dir="auto">vyasac.toml</code> at root defines global context (Work=“Bible”).</li>
 <li><code dir="auto">content/vyasa.toml</code> overrides/adds context.</li>
 <li><code dir="auto">content/vol1/vyasa.toml</code> adds <code dir="auto">volume="1"</code>.</li>
 </ul>
