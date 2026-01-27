@@ -1,5 +1,20 @@
 [
-  "bhagavad-gita",
-  "bible",
-  "minimal"
+  {
+    "id": "bhagavad-gita",
+    "name": "bhagavad-gita",
+    "file": "bhagavad-gita.zip",
+    "hash": "9198188e"
+  },
+  {
+    "id": "bible",
+    "name": "bible",
+    "file": "bible.zip",
+    "hash": "4169e107"
+  },
+  {
+    "id": "minimal",
+    "name": "minimal",
+    "file": "minimal.zip",
+    "hash": "4bc1b3f2"
+  }
 ]
