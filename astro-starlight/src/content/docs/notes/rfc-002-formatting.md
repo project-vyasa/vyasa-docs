@@ -47,6 +47,7 @@ We propose using **Explicit Semantic Commands** with optional shorthands (aliase
   - `break { type="page" }` (Page break)
   - *Aliases*: `br`, `col-break`, `pg-break`
   - *Note*: These are **presentational** breaks. They do not interrupt the semantic flow of content (e.g., a `reference` stream). A `chapter` command creates a *structural* boundary; a `break { type="page" }` merely suggests where a page *might* end in print.
+  - **Best Practice**: Use explicit `` `br `` commands for line breaks within text blocks (like purports) instead of relying on double newlines. This ensures consistent rendering across different templates and output formats.
 
 - **Lists**:
   ```vyasa

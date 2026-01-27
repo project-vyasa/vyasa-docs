@@ -7,6 +7,11 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-01-26: Context-Driven Configuration
+*   **Shift**: Moved configuration logic (Aliases, URN Schemes) out of `vyasac.toml` and into `context.vy`.
+*   **Mechanism**: The `context.vy` file is now the single source of truth for "soft" configuration that might change per-folder. `vyasac.toml` is reserved for "hard" build config (source path, streams).
+*   **Benefit**: Simplifies the mental model. Configuring the language is done *in* the language.
+
 ## 2026-01-25: Template Customization & Aliases
 *   **Templates**: Added support for a `templates/` directory in the workspace root. The compiler now looks for `default.html` here to override built-in templates.
 *   **AST Rendering**: Templates now receive the raw AST (`Node::Command`, `Node::Text`).
@@ -19,7 +24,7 @@ description: History of design decisions for the Vyasa workspace model.
 *   **Reasoning**: "Sidecar" implies second-class citizenship. In reality, a translation or an audio alignment file is just another stream of information about the work.
 *   **Concept**:
     *   **Workspace**: A collection of related streams defined by `vyasac.toml`.
-    *   **Primary Stream**: The definitive text source (defining valid reference IDs). Used for URN generation.
+    *   **Primary Stream**: The definitive text source (defining valid reference IDs).
     *   **Secondary Streams**: Other folders (formerly sidecars) that reference the primary stream.
 *   **Linking**: Linking is implicit based on relative paths. `primary/vol1/gen.vy` links to `secondary/vol1/gen.vy`.
 *   **Config**:

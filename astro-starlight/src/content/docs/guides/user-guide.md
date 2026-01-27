@@ -113,10 +113,18 @@ Mark the start of a structural unit.
 #### Identification (Fully Qualified Names)
 The `reference` command (and its aliases like `r` or `ref`) is responsible for establishing the unique identity (URN) of the content that follows.
 
-*   Arguments to `reference` (e.g., `1.1`) are appended to the active URN scheme defined in the project configuration.
+*   Arguments to `reference` (e.g., `1.1`) are appended to the active URN scheme defined in the project's `context.vy`.
 *   **Inheritance**: Subsequent content nodes (like `verse` blocks or plain text) automatically inherit this active URN as their fully qualified ID. The `verse` command itself does not generate an ID; it adopts the ID set by the most recent `reference`.
 
-### 3. Styled Blocks & Overlapping Scopes
+### 3. Context & URNs
+The URN scheme is defined via the `urn_scheme` context variable in `context.vy`.
+
+**Example (`context.vy`)**:
+```vyasa
+`set context { urn_scheme = "urn:bg:{chapter}:{id}" }
+```
+
+### 4. Styled Blocks & Overlapping Scopes
 Groups text under a specific tag/command.
 
 **Standard Syntax**: `` `cmd [ ... ] ``
@@ -139,7 +147,18 @@ Groups text under a specific tag/command.
 ]RED
 ```
 
-### 4. Inline Commands
+### 4. Explicit Formatting
+Vyasa supports explicit commands for text formatting to ensure precision.
+
+| Command | Alias | Syntax | HTML Mapping |
+| :--- | :--- | :--- | :--- |
+| **Emphasis (Bold)** | `e1` | `` `e1[text] `` | `<strong>` |
+| **Emphasis (Italic)** | `e2` | `` `e2[text] `` | `<em>` |
+| **Line Break** | `br` | `` `br `` | `<br />` |
+| **Column Break** | `col-break` | `` `col-break `` | `<hr class="col-break" />` |
+| **Page Break** | `pg-break` | `` `pg-break `` | `<hr class="pg-break" />` |
+
+### 5. Inline Commands
 Short-form commands for formatting or semantic tagging.
 
 **Syntax**: `` `tag{attributes}[content] ``

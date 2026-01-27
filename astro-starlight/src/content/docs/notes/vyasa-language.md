@@ -7,6 +7,12 @@ description: History of design decisions for the Vyasa language.
 
 *In reverse chronological order*
 
+## 2026-01-26: Explicit Formatting & Context URNs
+*   **Decision**: Adopted **Explicit Formatting Commands** (`br`, `e1`, `e2`) over implicit markdown-like syntax or raw HTML.
+    *   **Rationale**: Ensures portability and consistent rendering across environments (WASM/Editor). implicit double-newlines for breaks proved fragile.
+*   **URNs**: Moved URN scheme definition from static `vyasac.toml` to dynamic `context.vy`.
+    *   **Reason**: Allows different parts of a workspace (e.g., Intro vs Main Text) to use different URN structures.
+
 ## 2026-01-25: Stream vs. Container Architecture
 *   **Concept**: Formalized two valid ways to structure content.
     *   **Stream-based**: Using `reference` (aliased as `r`) to mark points in a continuous flow. Best for narratives (e.g., Bible).
