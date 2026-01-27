@@ -18,7 +18,7 @@ A Vyasa Project requires a specific directory structure to ensure correct buildi
 **Required Layout:**
 ```text
 my_project/
-├── vyasa.toml       # Project Root Configuration (Required)
+├── vyasac.toml       # Project Root Configuration (Required)
 ├── content/         # Source .vy files
 │   ├── vol1/
 │   │   ├── vyasa.toml (Context: volume=1)
@@ -27,7 +27,7 @@ my_project/
 └── sidecar/         # Audio/Translation files
 ```
 
--   **`vyasa.toml` (Root)**: Marks the directory as a project. Contains global metadata (Work Name, Version).
+-   **`vyasac.toml` (Root)**: Marks the directory as a project. Contains build configuration (Streams, Templates).
 -   **`content/`**: Contains the hierarchy of Vyasa source files.
 -   **`vyasa.toml` (Subdirectories)**: Defines context for that folder (e.g., `volume=1`), which is inherited by files inside.
 -   **`sidecar/`**: Reserved for sidecar files (alignment/audio).
@@ -85,7 +85,7 @@ The following built-in commands are supported by the compiler:
 | **Text Stream** | `textstream` | Explicitly marks a block of text as content (useful if starting with special chars). | `` `textstream[ ... ] `` |
 | **Verse** | `verse` | A structural container for verse content. Inherits ID/URN from the active reference. | `` `verse[ ... ] `` |
 
-> **Note**: Short names (like `ref`) are typically enabled via **Aliases** in your `context.vy`. The compiler sees the canonical name.
+> **Note**: Short names (like `r` for `reference`) are standard built-ins. You can define custom aliases using `def-alias` in your `context.vy`.
 
 ## Syntax Reference
 
@@ -227,9 +227,7 @@ You can create custom commands that act as templates by combining **Aliases** an
 
 **Setup (`context.vy`):**
 ```text
-`set aliases {
-  speaking = "state"
-}
+`def-alias { name="speaking" target="state" }
 
 `set entities {
   speaking = { action="speaking" }

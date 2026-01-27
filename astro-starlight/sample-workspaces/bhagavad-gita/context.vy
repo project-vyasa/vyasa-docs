@@ -5,4 +5,5 @@
 `command-def { name="synonyms" category="content" }
 `command-def { name="term" category="content" }
 `command-def { name="meaning" category="content" }
-`command-def { name="wj" category="content" }
+
+`set context { urn_scheme = "urn:vyasa:vedabase:bg:{chapter}:{id}" }
