@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument ==
+        "file" %}{{ node.Command.attributes.title | default(value="Untitled") }}{% endif %}{% endfor %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Serif', serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fdfdfd;
+        }
+
+        .noto-serif-vyasa {
+            font-family: "Noto Serif", serif;
+            font-optical-sizing: auto;
+            font-weight: 500;
+            font-style: normal;
+            font-variation-settings:
+                "wdth" 100;
+        }
+
+        .header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .verse-ref {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        .sanskrit-box {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .devanagari {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .iast {
+            font-family: 'Noto Serif', serif;
+            font-style: italic;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .synonyms-box {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            border-left: 4px solid #d35400;
+            display: grid;
+            grid-template-columns: min-content 1fr;
+            column-gap: 1rem;
+            row-gap: 0.5rem;
+            align-items: baseline;
+        }
+
+        /* Remove old entry wrapper styling */
+        .section-title {
+            grid-column: 1 / -1;
+            /* Span full width */
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .synonym-term {
+            font-weight: bold;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+
+        .synonym-term::after {
+            content: " - ";
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+
+        .synonym-meaning {
+            color: #555;
+        }
+
+        .translation-box {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .purport-box {
+            font-size: 1rem;
+            text-align: justify;
+        }
+
+        .purport-box p {
+            margin-bottom: 1rem;
+            text-indent: 1rem;
+        }
+
+        .section-title {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="content">
+        {% macro render_node(node) %}
+        {% if node.Text %}
+        {{ node.Text.value | replace(from="\n\n", to="</p>
+        <p>") | replace(from="\n", to=" ") | safe }}
+            {% elif node.Command %}
+            {% if node.Command.cmd == "emphasis" %}
+            {% if node.Command.attributes.level == "1" %}
+            <b>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</b>
+            {% elif node.Command.attributes.level == "2" %}
+            <i>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</i>
+            {% else %}
+            <b>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</b>
+            {% endif %}
+            {% elif node.Command.cmd == "break" %}
+            {% if node.Command.attributes.type == "line" %}<br />{% endif %}
+            {% if node.Command.attributes.type == "column" %}
+            <hr class="col-break" />{% endif %}
+            {% if node.Command.attributes.type == "page" %}
+            <hr class="pg-break" />{% endif %}
+            {% elif node.Command.cmd == "list" %}
+        <ul>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</ul>
+        {% elif node.Command.cmd == "item" %}
+        <li>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</li>
+        {% else %}
+        {# Fallback for unknown inline commands, just render children #}
+        {% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endmacro %}
+
+        {% for node in primary.body %}
+        {% if node.Command %}
+        {% set cmd = node.Command.cmd %}
+        {% set args = node.Command.argument | default(value="") %}
+
+        {% if cmd == "reference" %}
+        <div class="header">
+            <div class="verse-ref">Verse {{ args }}</div>
+        </div>
+
+        {% elif cmd == "devanagari" %}
+        <div class="sanskrit-box">
+            <div class="devanagari">
+                {% for child in node.Command.children %}
+                {% if child.Text %}{{ child.Text.value }}
+                {% elif child.SegmentBreak %}<br />{% endif %}
+                {% endfor %}
+            </div>
+
+            {% elif cmd == "iast" %}
+            <div class="iast">
+                {% for child in node.Command.children %}
+                {% if child.Text %}{{ child.Text.value | replace(from="\n", to="<br />") | safe }}
+                {% elif child.SegmentBreak %}<br />{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {% elif cmd == "synonyms" %}
+        <div class="synonyms-box">
+            <div class="section-title">Synonyms</div>
+            <!-- Render children directly. Interlinear stream produces flat list of term/meaning nodes -->
+            {% for child in node.Command.children %}
+            {% if child.Command %}
+            {% if child.Command.cmd == "term" %}
+            <div class="synonym-term">{% for grand in child.Command.children %}{{ grand.Text.value }}{% endfor %}</div>
+            {% elif child.Command.cmd == "meaning" %}
+            <div class="synonym-meaning">{% for grand in child.Command.children %}{{ grand.Text.value }}{% endfor %}
+            </div>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {% elif cmd == "translation" %}
+        <div class="translation-box">
+            <div class="section-title">Translation</div>
+            <p>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</p>
+        </div>
+
+        {% elif cmd == "purport" %}
+        <div class="purport-box">
+            <div class="section-title">Purport</div>
+            <p>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+    </div>
+
+</body>
+
+</html>
