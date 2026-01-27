@@ -16,11 +16,11 @@
         {% elif node.Command %}
         {% if node.Command.cmd == "emphasis" %}
         {% if node.Command.attributes.level == "1" %}
-        <b>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</b>
+        <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
         {% elif node.Command.attributes.level == "2" %}
-        <i>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</i>
+        <em>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</em>
         {% else %}
-        <b>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</b>
+        <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
         {% endif %}
         {% elif node.Command.cmd == "break" %}
         {% if node.Command.attributes.type == "line" %}<br />{% endif %}

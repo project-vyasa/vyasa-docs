@@ -4,6 +4,3 @@ source = "https://www.bible.com/bible/111/JHN.14.NIV"
 [streams]
 primary = "content"
 templates = "templates"
-
-[aliases]
-r = "reference"

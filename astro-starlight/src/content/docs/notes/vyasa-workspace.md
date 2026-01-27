@@ -18,7 +18,7 @@ description: History of design decisions for the Vyasa workspace model.
 *   **Shift**: Moved from "Project + Sidecars" to "Workspace + Streams".
 *   **Reasoning**: "Sidecar" implies second-class citizenship. In reality, a translation or an audio alignment file is just another stream of information about the work.
 *   **Concept**:
-    *   **Workspace**: A collection of related streams defined by `vyasa.toml`.
+    *   **Workspace**: A collection of related streams defined by `vyasac.toml`.
     *   **Primary Stream**: The definitive text source (defining valid reference IDs). Used for URN generation.
     *   **Secondary Streams**: Other folders (formerly sidecars) that reference the primary stream.
 *   **Linking**: Linking is implicit based on relative paths. `primary/vol1/gen.vy` links to `secondary/vol1/gen.vy`.
@@ -39,7 +39,7 @@ description: History of design decisions for the Vyasa workspace model.
 ## 2025-12-29: Project Structure & Inheritance
 *   **Decision**: Configuration should be hierarchical.
 *   **Mechanism**:
-    *   `vyasa.toml` at root defines global context (Work="Bible").
+    *   `vyasac.toml` at root defines global context (Work="Bible").
     *   `content/vyasa.toml` overrides/adds context.
     *   `content/vol1/vyasa.toml` adds `volume="1"`.
 *   **Output**: The compiler merges these contexts down the tree so every file has a complete view of its metadata.
