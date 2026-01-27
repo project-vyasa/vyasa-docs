@@ -1,0 +1,8 @@
+[workspace]
+name = "Minimal Sample"
+version = "0.1.0"
+
+[streams]
+primary = "content"
+
+templates = "templates"

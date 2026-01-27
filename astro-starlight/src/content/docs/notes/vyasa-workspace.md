@@ -7,6 +7,13 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-01-25: Template Customization & Aliases
+*   **Templates**: Added support for a `templates/` directory in the workspace root. The compiler now looks for `default.html` here to override built-in templates.
+*   **AST Rendering**: Templates now receive the raw AST (`Node::Command`, `Node::Text`).
+    *   **Change**: Moved away from pre-formatted HTML generation in the backend to giving templates full control over the AST.
+    *   **Refinement**: `Text` nodes must be accessed via `.value`.
+*   **Workflows**: Added support for packaging workspaces (`build-samples`) and syncing WASM binaries (`/sync-wasm`).
+
 ## 2025-12-31: The Workspace Model
 *   **Shift**: Moved from "Project + Sidecars" to "Workspace + Streams".
 *   **Reasoning**: "Sidecar" implies second-class citizenship. In reality, a translation or an audio alignment file is just another stream of information about the work.

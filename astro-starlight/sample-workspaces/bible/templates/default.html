@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument ==
+        "file" %}{{ node.Command.attributes.title | default(value="Untitled") }}{% endif %}{% endfor %}</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            line-height: 1.6;
+        }
+
+        .node {
+            margin-bottom: 0.5rem;
+            display: inline;
+        }
+
+        .cmd-wj {
+            color: #d00;
+            font-style: italic;
+        }
+
+        /*
+        .cmd-wj .arg {
+            display: none; 
+        }
+        */
+
+        /* Arg not used in block syntax */
+        .segment {
+            border: 0;
+            border-top: 1px solid #ddd;
+            margin: 2rem 0;
+            display: block;
+        }
+
+        .arg {
+            font-size: 0.8em;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    {% macro render_nodes(nodes) %}
+    {% for node in nodes %}
+    {% if node.Command %}
+    {% if node.Command.cmd == "set" %}
+    {% if node.Command.argument == "file" %}
+    <h1>{{ node.Command.attributes.title }}</h1>
+    {% endif %}
+    {% elif node.Command.cmd == "reference" %}
+    <br>
+    <span class="node cmd-ref">
+        <span class="arg">[{{ node.Command.argument }}]</span>
+    </span>
+    {% else %}
+    <span class="node cmd-{{ node.Command.cmd }}">
+        {% if node.Command.argument %}<span class="arg">[{{ node.Command.argument }}]</span>{% endif %}
+        {% if node.Command.children %}
+        {{ self::render_nodes(nodes=node.Command.children) }}
+        {% endif %}
+    </span>
+    {% endif %}
+    {% elif node.Text %}
+    {{ node.Text.value }}
+    {% elif node.SegmentBreak %}
+    <hr class="segment" />
+    {% endif %}
+    {% endfor %}
+    {% endmacro %}
+
+    <div class="content">
+        {{ self::render_nodes(nodes=primary.body) }}
+    </div>
+</body>
+
+</html>

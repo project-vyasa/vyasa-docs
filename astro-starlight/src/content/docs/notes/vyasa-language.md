@@ -7,6 +7,12 @@ description: History of design decisions for the Vyasa language.
 
 *In reverse chronological order*
 
+## 2026-01-25: Stream vs. Container Architecture
+*   **Concept**: Formalized two valid ways to structure content.
+    *   **Stream-based**: Using `reference` (aliased as `r`) to mark points in a continuous flow. Best for narratives (e.g., Bible).
+    *   **Container-based**: Using `verse` blocks to contain content. Best for structured data (e.g., Gita).
+*   **Addition**: Added `verse` command as a standard container that inherits the active URN.
+
 ## 2025-12-31: URN Attributes & Enrichment
 *   **Decision**: Reference identifiers (`r 1.1`) are insufficient for global linking.
 *   **Change**: Added an "Enrichment" pass that computes a `urn` attribute for every reference node based on a configured scheme (e.g., `urn:vyasa:{work}:{id}`).
@@ -16,7 +22,7 @@ description: History of design decisions for the Vyasa language.
 *   **Problem**: Explicitly tagging every line in a large block (like a specific translation or transliteration stream) is verbose.
 *   **Solution**: Introduced `stream-def` and Implicit Tagging.
 *   **Syntax**:
-    ```vyasa
+    ```text
     `stream-def { id="gita"; pattern="d, i, e" }
     
     `gita

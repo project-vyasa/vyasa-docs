@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument ==
+        "file" %}{{ node.Command.attributes.title | default(value="Untitled") }}{% endif %}{% endfor %}</title>
+</head>
+
+<body>
+    {% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument == "file"
+    %}<h1>{{ node.Command.attributes.title }}</h1>{% endif %}{% endfor %}
+    <div>
+        {% macro render_node(node) %}
+        {% if node.Text %}
+        {{ node.Text.value | replace(from="\n", to="<br>") | safe }}
+        {% elif node.Command %}
+        {% if node.Command.cmd == "emphasis" %}
+        {% if node.Command.attributes.level == "1" %}
+        <b>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</b>
+        {% elif node.Command.attributes.level == "2" %}
+        <i>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</i>
+        {% else %}
+        <b>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</b>
+        {% endif %}
+        {% elif node.Command.cmd == "break" %}
+        {% if node.Command.attributes.type == "line" %}<br />{% endif %}
+        {% elif node.Command.cmd == "list" %}
+        <ul>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</ul>
+        {% elif node.Command.cmd == "item" %}
+        <li>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</li>
+        {% else %}
+        {% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endmacro %}
+
+        {% for node in primary.body %}
+        {{ self::render_node(node=node) }}
+        {% endfor %}
+    </div>
+</body>
+
+</html>

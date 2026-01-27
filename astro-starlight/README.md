@@ -1,16 +1,8 @@
-# Starlight Starter Kit: Basics
-
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
-
-```
-npm create astro@latest -- --template starlight
-```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+# Vyasa Docs
 
 ## 🚀 Project Structure
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+Vyasa Docs is an [Astro + Starlight](https://starlight.astro.build) project, you'll see the following folders and files:
 
 ```
 .
@@ -33,17 +25,32 @@ Static assets, like favicons, can be placed in the `public/` directory.
 
 ## 🧞 Commands
 
-All commands are run from the root of the project, from a terminal:
-
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
 | `npm install`             | Installs dependencies                            |
 | `npm run dev`             | Starts local dev server at `localhost:4321`      |
 | `npm run build`           | Build your production site to `./dist/`          |
+| `npm run build-samples`   | Packages sample workspaces to `public/samples`   |
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 
-## 👀 Want to learn more?
+## 🔄 Workflows
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+### Sync WASM (`/sync-wasm`)
+
+To update the WASM binary from the `vyasa` compiler:
+
+```bash
+# Using the agent workflow
+/sync-wasm
+```
+
+Or manually:
+
+1.  Build WASM in `vyasa/vyasac`: `wasm-pack build --target web`
+2.  Copy `pkg` to `src/pkg`.
+
+
+
+

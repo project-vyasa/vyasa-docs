@@ -1,23 +1,29 @@
 ---
 title: Welcome to Project Vyasa
-description: Vyasa is a language to enrich (ancient) text with semantic metadata.
+description: Vyasa is a language to enrich (ancient) text with semantic information.
 template: splash # Remove or comment out this line to display the site sidebar on this page.
 hero:
-  tagline: Vyasa is a language to enrich (ancient) text with semantic metadata.
-#  image:
-#    file: ../../assets/houston.webp
-#  actions:
-#    - text: Explore Vyasa
-#      link: ./user-guide/
-#      icon: right-arrow
-#      variant: minimal
+  tagline: Vyasa is a language to enrich (ancient) text with semantic information.
+  image:
+    file: ../../assets/vyasa-logo.png
+  actions:
+    - text: Explore Vyasa
+      link: /vyasa-docs/playarea/
+      icon: right-arrow
+      variant: minimal
 ---
 
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-<CardGrid stagger>
+<CardGrid>
+	<Card title="Explore Vyasa language" icon="codePen">
+		[Play Area](/vyasa-docs/playarea/).
+	</Card>
 	<Card title="Review documentation" icon="open-book">
-		Learn more in [Vyasa Docs](/vyasa-docs/user-guide/).
+		[Vyasa Docs](/vyasa-docs/guides/user-guide/).
+	</Card>
+	<Card title="Reference Implementation" icon="forward-slash">
+		Compiler repository: [vyasac](https://github.com/project-vyasa/vyasa).
 	</Card>
 </CardGrid>

@@ -1,0 +1,12 @@
+[workspace]
+name = "Bhagavad Gita Sample"
+version = "0.1.0"
+source = "https://vedabase.io/en/library/bg/1/1/"
+
+[streams]
+primary = "content"
+
+templates = "templates"
+
+[aliases]
+r = "reference"

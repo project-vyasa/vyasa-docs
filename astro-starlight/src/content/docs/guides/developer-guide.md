@@ -63,8 +63,8 @@ comment         ::= "`" whitespace+ /* Empty command is a comment */
 3.  **Blocks**: Commands that contain other content.
     *   Distinguished by a **Delimiter** syntax: `;DELIM [ ... ]DELIM`.
     *   This ensures "Safe Block Parsing" where the parser scans until the matching delimiter, ignoring internal syntax conflicts.
-4.  **Implicit Text Streams**:
-    *   Blocks can be defined as "Streams" where lines are implicitly tagged with commands based on a pattern.
+4.  **Interlinear Streams**:
+    *   Blocks can be defined as "Interlinear Streams" where lines are implicitly tagged with commands based on a pattern.
 
 ## 2. URN Scheme & Context
 
@@ -86,13 +86,31 @@ The reference implementation is built in **Rust** and acts as both a CLI tool an
 
 The implementation uses a shared compilation pipeline:
 
-1.  **Parsing** (`src/parser.rs`): Zero-copy parsing using `nom`.
-2.  **Environment Injection**: Inherits context from `vyasa.toml`.
-3.  **Alias Source Injection** (`src/alias_resolver.rs`): Handles macro expansion by injecting `_alias` attributes.
-4.  **Enrichment** (`src/enricher.rs`):
-    *   **URNs**: Generates URNs based on the scheme.
-    *   **State & Entities**: Propagates state from `entity` commands and aliases (Registry).
-5.  **Output** (`src/backend/`): Serializes to JSON or SQLite.
+1.  **Parser** (`src/parser.rs`): Uses `nom` to parse `.vy` source text into a `VyasaDocument` AST.
+    *   Tracks source locations using `nom_locate` for error reporting.
+    *   Produces `Node` variants: `Command`, `Text`, `SegmentBreak`, `Comment`.
+
+2.  **Transformer** (`src/transformer.rs`): Performs initial AST mutations.
+    *   Handles **Interlinear Streams** (`interlinear-streams`): Expands raw text lines into command nodes based on defined patterns.
+    *   Preserves source locations during transformation.
+
+3.  **Alias Resolver** (`src/alias_resolver.rs`):
+    *   Resolves user-defined aliases (e.g., `q` -> `question`).
+    *   Respects `set aliases` commands in the document.
+
+4.  **Validator** (`src/validator.rs`):
+    *   Performs semantic validation.
+    *   Checks that all used commands are either built-in (core) or defined via `command-def`.
+    *   Validates arguments against allowed lists.
+
+6.  **Enricher** (`src/enricher.rs`):
+    *   Populates entity registries (`set entities`).
+    *   **State & Entities**: Propagates state from `state` commands and aliases (Registry).
+    *   Future: Will resolve cross-references and URNs.
+
+6.  **Backend compilation** (`src/backend/`):
+    *   **Tera** / **Handlebars**: Renders the AST to HTML using templates.
+    *   **SQLite**: Serializes the AST structure into a relational database for querying.
 
 ### Codebase Layout
 

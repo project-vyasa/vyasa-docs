@@ -5,7 +5,7 @@ description: Complete guide to using Vyasa for scriptural texts.
 
 # Vyasa User Guide
 
-Vyasa is a high-performance markup language designed for scriptural texts. This guide covers the syntax and features supported by the Vyasa parser.
+Vyasa is a high-performance semantic markup language designed for scriptural texts. This guide covers the syntax and features supported by the Vyasa parser.
 
 :::note
 Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
@@ -77,10 +77,13 @@ The following built-in commands are supported by the compiler:
 | Command | Canonical Name | Description | Example |
 | :--- | :--- | :--- | :--- |
 | **Reference** | `reference` | Defines a URN-addressable segment and sets the context ID. | `` `reference 1.1 In the beginning... `` |
+| **State** | `state` | Updates the contextual state (speaker, scene, etc.) for subsequent nodes. | `` `state { speaker="Sanjaya" } `` |
 | **Set** | `set` | Updates environment configuration (context, aliases, entities). | `` `set context { work="Bible" } `` |
-| **Entity** | `entity` | Defines or references a semantic entity. Used for state tracking (speaker) or inline tagging. | `` `entity Krishna `` |
-| **Stream Definition** | `stream-def` | Defines a repeating pattern of commands for text blocks. | `` `stream-def { id="gita" pattern="d, i, e" } `` |
+| **Entity** | `entity` | Defines or references a semantic entity. Used for inline tagging. | `` `entity Krishna `` |
+| **Interlinear Streams** | `interlinear-streams` | Defines a repeating pattern of commands for text blocks. | `` `interlinear-streams { id="gita" pattern="d, i, e" } `` |
+| **Custom Command** | `command-def` | Defines a new command with specific attributes. | `` `command-def arjuna { category="entity" } `` |
 | **Text Stream** | `textstream` | Explicitly marks a block of text as content (useful if starting with special chars). | `` `textstream[ ... ] `` |
+| **Verse** | `verse` | A structural container for verse content. Inherits ID/URN from the active reference. | `` `verse[ ... ] `` |
 
 > **Note**: Short names (like `ref`) are typically enabled via **Aliases** in your `context.vy`. The compiler sees the canonical name.
 
@@ -106,6 +109,12 @@ Mark the start of a structural unit.
 `reference 1      --> Verse 1 (inherits Book/Chapter)
 `reference 3.16   --> Chapter 3, Verse 16
 ```
+
+#### Identification (Fully Qualified Names)
+The `reference` command (and its aliases like `r` or `ref`) is responsible for establishing the unique identity (URN) of the content that follows.
+
+*   Arguments to `reference` (e.g., `1.1`) are appended to the active URN scheme defined in the project configuration.
+*   **Inheritance**: Subsequent content nodes (like `verse` blocks or plain text) automatically inherit this active URN as their fully qualified ID. The `verse` command itself does not generate an ID; it adopts the ID set by the most recent `reference`.
 
 ### 3. Styled Blocks & Overlapping Scopes
 Groups text under a specific tag/command.
@@ -172,7 +181,7 @@ An Entity is any named concept—a Person, Deity, Place, Time Period, or Abstrac
 ### 1. Entity Registry (`context.vy`)
 You can define entities centrally to keep your content clean.
 
-```vyasa
+```text
 `set entities {
   Krishna = { type="Deity" role="Avatar" }
   Arjuna = { type="Person" role="Warrior" }
@@ -181,30 +190,34 @@ You can define entities centrally to keep your content clean.
 ```
 
 ### 2. Setting State
-When you use `entity` without arguments or as a standalone command settings attributes, it updates the **Flow State**. This state is propagated to all subsequent content nodes until changed.
+Use the `state` command to update the **Flow State**. This state is propagated to all subsequent content nodes until changed.
 
 **Example: Setting Speaker**
-```vyasa
-`entity { speaker="Sanjaya" }
+```text
+`state { speaker="Sanjaya" }
 `reference 1.1 ... (Attributes: speaker="Sanjaya")
 `reference 1.2 ... (Attributes: speaker="Sanjaya")
 
-`entity { speaker="" }  <-- Clears the speaker state
+`state { speaker="" }  <-- Clears the speaker state
 ```
 
 ### 3. Modeling Actions (Verbs)
 You are not limited to nouns like "Speaker". You can model events by generic state keys.
 
-```vyasa
-`entity { actor="Sanjaya" action="speaking" }
+```text
+`state { actor="Sanjaya" action="speaking" }
 `reference 1.1 ... (Attributes: actor="Sanjaya", action="speaking")
 ```
 
 ### 4. Inline Entities
 When you provide an argument (the entity name), it creates a specific Entity Node. It inherits attributes from the Registry but **does not** change the global state.
 
-```vyasa
-`entity Krishna     <-- Inherits type="Deity" from registry
+**Benefits**:
+*   **Semantic Tagging**: Explicitly marks a word/phrase as referring to a specific entity, even if using pronouns or epithets.
+*   **Indexing**: Allows compilers to generate an index of where entities appear.
+*   **Rich UI**: Enables features like hover-cards (showing the entity's description/role from the registry) or hyperlinks.
+
+```text
 `entity Krishna     <-- Inherits type="Deity" from registry
 `entity Arjuna { mood="Despondent" } <-- Inherits registry + overrides mood
 ```
@@ -213,14 +226,12 @@ When you provide an argument (the entity name), it creates a specific Entity Nod
 You can create custom commands that act as templates by combining **Aliases** and the **Entity Registry**.
 
 **Setup (`context.vy`):**
-```vyasa
+```text
 `set aliases {
-  Krishna = "entity"
-  speaking = "entity"
+  speaking = "state"
 }
 
 `set entities {
-  Krishna = { actor="Krishna" type="Deity" }
   speaking = { action="speaking" }
 }
 ```
@@ -228,23 +239,39 @@ You can create custom commands that act as templates by combining **Aliases** an
 **Usage:**
 Using the alias as a command automatically merges its registry attributes into the node.
 
-```vyasa
-`Krishna `speaking
-`reference 1.1 "This verse has actor=Krishna and action=speaking"
+```text
+`speaking
+`reference 1.1 "This verse has action=speaking"
 ```
 
 ---
 
 ## Advanced Features
 
-### Text Stream Patterns
+### Custom Commands (`command-def`)
+You can define your own domain vocabulary within any document using `command-def`. This is useful for project-specific terms that aren't available in the core language.
+
+**Syntax**:
+```text
+`command-def name { category="cat" ... }
+```
+
+**Example**:
+```text
+`command-def arjuna { category="entity" }
+`command-def uvacha { category="verb" }
+
+`arjuna `uvacha [ O Krishna... ]
+```
+
+### Interlinear Streams
 For documents with repeating structures (like interlinear texts), you can define a pattern to implicitly tag lines.
 
 **Syntax**:
 ```text
-`stream-def {
+`interlinear-streams {
   id = "pattern_name"
-  pattern = [ "cmd1", "cmd2", "cmd3" ]
+  pattern = "cmd1, cmd2, cmd3"
 }
 ```
 
@@ -253,7 +280,7 @@ Use the pattern ID as a command. The lines inside will be automatically assigned
 
 **Example**:
 ```text
-`stream-def{ id="verse"; pattern=[d, i, e] }
+`interlinear-streams{ id="verse" pattern="d, i, e" }
 
 `verse[
   धृतराष्ट्र उवाच           
