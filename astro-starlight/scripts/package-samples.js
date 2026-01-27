@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,8 +59,18 @@ for (const item of items) {
             // Note: zip command patterns are shell glob patterns
             console.log(`  Zipping to ${zipPath}...`);
             execSync(`zip -r "${zipPath}" . -x "*.DS_Store" "dist/*"`, { cwd: itemPath, stdio: 'inherit' });
-            samples.push(item);
-            console.log(`  Package created.`);
+
+            // Calculate hash for cache busting
+            const fileBuffer = fs.readFileSync(zipPath);
+            const hash = crypto.createHash('md5').update(fileBuffer).digest('hex').substring(0, 8);
+
+            samples.push({
+                id: item,
+                name: item,
+                file: `${item}.zip`,
+                hash: hash
+            });
+            console.log(`  Package created (Hash: ${hash}).`);
         } catch (error) {
             console.error(`  Failed to package ${item}:`, error);
             process.exit(1);
