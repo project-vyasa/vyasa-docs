@@ -9,12 +9,12 @@
     "id": "bible",
     "name": "bible",
     "file": "bible.zip",
-    "hash": "9f4a1052"
+    "hash": "3b1350ec"
   },
   {
     "id": "minimal",
     "name": "minimal",
     "file": "minimal.zip",
-    "hash": "2f07e7f2"
+    "hash": "3df65752"
   }
 ]

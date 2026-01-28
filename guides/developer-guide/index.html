@@ -152,15 +152,15 @@
 <li>
 <p><strong>Alias Resolver</strong> (<code dir="auto">src/alias_resolver.rs</code>):</p>
 <ul>
-<li>Resolves user-defined aliases (e.g., <code dir="auto">q</code> -> <code dir="auto">question</code>).</li>
-<li>Respects <code dir="auto">set aliases</code> commands in the document.</li>
+<li>Resolves user-defined aliases (e.g., <code dir="auto">h1</code> -> <code dir="auto">heading</code>).</li>
+<li>Respects <code dir="auto">alias-def</code> commands in the environment.</li>
 </ul>
 </li>
 <li>
 <p><strong>Validator</strong> (<code dir="auto">src/validator.rs</code>):</p>
 <ul>
 <li>Performs semantic validation.</li>
-<li>Checks that all used commands are either built-in (core) or defined via <code dir="auto">command-def</code>.</li>
+<li>Checks that all used commands are defined in the Standard Library (<code dir="auto">builtins.vy</code>) or via <code dir="auto">command-def</code>.</li>
 <li>Validates arguments against allowed lists.</li>
 </ul>
 </li>
