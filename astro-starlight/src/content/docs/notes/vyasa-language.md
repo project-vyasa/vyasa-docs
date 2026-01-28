@@ -5,19 +5,26 @@ description: History of design decisions for the Vyasa language.
 
 # Vyasa Language Design History
 
+<!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
+
+## 2026-01-28: Whitespace Preservation
+*   **Problem**: Previous versions aggressively stripped whitespace between nodes, making it impossible to render poetry or lists where line breaks mattered.
+*   **Fix**: Modified parser to preserve text whitespace as `Text` nodes.
+*   **Impact**:
+    *   **Prose**: Unaffected (HTML collapses whitespace naturally).
+    *   **Poetry**: Can now be rendered correctly using CSS `white-space: pre-wrap` on container blocks (e.g., `preformatted`).
+
+## 2026-01-27: Standard Library Refinement
+*   **Decision**: Cleaned up `builtins.vy` to include only Meta and Formatting commands. Domain-specific commands (like `verse`) moved to context configuration.
+*   **Standardization**: Renamed `def-alias` to `alias-def` to align with `command-def`.
+*   **Headings**: Added hierarchical `heading` command and `h1-h3` aliases.
 
 ## 2026-01-26: Explicit Formatting & Context URNs
 *   **Decision**: Adopted **Explicit Formatting Commands** (`br`, `e1`, `e2`) over implicit markdown-like syntax or raw HTML.
     *   **Rationale**: Ensures portability and consistent rendering across environments (WASM/Editor). implicit double-newlines for breaks proved fragile.
 *   **URNs**: Moved URN scheme definition from static `vyasac.toml` to dynamic `context.vy`.
     *   **Reason**: Allows different parts of a workspace (e.g., Intro vs Main Text) to use different URN structures.
-
-
-## 2026-01-27: Standard Library Refinement
-*   **Decision**: Cleaned up `builtins.vy` to include only Meta and Formatting commands. Domain-specific commands (like `verse`) moved to context configuration.
-*   **Standardization**: Renamed `def-alias` to `alias-def` to align with `command-def`.
-*   **Headings**: Added hierarchical `heading` command and `h1-h3` aliases.
 
 ## 2026-01-25: Stream vs. Container Architecture
 *   **Concept**: Formalized two valid ways to structure content.

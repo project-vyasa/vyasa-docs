@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "knowledge-sheet" %}{{
+        node.Command.attributes.title }}{% endif %}{% endfor %}</title>
+    <style>
+        body {
+            font-family: serif;
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        .sheet-meta {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 1rem;
+        }
+
+        .sheet-number {
+            font-weight: bold;
+            color: #666;
+        }
+
+        .sheet-title {
+            margin: 0.5rem 0;
+            font-size: 1.8rem;
+        }
+
+        .sheet-location {
+            font-style: italic;
+            color: #888;
+        }
+
+        /* The important bit: whitespace preservation */
+        .preformatted {
+            white-space: pre-wrap;
+            font-family: inherit;
+            /* Keep serif/body font, don't switch to mono */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        {%- macro render_node(node) -%}
+        {%- if node.Text -%}
+        {{ node.Text.value }}
+        {%- elif node.Command -%}
+        {%- if node.Command.cmd == "knowledge-sheet" -%}
+        <!-- Render Metadata -->
+        <div class="sheet-meta">
+            <div class="sheet-number">Weekly Knowledge #{{ node.Command.argument }}</div>
+            <h1 class="sheet-title">{{ node.Command.attributes.title }}</h1>
+            <div class="sheet-location">{{ node.Command.attributes.location | default(value="Unknown Location") }} — {{
+                node.Command.attributes.date | default(value="") }}</div>
+        </div>
+
+        {%- elif node.Command.cmd == "preformatted" -%}
+        <!-- Render Preformatted Block with NO whitespace injection -->
+        <div class="preformatted">{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor
+            %}</div>
+
+        {%- elif node.Command.cmd == "emphasis" -%}
+        {%- if node.Command.attributes.level == "1" -%}
+        <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
+        {%- endif -%}
+
+        {%- elif node.Command.cmd == "break" -%}
+        <br />
+
+        {%- else -%}
+        {%- for child in node.Command.children -%}{{ self::render_node(node=child) }}{%- endfor -%}
+        {%- endif -%}
+        {%- endif -%}
+        {%- endmacro -%}
+
+        {%- for node in primary.body -%}
+        {{ self::render_node(node=node) }}
+        {%- endfor -%}
+    </div>
+</body>
+
+</html>

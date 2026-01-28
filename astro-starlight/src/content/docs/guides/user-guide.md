@@ -158,6 +158,38 @@ Vyasa supports explicit commands for text formatting to ensure precision.
 | **Column Break** | `col-break` | `` `col-break `` | `<hr class="col-break" />` |
 | **Page Break** | `pg-break` | `` `pg-break `` | `<hr class="pg-break" />` |
 
+### 5. Preformatted Text & Poetry
+By default, Vyasa (like HTML) collapses multiple spaces and newlines into a single space. This works well for prose but breaks poetry or lists.
+
+To preserve whitespace, use a custom command (e.g., `preformatted`) and style it with CSS.
+
+**Context (`context.vy`)**:
+```vyasa
+`command-def { name="preformatted" category="formatting" }
+```
+
+**Content**:
+```vyasa
+`preformatted[
+    Stretching the Sound is Music.
+    Stretching the Movement is Dance.
+]
+```
+
+**Template (`default.html`)**:
+```html
+<div class="preformatted">
+    {%- for child in node.Command.children -%}
+        {{ self::render_node(node=child) }}
+    {%- endfor -%}
+</div>
+```
+
+**CSS**:
+```css
+.preformatted { white-space: pre-wrap; }
+```
+
 ### 5. Inline Commands
 Short-form commands for formatting or semantic tagging.
 
