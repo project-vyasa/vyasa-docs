@@ -160,3 +160,15 @@ Data in Vyasa streams can be flexible. A command might not always have the attri
 
 This ensures your template renders even if `title` is missing from the source content.
 
+This ensures your template renders even if `title` is missing from the source content.
+
+### Whitespace Control
+When rendering preformatted text (e.g., poetry), standard Jinja2 tags can inject unwanted newlines.
+
+*   Use `{%-` and `-%}` to strip whitespace around tags.
+*   Ensure children of `preformatted` blocks are rendered immediately.
+
+**Example**:
+```html
+<div class="preformatted">{%- for child in children -%}{{ render(child) }}{%- endfor -%}</div>
+```
