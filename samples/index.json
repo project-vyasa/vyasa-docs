@@ -3,18 +3,18 @@
     "id": "bhagavad-gita",
     "name": "bhagavad-gita",
     "file": "bhagavad-gita.zip",
-    "hash": "9198188e"
+    "hash": "01b4be8d"
   },
   {
     "id": "bible",
     "name": "bible",
     "file": "bible.zip",
-    "hash": "aadf2c9d"
+    "hash": "9f4a1052"
   },
   {
     "id": "minimal",
     "name": "minimal",
     "file": "minimal.zip",
-    "hash": "4bc1b3f2"
+    "hash": "2f07e7f2"
   }
 ]
