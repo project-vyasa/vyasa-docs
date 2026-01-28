@@ -76,11 +76,14 @@ The most robust way to render a recursive tree of nodes is to define a **Macro**
             {% if node.Command %}
             
                 <!-- Handle specific commands specially -->
-                {% if node.Command.cmd == "ref" %}
+                {% if node.Command.cmd == "reference" %}
                     <br><span class="ref">[{{ node.Command.argument }}]</span>
                     
-                {% elif node.Command.cmd == "section" %}
-                    <h2>{{ node.Command.attributes.title }}</h2>
+                {% elif node.Command.cmd == "heading" %}
+                    <!-- Render heading based on level -->
+                    <h{{ node.Command.attributes.level | default(value="1") }}>
+                        {{ self::render_nodes(nodes=node.Command.children) }}
+                    </h{{ node.Command.attributes.level | default(value="1") }}>
                     
                 {% else %}
                     <!-- Default rendering for other commands -->

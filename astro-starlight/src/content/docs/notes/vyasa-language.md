@@ -13,6 +13,12 @@ description: History of design decisions for the Vyasa language.
 *   **URNs**: Moved URN scheme definition from static `vyasac.toml` to dynamic `context.vy`.
     *   **Reason**: Allows different parts of a workspace (e.g., Intro vs Main Text) to use different URN structures.
 
+
+## 2026-01-27: Standard Library Refinement
+*   **Decision**: Cleaned up `builtins.vy` to include only Meta and Formatting commands. Domain-specific commands (like `verse`) moved to context configuration.
+*   **Standardization**: Renamed `def-alias` to `alias-def` to align with `command-def`.
+*   **Headings**: Added hierarchical `heading` command and `h1-h3` aliases.
+
 ## 2026-01-25: Stream vs. Container Architecture
 *   **Concept**: Formalized two valid ways to structure content.
     *   **Stream-based**: Using `reference` (aliased as `r`) to mark points in a continuous flow. Best for narratives (e.g., Bible).
