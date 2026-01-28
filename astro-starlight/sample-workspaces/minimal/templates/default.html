@@ -2,33 +2,62 @@
 <html>
 
 <head>
-    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument ==
-        "file" %}{{ node.Command.attributes.title | default(value="Untitled") }}{% endif %}{% endfor %}</title>
+    <title>Minimal Sample</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #333;
+        }
+
+        .quiet {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 
 <body>
-    {% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument == "file"
-    %}<h1>{{ node.Command.attributes.title }}</h1>{% endif %}{% endfor %}
     <div>
         {% macro render_node(node) %}
         {% if node.Text %}
-        {{ node.Text.value | replace(from="\n", to="<br>") | safe }}
+        {{ node.Text.value }}
         {% elif node.Command %}
-        {% if node.Command.cmd == "emphasis" %}
+        {% if node.Command.cmd == "heading" %}
+        <!-- Dynamic Heading Levels -->
+        <h{{ node.Command.attributes.level | default(value="2" ) }}>
+            {% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}
+        </h{{ node.Command.attributes.level | default(value="2" ) }}>
+
+        {% elif node.Command.cmd == "emphasis" %}
         {% if node.Command.attributes.level == "1" %}
         <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
         {% elif node.Command.attributes.level == "2" %}
         <em>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</em>
-        {% else %}
-        <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
         {% endif %}
+
         {% elif node.Command.cmd == "break" %}
-        {% if node.Command.attributes.type == "line" %}<br />{% endif %}
+        <br />
+
         {% elif node.Command.cmd == "list" %}
         <ul>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</ul>
+
         {% elif node.Command.cmd == "item" %}
         <li>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</li>
+
+        {% elif node.Command.cmd == "comment" %}
+        <!-- Ignore comments -->
+
         {% else %}
+        <!-- Fallback for unknown commands -->
         {% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}
         {% endif %}
         {% endif %}
