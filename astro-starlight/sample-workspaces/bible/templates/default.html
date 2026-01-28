@@ -2,13 +2,18 @@
 <html>
 
 <head>
-    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument ==
-        "file" %}{{ node.Command.attributes.title | default(value="Untitled") }}{% endif %}{% endfor %}</title>
+    <title>{{ primary.environment.context.title | default(value="Untitled") }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet">
     <style>
         body {
-            font-family: sans-serif;
-            max-width: 800px;
+            font-family: 'Inter', sans-serif;
+            max-width: 400px;
             margin: 2rem auto;
+            padding: 1rem 1rem;
             line-height: 1.6;
         }
 
@@ -18,27 +23,35 @@
         }
 
         .cmd-wj {
-            color: #d00;
-            font-style: italic;
-        }
-
-        /*
-        .cmd-wj .arg {
-            display: none; 
-        }
-        */
-
-        /* Arg not used in block syntax */
-        .segment {
-            border: 0;
-            border-top: 1px solid #ddd;
-            margin: 2rem 0;
-            display: block;
+            color: #A00;
         }
 
         .arg {
             font-size: 0.8em;
             color: #888;
+        }
+
+        .cmd-ref {
+            margin-right: 0.25rem;
+            vertical-align: super;
+            font-size: 0.7em;
+            color: #666;
+        }
+
+        h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            color: #444;
+            font-weight: bold;
+        }
+
+        h4 {
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.0rem;
+            color: #555;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -48,14 +61,21 @@
     {% for node in nodes %}
     {% if node.Command %}
     {% if node.Command.cmd == "set" %}
-    {% if node.Command.argument == "file" %}
-    <h1>{{ node.Command.attributes.title }}</h1>
-    {% endif %}
+    {# Skip rendering set commands #}
     {% elif node.Command.cmd == "reference" %}
-    <br>
     <span class="node cmd-ref">
-        <span class="arg">[{{ node.Command.argument }}]</span>
+        <span class="arg"><strong>{{ node.Command.argument }}</strong></span>
     </span>
+    {% elif node.Command.cmd == "break" %}
+    {% if node.Command.attributes.type == "line" %}<br />{% endif %}
+    {% elif node.Command.cmd == "heading" %}
+    {% if node.Command.attributes.level == "1" %}
+    <h3>{{ self::render_nodes(nodes=node.Command.children) }}</h3>
+    {% elif node.Command.attributes.level == "2" %}
+    <h4>{{ self::render_nodes(nodes=node.Command.children) }}</h4>
+    {% else %}
+    <h3>{{ self::render_nodes(nodes=node.Command.children) }}</h3>
+    {% endif %}
     {% else %}
     <span class="node cmd-{{ node.Command.cmd }}">
         {% if node.Command.argument %}<span class="arg">[{{ node.Command.argument }}]</span>{% endif %}
@@ -66,13 +86,12 @@
     {% endif %}
     {% elif node.Text %}
     {{ node.Text.value }}
-    {% elif node.SegmentBreak %}
-    <hr class="segment" />
     {% endif %}
     {% endfor %}
     {% endmacro %}
 
     <div class="content">
+        <h1>{{ primary.environment.context.title }}</h1>
         {{ self::render_nodes(nodes=primary.body) }}
     </div>
 </body>

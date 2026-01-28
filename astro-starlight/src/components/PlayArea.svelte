@@ -73,7 +73,9 @@
     async function loadWorkspaceList() {
         try {
             const base = getBasePath();
-            const res = await fetch(`${base}samples/index.json`);
+            const res = await fetch(
+                `${base}samples/index.json?t=${Date.now()}`,
+            );
             if (res.ok) {
                 // Determine if new format (objects) or legacy (strings)
                 const data = await res.json();
