@@ -16,21 +16,22 @@ Decouple core command definitions from the compiler binary by introducing a **St
 ### 1. The `builtins.vy` File
 We propose a standard file (embedded in the binary but overridable, or distributed with the CLI) that defines the default environment.
 
-```vyasa
 // builtins.vy
 
-// Structural Commands
-`command-def { name="section" args="title,id" category="structure" }
-`command-def { name="chapter" args="title" category="structure" }
+// Meta Commands
+`command-def { name="comment" category="meta" }
+`command-def { name="set" category="meta" }
+`command-def { name="alias-def" args="name,target" category="meta" }
 
-// Content Commands
-`command-def { name="devanagari" category="content" }
-`command-def { name="iast" category="content" }
+// Formatting Commands
+`command-def { name="emphasis" args="level" category="formatting" }
+`command-def { name="heading" args="level" category="formatting" }
+`command-def { name="break" args="type" category="formatting" }
 
-// Formatting Aliases (Syntactic Sugar)
-`def-alias { name="e1" target="emphasis" params="level=1" }
-`def-alias { name="br" target="break" params="type=line" }
-```
+// Aliases
+`alias-def { name="h1" target="heading" params="level=1" }
+`alias-def { name="br" target="break" params="type=line" }
+`alias-def { name="e1" target="emphasis" params="level=1" }
 
 ### 2. Compiler Changes
 

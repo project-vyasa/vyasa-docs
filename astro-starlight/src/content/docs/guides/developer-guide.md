@@ -95,12 +95,12 @@ The implementation uses a shared compilation pipeline:
     *   Preserves source locations during transformation.
 
 3.  **Alias Resolver** (`src/alias_resolver.rs`):
-    *   Resolves user-defined aliases (e.g., `q` -> `question`).
-    *   Respects `set aliases` commands in the document.
+    *   Resolves user-defined aliases (e.g., `h1` -> `heading`).
+    *   Respects `alias-def` commands in the environment.
 
 4.  **Validator** (`src/validator.rs`):
     *   Performs semantic validation.
-    *   Checks that all used commands are either built-in (core) or defined via `command-def`.
+    *   Checks that all used commands are defined in the Standard Library (`builtins.vy`) or via `command-def`.
     *   Validates arguments against allowed lists.
 
 6.  **Enricher** (`src/enricher.rs`):

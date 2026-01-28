@@ -85,7 +85,7 @@ The following built-in commands are supported by the compiler:
 | **Text Stream** | `textstream` | Explicitly marks a block of text as content (useful if starting with special chars). | `` `textstream[ ... ] `` |
 | **Verse** | `verse` | A structural container for verse content. Inherits ID/URN from the active reference. | `` `verse[ ... ] `` |
 
-> **Note**: Short names (like `r` for `reference`) are standard built-ins. You can define custom aliases using `def-alias` in your `context.vy`.
+> **Note**: Short names (like `r` for `reference`) are standard built-ins. You can define custom aliases using `alias-def` in your `context.vy`.
 
 ## Syntax Reference
 
@@ -246,7 +246,7 @@ You can create custom commands that act as templates by combining **Aliases** an
 
 **Setup (`context.vy`):**
 ```text
-`def-alias { name="speaking" target="state" }
+`alias-def { name="speaking" target="state" }
 
 `set entities {
   speaking = { action="speaking" }
