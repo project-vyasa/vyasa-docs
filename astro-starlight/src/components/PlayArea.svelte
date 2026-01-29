@@ -12,7 +12,6 @@
         Icon,
         Button,
         Select,
-        Toolbar,
         Panel,
         type TreeNode,
     } from "@vyasa-ui/svelte";
@@ -28,9 +27,6 @@
         MoreHorizontal,
     } from "lucide-svelte";
 
-    // Reused Components (V2)
-    import PreviewPane from "./ide_v2/PreviewPane.svelte";
-
     let outputJSON = $state("");
     let fileError = $state("");
     let iframeSrc = $state("");
@@ -43,7 +39,8 @@
     let logs = $state("System Logs:\n");
 
     // Tree State
-    let treeData = $derived(pathsToTree(Object.keys(files)));
+    let treeData = $state<TreeNode[]>([]);
+    let outputTreeData = $state<TreeNode[]>([]);
     let expandedIds = $state(new Set<string>());
 
     interface WorkspaceMeta {
@@ -153,6 +150,8 @@
             }
 
             files = newFiles;
+            treeData = pathsToTree(Object.keys(files));
+            console.log("Tree Data Updated:", treeData.length, "nodes");
 
             // Auto-select
             const keys = Object.keys(files);
@@ -181,6 +180,8 @@
     }
 
     function scanTemplates() {
+        // Log files to debug tree data
+        console.log("Files loaded:", Object.keys(files));
         const temps = new Set<string>();
         temps.add("ast.html");
         for (const path of Object.keys(files)) {
@@ -254,10 +255,26 @@
             const resultStr = compile_workspace(input, tmplArg);
             const result = JSON.parse(resultStr);
 
-            outputJSON = JSON.stringify(result, null, 2);
-            outputFiles = Object.keys(result)
+            console.log("Compiler Stats:", result.stats);
+            log(
+                `[SUCCESS] Compiled ${result.stats.file_count} files in ${Math.round(result.stats.duration_ms)}ms.`,
+            );
+
+            outputJSON = JSON.stringify(result.files, null, 2);
+            outputFiles = Object.keys(result.files)
                 .filter((k) => k.startsWith("output/"))
                 .sort();
+            outputTreeData = pathsToTree(outputFiles);
+            console.log("Output Files:", outputFiles);
+            console.log("Output Tree Data:", outputTreeData);
+
+            // Auto-expand 'output' folder
+            if (outputFiles.length > 0) {
+                const newExpanded = new Set(expandedIds);
+                newExpanded.add("output");
+                // Also expand subfolders if few? For now just root.
+                expandedIds = newExpanded;
+            }
 
             const html =
                 outputFiles.find((k) => k.endsWith(".html")) || outputFiles[0];
@@ -280,6 +297,25 @@
         } catch (e) {}
     }
 
+    // Editor separate state to avoid proxy binding issues
+    let editorContent = $state("");
+    $effect(() => {
+        if (selectedFile && files[selectedFile] !== undefined) {
+            // Only update if different to avoid cursor jumps (though Editor handles it)
+            if (editorContent !== files[selectedFile]) {
+                editorContent = files[selectedFile];
+            }
+        }
+    });
+
+    // Sync back
+    function onEditorChange(newVal: string) {
+        editorContent = newVal;
+        if (selectedFile) {
+            files[selectedFile] = newVal;
+        }
+    }
+
     // --- UI Helpers ---
     function goHome() {
         window.location.href = "/";
@@ -290,6 +326,9 @@
     // Layout State
     let leftWidth = $state(240);
     let rightWidth = $state(400);
+
+    // Compute header grid columns to match AppShell body: [Left Sidebar] [Content] [Right Sidebar]
+    let headerGridCols = $derived(`${leftWidth}px 1fr ${rightWidth}px`);
 
     onMount(async () => {
         // Calculate initial split to be roughly 50/50 between editor and preview
@@ -302,109 +341,148 @@
 </script>
 
 <div class="h-screen w-screen overflow-hidden text-sm">
-    <AppShell bind:leftWidth bind:rightWidth>
+    <AppShell
+        bind:leftWidth
+        bind:rightWidth
+        bottomHeight={200}
+        maximizedZone="none"
+    >
         {#snippet header()}
-            <div class="header-wrapper">
-                <Toolbar>
-                    <div class="flex items-center gap-4 w-full">
-                        <!-- Branding / Back -->
-                        <div class="flex items-center gap-2 mr-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                icon={ArrowLeft}
-                                onclick={goHome}
-                                title="Back to Docs"
-                            />
-                            <strong class="text-lg">Vyasa</strong>
-                            <span class="opacity-50">Play</span>
-                        </div>
-
-                        <!-- Workspace Select -->
-                        <div class="flex items-center gap-2 min-w-[200px]">
-                            <Select
-                                options={availableWorkspaces.map((w) => ({
-                                    label: w.name,
-                                    value: w.id,
-                                }))}
-                                bind:value={selectedWorkspaceId}
-                                onchange={() =>
-                                    loadWorkspace(selectedWorkspaceId)}
-                                placeholder="Select Workspace"
-                            />
-                        </div>
-
-                        <!-- Template Select -->
-                        <div class="flex items-center gap-2 min-w-[150px]">
-                            <Select
-                                options={[
-                                    {
-                                        label: "AST (Built-in)",
-                                        value: "ast.html",
-                                    },
-                                    ...availableTemplates
-                                        .filter((t) => t !== "ast.html")
-                                        .map((t) => ({ label: t, value: t })),
-                                ]}
-                                bind:value={selectedTemplate}
-                                onchange={runCompiler}
-                                placeholder="Template"
-                            />
-                        </div>
-
-                        <div class="flex-1"></div>
-
-                        <!-- Actions -->
-                        <div class="flex items-center gap-2">
-                            <Button
-                                variant="primary"
-                                icon={Play}
-                                onclick={runCompiler}
-                            >
-                                Run
-                            </Button>
-
-                            <Button
-                                variant="secondary"
-                                icon={Upload}
-                                onclick={() => fileInput?.click()}
-                            >
-                                Import Zip
-                            </Button>
-                            <input
-                                type="file"
-                                class="hidden"
-                                bind:this={fileInput}
-                                onchange={handleFileUpload}
-                                accept=".zip"
-                            />
-                        </div>
+            <div
+                class="header-grid"
+                style:grid-template-columns={headerGridCols}
+            >
+                <div class="header-cell px-2 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            icon={ArrowLeft}
+                            onclick={goHome}
+                            title="Back to Docs"
+                        />
+                        <strong class="text-lg">Vyasa</strong>
+                        <span class="opacity-50">PlayArea</span>
                     </div>
-                </Toolbar>
+                </div>
+
+                <!-- Col 2: Editor Actions (Aligned with Editor) -->
+                <div class="header-cell px-2 flex items-center">
+                    <Button
+                        variant="ghost"
+                        icon={Upload}
+                        onclick={() => fileInput?.click()}
+                        class="text-xs"
+                    >
+                        Import Zip
+                    </Button>
+                    <input
+                        type="file"
+                        class="hidden"
+                        bind:this={fileInput}
+                        onchange={handleFileUpload}
+                        accept=".zip"
+                    />
+                </div>
+
+                <!-- Col 3: Preview Actions (Aligned with Sidebar Right) -->
+                <div
+                    class="header-cell border-l px-2 flex items-center gap-2 bg-surface-alt"
+                >
+                    <div class="flex-1">
+                        <Select
+                            options={[
+                                { label: "AST (Built-in)", value: "ast.html" },
+                                ...availableTemplates
+                                    .filter((t) => t !== "ast.html")
+                                    .map((t) => ({ label: t, value: t })),
+                            ]}
+                            bind:value={selectedTemplate}
+                            onchange={runCompiler}
+                            placeholder="Template"
+                        />
+                    </div>
+                    <Button variant="primary" icon={Play} onclick={runCompiler}>
+                        Run
+                    </Button>
+                </div>
             </div>
         {/snippet}
 
         {#snippet sidebarLeft()}
-            <Panel title="Explorer" icon={Folder}>
-                {#snippet actions()}
-                    <Button variant="ghost" size="icon" icon={MoreHorizontal} />
-                {/snippet}
-                <div class="h-full overflow-auto py-2">
-                    <Tree
-                        data={treeData}
-                        bind:expandedIds
-                        selectedId={selectedFile}
-                        onSelect={(node: any) =>
-                            !node.children && (selectedFile = node.id)}
+            <div class="h-full flex flex-col">
+                <!-- Workspace Selector (Top) -->
+                <div class="p-2 border-b bg-surface-alt">
+                    <Select
+                        options={availableWorkspaces.map((w) => ({
+                            label: w.name,
+                            value: w.id,
+                        }))}
+                        bind:value={selectedWorkspaceId}
+                        onchange={() => loadWorkspace(selectedWorkspaceId)}
+                        placeholder="Select Workspace"
                     />
                 </div>
-            </Panel>
+
+                <!-- Source Explorer (Middle) -->
+                <Panel
+                    title="Source"
+                    icon={Folder}
+                    class="flex-1 min-h-0 border-b-0"
+                >
+                    {#snippet actions()}
+                        <Button variant="ghost" size="icon" />
+                    {/snippet}
+                    <div class="h-full overflow-auto py-2">
+                        {#key treeData}
+                            <Tree
+                                data={treeData}
+                                bind:expandedIds
+                                bind:selectedId={selectedFile}
+                                onSelect={(node) => {
+                                    console.log("Selected node:", node);
+                                    if (!node.children) {
+                                        selectedFile = node.id;
+                                        console.log(
+                                            "New selectedFile:",
+                                            selectedFile,
+                                        );
+                                    }
+                                }}
+                            />
+                        {/key}
+                    </div>
+                </Panel>
+
+                <!-- Output Explorer (Bottom) -->
+                <div class="h-1/3 border-t">
+                    <Panel
+                        title="Output"
+                        icon={CheckCircle}
+                        class="h-full border-0"
+                    >
+                        <div class="h-full overflow-auto py-2">
+                            {#key outputTreeData}
+                                <Tree
+                                    data={outputTreeData}
+                                    bind:expandedIds
+                                    selectedId={selectedOutputFile}
+                                    onSelect={(node: any) =>
+                                        !node.children &&
+                                        selectOutputFile(node.id)}
+                                />
+                            {/key}
+                        </div>
+                    </Panel>
+                </div>
+            </div>
         {/snippet}
 
         {#snippet children()}
             {#if selectedFile && files[selectedFile] !== undefined}
                 <CodeEditor
-                    bind:value={files[selectedFile]}
+                    value={editorContent}
+                    onchange={onEditorChange}
                     language={selectedFile.endsWith(".html")
                         ? "html"
                         : "markdown"}
@@ -428,15 +506,35 @@
 
         {#snippet sidebarRight()}
             <div class="h-full flex flex-col">
-                <PreviewPane
-                    {iframeSrc}
-                    {outputFiles}
-                    debugJson={outputJSON}
-                    {logs}
-                    {selectedOutputFile}
-                    on:selectFile={(e) => selectOutputFile(e.detail)}
-                />
+                <!-- Preview Iframe -->
+                <div class="flex-1 bg-white relative">
+                    {#if iframeSrc}
+                        <iframe
+                            srcdoc={iframeSrc}
+                            title="Preview"
+                            class="w-full h-full border-none"
+                            sandbox="allow-scripts allow-same-origin"
+                        ></iframe>
+                    {:else}
+                        <div
+                            class="flex items-center justify-center h-full text-neutral-400"
+                        >
+                            No preview available
+                        </div>
+                    {/if}
+                </div>
             </div>
+        {/snippet}
+
+        <!-- Output Debug -->
+        {#snippet panelBottom()}
+            <Panel title="Console" icon={Code}>
+                <div
+                    class="h-full overflow-auto p-2 font-mono text-xs bg-black text-green-400"
+                >
+                    <pre>{logs}</pre>
+                </div>
+            </Panel>
         {/snippet}
 
         {#snippet statusBar()}
@@ -554,5 +652,54 @@
     }
     .text-neutral-700 {
         color: #404040;
+    }
+    /* New V4 Utilities */
+    .bg-surface-alt {
+        background-color: var(--bg-surface-alt);
+    }
+    .bg-white {
+        background-color: #ffffff; /* Force actual white for preview paper look */
+    }
+    .p-2 {
+        padding: 0.5rem;
+    }
+    .border-b {
+        border-bottom: 1px solid var(--border-base);
+    }
+    .border-t {
+        border-top: 1px solid var(--border-base);
+    }
+    .border-0 {
+        border: none;
+    }
+    .border-b-0 {
+        border-bottom: none;
+    }
+    .h-1\/3 {
+        height: 33.333333%;
+    }
+    .min-h-0 {
+        min-height: 0;
+    }
+    .relative {
+        position: relative;
+    }
+    .header-grid {
+        display: grid;
+        height: 100%;
+        width: 100%;
+    }
+    .header-cell {
+        display: flex;
+        align-items: center;
+        overflow: visible;
+        position: relative;
+        z-index: 100; /* Boost z-index above sidebars */
+    }
+    .border-l {
+        border-left: 1px solid var(--border-base);
+    }
+    .border-r {
+        border-right: 1px solid var(--border-base);
     }
 </style>
