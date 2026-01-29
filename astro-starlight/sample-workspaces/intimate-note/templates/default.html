@@ -2,83 +2,121 @@
 <html>
 
 <head>
-    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "knowledge-sheet" %}{{
-        node.Command.attributes.title }}{% endif %}{% endfor %}</title>
+    <title>{%- for node in primary.body -%}{%- if node.Command and node.Command.cmd == "knowledge-sheet" -%}{{
+        node.Command.attributes.title }}{%- endif -%}{%- endfor -%}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
     <style>
         body {
-            font-family: serif;
+            font-family: 'Noto Serif', serif;
             max-width: 700px;
-            margin: 2rem auto;
             padding: 0 1rem;
-            line-height: 1.6;
+            line-height: 1.4;
+        }
+
+        h2 {
+            margin: 1.5rem 0 0.5rem 0;
+            font-size: 1.2rem;
         }
 
         .sheet-meta {
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             border-bottom: 1px solid #ccc;
-            padding-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            white-space: normal;
         }
 
-        .sheet-number {
-            font-weight: bold;
-            color: #666;
+        .align-center {
+            text-align: center;
+        }
+
+        .align-right {
+            text-align: right;
+        }
+
+        .sheet-date,
+        .sheet-location {
+            font-style: italic;
+            color: #888;
+            margin-bottom: 0.2rem;
         }
 
         .sheet-title {
             margin: 0.5rem 0;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
         }
 
-        .sheet-location {
-            font-style: italic;
-            color: #888;
-        }
-
-        /* The important bit: whitespace preservation */
-        .preformatted {
+        .content {
             white-space: pre-wrap;
-            font-family: inherit;
-            /* Keep serif/body font, don't switch to mono */
+        }
+
+        .lines {
+            margin: 1rem 0;
+        }
+
+        .extras {
+            font-style: italic;
         }
     </style>
 </head>
 
 <body>
-    <div class="content">
-        {%- macro render_node(node) -%}
+    <div class="content">{%- macro render_node(node) -%}
         {%- if node.Text -%}
-        {{ node.Text.value }}
+        {{- node.Text.value -}}
         {%- elif node.Command -%}
         {%- if node.Command.cmd == "knowledge-sheet" -%}
         <!-- Render Metadata -->
         <div class="sheet-meta">
-            <div class="sheet-number">Weekly Knowledge #{{ node.Command.argument }}</div>
-            <h1 class="sheet-title">{{ node.Command.attributes.title }}</h1>
-            <div class="sheet-location">{{ node.Command.attributes.location | default(value="Unknown Location") }} — {{
-                node.Command.attributes.date | default(value="") }}</div>
+            <div class="sheet-date">{{- node.Command.attributes.date | date(format="%B %e, %Y") | default(value="") -}}
+            </div>
+            <div class="sheet-location">{{- node.Command.attributes.location | default(value="Unknown Location") -}}
+            </div>
+            <h1 class="sheet-title">{{- node.Command.attributes.number -}}.&nbsp;&nbsp;&nbsp;{{-
+                node.Command.attributes.title -}}</h1>
         </div>
 
-        {%- elif node.Command.cmd == "preformatted" -%}
-        <!-- Render Preformatted Block with NO whitespace injection -->
-        <div class="preformatted">{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor
-            %}</div>
+        {%- elif node.Command.cmd == "lines" -%}
+        <div class="lines">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
+        </div>
+
+        {%- elif node.Command.cmd == "extras" -%}
+        <div class="extras">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor
+            -%}</div>
+
+        {%- elif node.Command.cmd == "center" -%}
+        <div class="align-center">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%-
+            endfor -%}</div>
+
+        {%- elif node.Command.cmd == "right" -%}
+        <div class="align-right">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%-
+            endfor -%}</div>
+
+        {%- elif node.Command.cmd == "speaker" -%}
+        <strong>{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
+
+        {%- elif node.Command.cmd == "heading" -%}
+        <h{{ node.Command.attributes.level | default(value="2" ) }}>{%- for child in node.Command.children -%}{{-
+            self::render_node(node=child) -}}{%- endfor -%}</h{{ node.Command.attributes.level | default(value="2" ) }}>
 
         {%- elif node.Command.cmd == "emphasis" -%}
         {%- if node.Command.attributes.level == "1" -%}
-        <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
+        <strong>{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
         {%- endif -%}
 
         {%- elif node.Command.cmd == "break" -%}
         <br />
 
         {%- else -%}
-        {%- for child in node.Command.children -%}{{ self::render_node(node=child) }}{%- endfor -%}
+        {%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
         {%- endif -%}
         {%- endif -%}
         {%- endmacro -%}
 
         {%- for node in primary.body -%}
-        {{ self::render_node(node=node) }}
+        {{- self::render_node(node=node) -}}
         {%- endfor -%}
     </div>
 </body>

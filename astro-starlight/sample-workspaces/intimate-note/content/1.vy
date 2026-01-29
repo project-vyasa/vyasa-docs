@@ -2,14 +2,12 @@
 
 This begins a new practice of weekly dispatches of Knowledge from Guruji. Every center around the world will receive the Knowledge so it can be read for people to copy down at weekly Satsang. Here is the first segment Guruji dictated at Big Sur, 21 June, 1995.
 
-* * * *
-
+`center[* * * *]
+`lines[
 Beyond an event is Knowledge.
-
 Beyond a person is love.
-
 Beyond an object is infinity.
-
+]
 Knowledge is not in an event; it is beyond an event.
 
 If you take one event and infer anything from one event -- infer knowledge -- it will be erroneous knowledge. Say Nancy gets angry and shouts at someone. You attribute anger to Nancy, but actually it was carried from someone else to her. Someone else got angry first and someone else and someone else and on and on like that.
