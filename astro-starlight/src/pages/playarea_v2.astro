@@ -1,0 +1,71 @@
+---
+import PlayArea from "../components/PlayAreaV2.svelte";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vyasa Playarea</title>
+    <style is:global>
+      :root {
+        /* Minimal Dark Theme Variables for Components */
+        --sl-font-system:
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        --sl-font-mono: "Menlo", "Monaco", "Courier New", monospace;
+
+        --sl-color-bg: #111;
+        --sl-color-bg-nav: #181818;
+        --sl-color-text: #eee;
+        --sl-color-text-invert: #111;
+        --sl-color-text-accent: #aaa;
+
+        --sl-color-gray-6: #222; /* Sidebar/Headers */
+        --sl-color-gray-5: #333; /* Hover */
+        --sl-color-gray-4: #444; /* Borders */
+        --sl-color-gray-3: #666; /* Icons/Inactive */
+
+        --sl-color-accent: #3b82f6; /* Blue */
+        --sl-color-accent-low: rgba(59, 130, 246, 0.2);
+
+        --sl-color-hairline: #333;
+        --sl-color-black: #000;
+        --sl-color-white: #fff;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--sl-color-bg);
+        color: var(--sl-color-text);
+        font-family: var(--sl-font-system);
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Nav Link overlay */
+      .back-link {
+        position: fixed;
+        top: 0.8rem;
+        right: 1.5rem;
+        z-index: 1000;
+        color: var(--sl-color-text-accent);
+        text-decoration: none;
+        font-size: 0.8rem;
+        opacity: 0.7;
+      }
+      .back-link:hover {
+        opacity: 1;
+        color: var(--sl-color-white);
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/" class="back-link">← Docs</a>
+    <PlayArea client:only="svelte" />
+  </body>
+</html>

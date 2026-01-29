@@ -1,54 +1,72 @@
 ---
-import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import PlayArea from "../components/PlayArea.svelte";
 ---
 
-<StarlightPage frontmatter={{ title: "Vyasa Playarea", template: "splash" }}>
-  <div class="playarea-wrapper">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vyasa Playarea</title>
+    <style is:global>
+      :root {
+        /* Vyasa UI Theme Variables (Dark) */
+        --bg-surface: #111111;
+        --bg-surface-alt: #1c1c1c;
+
+        --text-primary: #e5e5e5;
+        --text-secondary: #a3a3a3;
+        --text-tertiary: #525252;
+
+        --border-base: #262626;
+
+        --action-primary: #3b82f6;
+        --action-primary-hover: #2563eb;
+        --action-text: #ffffff;
+
+        --text-xs: 0.75rem;
+        --text-sm: 0.875rem;
+        --bg-surface-elevated: #2a2a2a;
+        --action-primary-alpha: rgba(59, 130, 246, 0.2);
+
+        --control-height-base: 2.25rem;
+        --control-radius: 0.375rem;
+
+        --border-focus: rgba(59, 130, 246, 0.5);
+        --focus-ring: 0 0 0 2px rgba(59, 130, 246, 0.2);
+
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+
+        --font-sans: system-ui, -apple-system, sans-serif;
+        --font-medium: 500;
+
+        --density: 1; /* For Tree component padding */
+
+        /* Starlight Compat */
+        --sl-font-system: system-ui, -apple-system, sans-serif;
+      }
+
+      /* Reset box-sizing */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        font-family: var(--sl-font-system);
+        height: 100vh;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
     <PlayArea client:only="svelte" />
-  </div>
-</StarlightPage>
-
-<style>
-  .playarea-wrapper {
-    /* Height: Viewport - Nav Height - small margin */
-    height: calc(100vh - var(--sl-nav-height) - 2rem);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-top: 0.5rem;
-  }
-</style>
-
-<style is:global>
-  /* Force full width for the main container */
-  .sl-container {
-    max-width: 98% !important;
-    padding-inline: 0.5rem !important;
-    margin-inline: auto !important;
-  }
-
-  /* Resolves to 1 rem otherwise causing various alignment problems */
-  .sl-markdown-content {
-    margin: 0 !important;
-  }
-
-  /* Reset content panel padding */
-  .content-panel {
-    padding: 0 !important;
-  }
-
-  /* Hide Starlight Page Title to allow full-screen app layout */
-  .content-panel h1 {
-    display: none !important;
-  }
-
-  /* Ensure no extra margins on main element */
-  main {
-    padding: 0 !important;
-  }
-  /* Hide Footer to prevent vertical scrollbar and gain space */
-  footer {
-    display: none !important;
-  }
-</style>
+  </body>
+</html>
