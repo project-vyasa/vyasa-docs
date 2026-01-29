@@ -1,0 +1,54 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import PlayArea from "../components/PlayAreaV1.svelte";
+---
+
+<StarlightPage frontmatter={{ title: "Vyasa Playarea", template: "splash" }}>
+  <div class="playarea-wrapper">
+    <PlayArea client:only="svelte" />
+  </div>
+</StarlightPage>
+
+<style>
+  .playarea-wrapper {
+    /* Height: Viewport - Nav Height - small margin */
+    height: calc(100vh - var(--sl-nav-height) - 2rem);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+</style>
+
+<style is:global>
+  /* Force full width for the main container */
+  .sl-container {
+    max-width: 98% !important;
+    padding-inline: 0.5rem !important;
+    margin-inline: auto !important;
+  }
+
+  /* Resolves to 1 rem otherwise causing various alignment problems */
+  .sl-markdown-content {
+    margin: 0 !important;
+  }
+
+  /* Reset content panel padding */
+  .content-panel {
+    padding: 0 !important;
+  }
+
+  /* Hide Starlight Page Title to allow full-screen app layout */
+  .content-panel h1 {
+    display: none !important;
+  }
+
+  /* Ensure no extra margins on main element */
+  main {
+    padding: 0 !important;
+  }
+  /* Hide Footer to prevent vertical scrollbar and gain space */
+  footer {
+    display: none !important;
+  }
+</style>
