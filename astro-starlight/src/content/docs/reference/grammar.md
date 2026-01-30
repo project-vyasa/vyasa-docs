@@ -71,6 +71,19 @@ Text           ::= ( [^`|\[\]\\] | EscapedChar )+
 EscapedChar    ::= "\\" .
 ```
 
+## Special Characters & Escaping
+
+Vyasa reserves the characters `` ` ``, `|`, `[`, `]`, `\`, `{`, `}` for syntax.
+
+- **Escaping**: Any character can be treated as literal text by prefixing it with a backslash `\`.
+  - Example: `` \` `` becomes a literal backtick.
+  - Example: `` \| `` becomes a literal pipe.
+
+- **Robustness**: The parser attempts to be robust. If a special character (like `` ` `` or `]`) is encountered in a context where it does not form a valid command or structure, it is treated as literal text.
+  - Example: `` `( `` parses as a literal backtick followed by `(`.
+  - **Note**: A backtick followed by a space or tab is parsed as a **Comment**.
+  - Example: `` ` This is a comment ``
+
 ## Examples
 
 ### Basic Command

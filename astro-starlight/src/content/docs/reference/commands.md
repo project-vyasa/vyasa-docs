@@ -41,6 +41,7 @@ State properties are propagated to all subsequent nodes until changed or cleared
 Updates environment configuration (context, aliases, entities).
 
 **Syntax**: `` `set <target> { key="value" ... } ``
+**Shorthand**: `` `set { key="value" ... } `` (Equivalent to `set context { ... }`)
 
 **Targets**:
 - `context`: Updates global metadata (e.g., `work`, `urn_scheme`).

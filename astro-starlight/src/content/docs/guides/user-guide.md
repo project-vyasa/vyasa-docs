@@ -21,17 +21,19 @@ A Vyasa Project requires a specific directory structure to ensure correct buildi
 ```text
 my_project/
 ├── vyasac.toml       # Project Root Configuration (Required)
-├── content/         # Source .vy files
+├── context.vy        # Global Context (Standard Library, URNs, Entities)
+├── content/          # Source .vy files
 │   ├── vol1/
-│   │   ├── vyasa.toml (Context: volume=1)
+│   │   ├── context.vy (Context: volume=1)
 │   │   └── book1.vy
-├── config/          # Project-wide metadata (Metadata rules etc.)
-└── sidecar/         # Audio/Translation files
+├── templates/        # Custom HTML templates
+└── sidecar/          # Audio/Translation files
 ```
 
 -   **`vyasac.toml` (Root)**: Marks the directory as a project. Contains build configuration (Streams, Templates).
+-   **`context.vy` (Root)**: The global preamble. Defines the URN scheme, entity registry, and project-wide aliases.
 -   **`content/`**: Contains the hierarchy of Vyasa source files.
--   **`vyasa.toml` (Subdirectories)**: Defines context for that folder (e.g., `volume=1`), which is inherited by files inside.
+-   **`context.vy` (Subdirectories)**: Defines context for that folder (e.g., `volume=1`). Files in that folder inherit these settings.
 -   **`sidecar/`**: Reserved for sidecar files (alignment/audio).
 
 ## CLI Usage
