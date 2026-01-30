@@ -318,7 +318,7 @@
 
     // --- UI Helpers ---
     function goHome() {
-        window.location.href = "/";
+        window.location.href = getBasePath();
     }
 
     let fileInput: HTMLInputElement;
