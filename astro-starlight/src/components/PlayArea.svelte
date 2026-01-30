@@ -297,25 +297,6 @@
         } catch (e) {}
     }
 
-    // Editor separate state to avoid proxy binding issues
-    let editorContent = $state("");
-    $effect(() => {
-        if (selectedFile && files[selectedFile] !== undefined) {
-            // Only update if different to avoid cursor jumps (though Editor handles it)
-            if (editorContent !== files[selectedFile]) {
-                editorContent = files[selectedFile];
-            }
-        }
-    });
-
-    // Sync back
-    function onEditorChange(newVal: string) {
-        editorContent = newVal;
-        if (selectedFile) {
-            files[selectedFile] = newVal;
-        }
-    }
-
     // --- UI Helpers ---
     function goHome() {
         window.location.href = getBasePath();
@@ -481,8 +462,7 @@
         {#snippet children()}
             {#if selectedFile && files[selectedFile] !== undefined}
                 <CodeEditor
-                    value={editorContent}
-                    onchange={onEditorChange}
+                    bind:value={files[selectedFile]}
                     language={selectedFile.endsWith(".html")
                         ? "html"
                         : "markdown"}
@@ -554,13 +534,6 @@
 </div>
 
 <style>
-    .header-wrapper {
-        padding: 0.5rem;
-        height: 100%;
-        display: flex;
-        align-items: center;
-    }
-
     /* Tailwind Polyfills for this component scope */
     .flex {
         display: flex;
@@ -601,16 +574,6 @@
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
     }
-    .mr-4 {
-        margin-right: 1rem;
-    }
-    .mb-4 {
-        margin-bottom: 1rem;
-    }
-    .mx-auto {
-        margin-left: auto;
-        margin-right: auto;
-    }
 
     .gap-2 {
         gap: 0.5rem;
@@ -618,11 +581,8 @@
     .gap-4 {
         gap: 1rem;
     }
-    .min-w-\[200px\] {
-        min-width: 200px;
-    }
-    .min-w-\[150px\] {
-        min-width: 150px;
+    .gap-4 {
+        gap: 1rem;
     }
 
     .text-lg {
@@ -650,9 +610,7 @@
     .bg-neutral-900 {
         background-color: #111;
     }
-    .text-neutral-700 {
-        color: #404040;
-    }
+
     /* New V4 Utilities */
     .bg-surface-alt {
         background-color: var(--bg-surface-alt);
@@ -669,18 +627,11 @@
     .border-t {
         border-top: 1px solid var(--border-base);
     }
-    .border-0 {
-        border: none;
-    }
-    .border-b-0 {
-        border-bottom: none;
-    }
+
     .h-1\/3 {
         height: 33.333333%;
     }
-    .min-h-0 {
-        min-height: 0;
-    }
+
     .relative {
         position: relative;
     }
@@ -698,8 +649,5 @@
     }
     .border-l {
         border-left: 1px solid var(--border-base);
-    }
-    .border-r {
-        border-right: 1px solid var(--border-base);
     }
 </style>

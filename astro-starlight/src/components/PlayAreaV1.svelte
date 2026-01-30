@@ -356,7 +356,7 @@
                         class:maximized={maximizedFile === path}
                     >
                         <div class="file-header">
-                            <label>{path}</label>
+                            <span class="file-label">{path}</span>
                             <button
                                 class="icon-btn"
                                 onclick={() => toggleMaximize(path)}
@@ -563,7 +563,7 @@
         border-bottom: 1px solid var(--sl-color-hairline);
         height: 1.8rem; /* Keep compact */
     }
-    .file-header label {
+    .file-header .file-label {
         margin: 0;
         color: var(--sl-color-text);
         font-size: 0.85rem;
@@ -701,31 +701,7 @@
         font-weight: bold;
         color: var(--sl-color-text-accent);
     }
-    .no-files {
-        font-size: 0.8rem;
-        color: var(--sl-color-gray-3);
-        font-style: italic;
-    }
-    .pill {
-        font-size: 0.75rem;
-        padding: 0.1rem 0.5rem;
-        height: 1.6rem;
-        background: var(--sl-color-gray-6);
-        color: var(--sl-color-text);
-        border: 1px solid var(--sl-color-hairline);
-        cursor: pointer;
-        border-radius: 4px;
-        transition: all 0.2s;
-    }
-    .pill:hover {
-        background: var(--sl-color-gray-5);
-    }
-    .pill.active {
-        background: var(--sl-color-accent);
-        color: var(--sl-color-text-invert);
-        border-color: var(--sl-color-accent);
-        font-weight: bold;
-    }
+
     .tabs {
         display: flex;
         gap: 0.2rem;

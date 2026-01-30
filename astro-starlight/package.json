@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "predeploy": "npm run build-samples && npm run build",
-    "deploy": "gh-pages --nojekyll -d dist"
+    "deploy": "gh-pages --nojekyll -d dist",
+    "check:svelte": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "gh-pages": "^6.3.0",
+    "svelte-check": "^4.3.5",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.5.0"
   }
