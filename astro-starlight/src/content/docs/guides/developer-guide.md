@@ -1,6 +1,8 @@
 ---
 title: Developer Guide
 description: Technical specification and guide for Vyasa parser/compiler developers.
+sidebar:
+  order: 2
 ---
 
 # Vyasa Developer Guide
@@ -17,41 +19,10 @@ Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
 
 Vyasa uses a **Unified Command Model**. Every functional element (header, alignment identifier, metadata block) is a `Command`.
 
-### 1.1 Grammar (EBNF)
+### 1.1 Grammar
 
-```
-document        ::= ( node )*
-node            ::= command | text | comment | segment_break
-
-/* --- Unified Command Structure --- */
-command         ::= inline_command | block_command
-
-/* `cmd arg {key=val} */
-inline_command  ::= "`" identifier [ whitespace argument ] [ attributes ]
-
-/* `cmd arg ;DELIM {key=val} [ ... ]DELIM */
-block_command   ::= "`" identifier [ whitespace argument ] marker attributes? whitespace "[" content "]" marker_end
-
-marker          ::= ";" identifier
-marker_end      ::= identifier
-
-/* --- Components --- */
-identifier      ::= [a-zA-Z0-9_-]+
-argument        ::= [a-zA-Z0-9_.:-/]+  /* Restricted charset */
-
-attributes      ::= "{" map_pairs "}"
-map_pairs       ::= map_pair ( separator map_pair )*
-map_pair        ::= key "=" value
-separator       ::= whitespace
-key             ::= identifier
-value           ::= string | argument | boolean
-string          ::= '"' [^"]* '"'
-
-/* --- Content --- */
-content         ::= ( node )*
-segment_break   ::= "|"
-comment         ::= "`" whitespace+ /* Empty command is a comment */
-```
+The formal grammar is defined in the [Grammar Reference](/reference/grammar).
+This specification serves as the authoritative source for all parser implementations.
 
 ### 1.2 Core Concepts
 
@@ -82,6 +53,11 @@ A Vyasa compiler is expected to generate Uniform Resource Names (URNs) for addre
 
 The reference implementation is built in **Rust** and acts as both a CLI tool and a WASM library.
 
+### Language Specification
+
+The Vyasa language syntax is formally defined in the [Grammar Reference](/reference/grammar).
+The compiler is written in Rust and exposes a WASM interface for web usage.
+
 ### Architecture
 
 The implementation uses a shared compilation pipeline:
@@ -100,7 +76,7 @@ The implementation uses a shared compilation pipeline:
 
 4.  **Validator** (`src/validator.rs`):
     *   Performs semantic validation.
-    *   Checks that all used commands are defined in the Standard Library (`builtins.vy`) or via `command-def`.
+    *   Checks that all used commands are defined in the **Standard Library** (`stdlib.vy`) or via `command-def`.
     *   Validates arguments against allowed lists.
 
 6.  **Enricher** (`src/enricher.rs`):

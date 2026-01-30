@@ -24,6 +24,10 @@ export default defineConfig({
                 label: 'Notes',
                 autogenerate: { directory: 'notes' },
             },
+            {
+                label: 'Reference',
+                autogenerate: { directory: 'reference' },
+            },
 
         ],
     }), svelte()],
