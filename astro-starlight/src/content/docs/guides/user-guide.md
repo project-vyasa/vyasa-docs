@@ -82,7 +82,7 @@ For a complete list of **Standard Library** commands and detailed usage, see the
 
 | Command | Description | Example |
 | :--- | :--- | :--- |
-| **`reference`** | Defines URN/ID | `` `reference 1.1 `` |
+| **`marker`** | Defines URN/ID | `` `marker 1.1 `` |
 | **`state`** | Sets context state | `` `state { speaker="Sanjaya" } `` |
 | **`set`** | Updates config | `` `set context { ... } `` |
 | **`entity`** | Semantic tagging | `` `entity Krishna `` |
@@ -92,8 +92,8 @@ For a complete list of **Standard Library** commands and detailed usage, see the
 ```text
 `set file{id=BG chapter=1}
 
-` Reference to Verse 1
-`reference 1 
+` Marker for Verse 1
+`marker 1 
 `textstream[
   `d[धर्मक्षेत्रे | कुरुक्षेत्रे]
   `i[dharmakṣētrē | kurukṣētrē]
@@ -102,7 +102,7 @@ For a complete list of **Standard Library** commands and detailed usage, see the
 
 ` Overlapping red letter example
 `wj;RED[
-  `reference 2 ...
-  `reference 3 ...
+  `marker 2 ...
+  `marker 3 ...
 ]RED
 ```

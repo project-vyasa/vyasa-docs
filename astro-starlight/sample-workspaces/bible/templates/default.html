@@ -31,7 +31,7 @@
             color: #888;
         }
 
-        .cmd-ref {
+        .cmd-marker {
             margin-right: 0.25rem;
             vertical-align: super;
             font-size: 0.7em;
@@ -62,8 +62,8 @@
     {% if node.Command %}
     {% if node.Command.cmd == "set" %}
     {# Skip rendering set commands #}
-    {% elif node.Command.cmd == "reference" %}
-    <span class="node cmd-ref">
+    {% elif node.Command.cmd == "marker" %}
+    <span class="node cmd-marker">
         <span class="arg"><strong>{{ node.Command.argument }}</strong></span>
     </span>
     {% elif node.Command.cmd == "break" %}

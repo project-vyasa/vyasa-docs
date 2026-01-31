@@ -8,6 +8,15 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-01-29: Semantic Refactoring (Marker vs Citation)
+*   **Problem**: The `reference` command (aliased `r`) was ambiguous. It was used both to *define* a structure (Verse 1) and to *point* to one (John 3:16).
+*   **Solution**: Split the semantics.
+    *   **`marker`** (alias `v`): Defines a structural anchor and sets the ID.
+    *   **`ref`** (alias `r`, `cite`): Points to a target URN (Citation).
+*   **Impact**:
+    *   Renamed `reference` -> `marker` in Standard Library.
+    *   Updated `bible` and `bhagavad-gita` samples to use `v` command.
+
 ## 2026-01-28: Whitespace Preservation
 *   **Problem**: Previous versions aggressively stripped whitespace between nodes, making it impossible to render poetry or lists where line breaks mattered.
 *   **Fix**: Modified parser to preserve text whitespace as `Text` nodes.
