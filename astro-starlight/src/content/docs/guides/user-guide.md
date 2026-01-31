@@ -45,6 +45,14 @@ vyasa build [PROJECT_ROOT] --output <OUTPUT_DIR>
 ```
 If `PROJECT_ROOT` is omitted, it defaults to the current directory. The command will fail if `vyasa.toml` or `content/` is missing.
 
+### Pack Workspace
+To create a distributable package (Zip or SQLite):
+```bash
+vyasac pack [PROJECT_ROOT] --output <OUTPUT_FILE> [--target zip|sqlite]
+```
+-   **Zip** (Default): Source exchange format. Contains JSON ASTs.
+-   **SQLite**: Application database format. Single file.
+
 ---
 
 ## Core Concepts
