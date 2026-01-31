@@ -27,7 +27,7 @@ This specification serves as the authoritative source for all parser implementat
 ### 1.2 Core Concepts
 
 1.  **Commands**: Started by a backtick `` ` ``.
-    *   Example: `` `r 1.1 `` (Reference command).
+    *   Example: `` `marker 1.1 `` (Marker command).
     *   Example: `` `set file{id="Gen"} `` (Metadata command).
 2.  **Attributes**: Key-value pairs enclosed in `{}`.
     *   Used for metadata (time, id, speakers).

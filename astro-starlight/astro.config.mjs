@@ -21,12 +21,12 @@ export default defineConfig({
                 autogenerate: { directory: 'guides' },
             },
             {
-                label: 'Notes',
-                autogenerate: { directory: 'notes' },
-            },
-            {
                 label: 'Reference',
                 autogenerate: { directory: 'reference' },
+            },
+            {
+                label: 'Notes',
+                autogenerate: { directory: 'notes' },
             },
 
         ],

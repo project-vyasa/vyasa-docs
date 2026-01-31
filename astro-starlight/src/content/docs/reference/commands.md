@@ -8,18 +8,31 @@ These are defined in the embedded `stdlib.vy`.
 
 ## Core Commands
 
-### `reference` (Alias: `r`, `ref`)
+### `marker` (Alias: `v`)
 Defines a URN-addressable segment and sets the active context ID.
 
-**Syntax**: `` `reference <number|dots> ``
+**Syntax**: `` `marker <number|dots> ``
 
 **Description**:
-The `reference` command establishes the unique identity (URN) of the content that follows. Arguments are appended to the active URN scheme defined in the project's `context.vy`. Subsequent content nodes automatically inherit this identity.
+The `marker` command establishes the unique identity (URN) of the content that follows. Arguments are appended to the active URN scheme defined in the project's `context.vy`. Subsequent content nodes automatically inherit this identity.
 
 **Examples**:
 ```vyasa
-`reference 1      --> Verse 1 (inherits ID)
-`reference 3.16   --> Chapter 3, Verse 16
+`marker 1     --> Verse 1 (inherits ID)
+`v 3.16       --> Chapter 3, Verse 16 (using alias 'v')
+```
+
+### `ref` (Alias: `r`, `cite`)
+References or cites another text segment.
+
+**Syntax**: `` `ref "target" ``
+
+**Description**:
+Used to create a citation or cross-reference to another segment (marker). This does *not* set the ID of the current block, but rather points to an existing one.
+
+**Example**:
+```vyasa
+As stated in `ref "John 3:16" ...
 ```
 
 ### `state`
@@ -82,7 +95,7 @@ A structural container for verse content.
 **Syntax**: `` `verse [ content... ] ``
 
 **Description**:
-Explicitly marks a block as a verse. It inherits identification from the most recent `reference` command.
+Explicitly marks a block as a verse. It inherits identification from the most recent `marker` command.
 
 ### `textstream`
 Explicitly marks a block of text as content.
@@ -170,6 +183,6 @@ Used for overlapping scopes or nesting.
 
 ```vyasa
 `wj;RED[
-  `reference 1 ...
+  `marker 1 ...
 ]RED
 ```

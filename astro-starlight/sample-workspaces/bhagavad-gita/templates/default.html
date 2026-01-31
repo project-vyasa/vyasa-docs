@@ -171,7 +171,7 @@
         {% set cmd = node.Command.cmd %}
         {% set args = node.Command.argument | default(value="") %}
 
-        {% if cmd == "reference" %}
+        {% if cmd == "marker" %}
         <div class="header">
             <div class="verse-ref">Verse {{ args }}</div>
         </div>
