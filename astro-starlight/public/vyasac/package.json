@@ -1,0 +1,15 @@
+{
+  "name": "vyasac",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "vyasac_bg.wasm",
+    "vyasac.js",
+    "vyasac.d.ts"
+  ],
+  "main": "vyasac.js",
+  "types": "vyasac.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

@@ -8,6 +8,11 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-01-30: Marker Resolution & URN Fallback
+*   **Refinement**: Improved the `pack` command's analysis pipeline.
+    *   **Marker Counting**: Ensure aliases (like `v` -> `marker`) are fully resolved before generating manifest statistics.
+    *   **URN Fallback**: If `urn_scheme` is missing in `manifest.json`, the packer now correctly resolves it from `context.vy` within the environment.
+
 ## 2026-01-29: Semantic Refactoring (Marker vs Citation)
 *   **Problem**: The `reference` command (aliased `r`) was ambiguous. It was used both to *define* a structure (Verse 1) and to *point* to one (John 3:16).
 *   **Solution**: Split the semantics.

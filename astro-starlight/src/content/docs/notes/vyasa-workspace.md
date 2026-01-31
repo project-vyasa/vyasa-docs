@@ -7,6 +7,16 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-01-30: SQLite Source Packaging
+*   **Goal**: Provide an "App-Ready" distribution format for Vyasa content.
+*   **Format**: Monolithic SQLite database (`.db`) containing normalized tables: `manifest`, `streams`, `nodes`, `registry`.
+*   **Usage**: `vyasac pack --target sqlite`. Enables direct SQL querying of the semantic graph (e.g., "Select all verses in Chapter 1").
+
+## 2026-01-29: Source Packaging (Samples)
+*   **Goal**: Enable distribution of compiled workspaces to publishers without requiring them to rebuild from source.
+*   **Format**: ZIP archive containing `vyasac.toml`, `context.vy`, and compiled `content`.
+*   **Implementation**: Initial support added via `package-samples.js` for the documentation site. Future `vyasac pack` command will formalize this.
+
 ## 2026-01-26: Context-Driven Configuration
 *   **Shift**: Moved configuration logic (Aliases, URN Schemes) out of `vyasac.toml` and into `context.vy`.
 *   **Mechanism**: The `context.vy` file is now the single source of truth for "soft" configuration that might change per-folder. `vyasac.toml` is reserved for "hard" build config (source path, streams).
