@@ -1,6 +1,6 @@
-`m 1
+` [source: https://vedabase.io/en/library/bg/1/1/]
 
-`v [
+`v 1 [
 `devanagari[
 धृतराष्ट्र उवाच |
 धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सव: ।| 

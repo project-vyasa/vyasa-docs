@@ -13,6 +13,7 @@
         Button,
         Select,
         Panel,
+        Switch,
         type TreeNode,
     } from "@vyasa-ui/svelte";
 
@@ -25,11 +26,14 @@
         Code,
         CheckCircle,
         MoreHorizontal,
+        ChevronLeft,
+        ChevronRight,
     } from "lucide-svelte";
 
     let outputJSON = $state("");
     let fileError = $state("");
     let iframeSrc = $state("");
+    let lineWrapping = $state(true);
 
     // State
     let files = $state<Record<string, string>>({});
@@ -287,6 +291,20 @@
         }
     }
 
+    function nextOutputFile() {
+        if (outputFiles.length === 0) return;
+        const idx = outputFiles.indexOf(selectedOutputFile);
+        const nextIdx = (idx + 1) % outputFiles.length;
+        selectOutputFile(outputFiles[nextIdx]);
+    }
+
+    function prevOutputFile() {
+        if (outputFiles.length === 0) return;
+        const idx = outputFiles.indexOf(selectedOutputFile);
+        const prevIdx = (idx - 1 + outputFiles.length) % outputFiles.length;
+        selectOutputFile(outputFiles[prevIdx]);
+    }
+
     function selectOutputFile(path: string) {
         selectedOutputFile = path;
         try {
@@ -348,7 +366,7 @@
                 </div>
 
                 <!-- Col 2: Editor Actions (Aligned with Editor) -->
-                <div class="header-cell px-2 flex items-center">
+                <div class="header-cell px-2 flex items-center gap-2">
                     <Button
                         variant="ghost"
                         icon={Upload}
@@ -364,12 +382,42 @@
                         onchange={handleFileUpload}
                         accept=".zip"
                     />
+                    <div class="w-[1px] h-4 bg-border-base mx-1"></div>
+                    <Switch
+                        bind:checked={lineWrapping}
+                        label="Wrap"
+                        size="sm"
+                    />
+                    <div class="w-[1px] h-4 bg-border-base mx-1"></div>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        icon={Play}
+                        onclick={runCompiler}
+                    >
+                        Run
+                    </Button>
                 </div>
 
                 <!-- Col 3: Preview Actions (Aligned with Sidebar Right) -->
                 <div
                     class="header-cell border-l px-2 flex items-center gap-2 bg-surface-alt"
                 >
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        icon={ChevronLeft}
+                        onclick={prevOutputFile}
+                        title="Previous File"
+                    />
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        icon={ChevronRight}
+                        onclick={nextOutputFile}
+                        title="Next File"
+                    />
+
                     <div class="flex-1">
                         <Select
                             options={[
@@ -383,9 +431,6 @@
                             placeholder="Template"
                         />
                     </div>
-                    <Button variant="primary" icon={Play} onclick={runCompiler}>
-                        Run
-                    </Button>
                 </div>
             </div>
         {/snippet}
@@ -436,7 +481,7 @@
                 </Panel>
 
                 <!-- Output Explorer (Bottom) -->
-                <div class="h-1/3 border-t">
+                <div class="h-1/2 border-t">
                     <Panel
                         title="Output"
                         icon={CheckCircle}
@@ -467,6 +512,7 @@
                         ? "html"
                         : "markdown"}
                     class="h-full w-full"
+                    {lineWrapping}
                 />
             {:else}
                 <div
@@ -630,6 +676,9 @@
 
     .h-1\/3 {
         height: 33.333333%;
+    }
+    .h-1\/2 {
+        height: 50%;
     }
 
     .relative {

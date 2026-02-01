@@ -44,7 +44,7 @@
             color: #d35400;
         }
 
-        .sanskrit-box {
+        .verse {
             text-align: center;
             margin-bottom: 2rem;
         }
@@ -171,27 +171,31 @@
         {% set cmd = node.Command.cmd %}
         {% set args = node.Command.argument | default(value="") %}
 
-        {% if cmd == "marker" %}
+        {% if cmd == "verse" %}
         <div class="header">
             <div class="verse-ref">Verse {{ args }}</div>
         </div>
 
-        {% elif cmd == "devanagari" %}
-        <div class="sanskrit-box">
+        <div class="verse">
+            {% for v_child in node.Command.children %}
+            {% if v_child.Command %}
+            {% if v_child.Command.cmd == "devanagari" %}
             <div class="devanagari">
-                {% for child in node.Command.children %}
+                {% for child in v_child.Command.children %}
                 {% if child.Text %}{{ child.Text.value }}
                 {% elif child.SegmentBreak %}<br />{% endif %}
                 {% endfor %}
             </div>
-
-            {% elif cmd == "iast" %}
+            {% elif v_child.Command.cmd == "iast" %}
             <div class="iast">
-                {% for child in node.Command.children %}
+                {% for child in v_child.Command.children %}
                 {% if child.Text %}{{ child.Text.value | replace(from="\n", to="<br />") | safe }}
                 {% elif child.SegmentBreak %}<br />{% endif %}
                 {% endfor %}
             </div>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
         </div>
 
         {% elif cmd == "synonyms" %}
