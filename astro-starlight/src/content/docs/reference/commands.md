@@ -133,8 +133,6 @@ Vyasa supports explicit commands for text formatting.
 | **Emphasis (Bold)** | `e1` | `<strong>` | `` `e1[text] `` |
 | **Emphasis (Italic)** | `e2` | `<em>` | `` `e2[text] `` |
 | **Line Break** | `br` | `<br />` | `` `br `` |
-| **Column Break** | `col-break` | `<hr class="col-break" />` | `` `col-break `` |
-| **Page Break** | `pg-break` | `<hr class="pg-break" />` | `` `pg-break `` |
 
 ## Meta Commands
 

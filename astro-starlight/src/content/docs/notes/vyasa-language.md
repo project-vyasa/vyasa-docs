@@ -8,6 +8,14 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-01-31: Semantic Refinement (Verse vs Marker)
+*   **Refinement**: Reclaimed `verse` (`v`) as a built-in structural container.
+*   **Alias Change**: Re-aliased `marker` to `m` (was `v`) to avoid conflict and optimize for "Writer" experience.
+*   **Impact**:
+    *   `stdlib.vy`: Added `verse` command. Added `m` -> `marker` alias.
+    *   `commands.md`: Updated documentation.
+    *   **Samples**: Updated Bible and Gita samples to use new `m` / `v` schema.
+
 ## 2026-01-30: Marker Resolution & URN Fallback
 *   **Refinement**: Improved the `pack` command's analysis pipeline.
     *   **Marker Counting**: Ensure aliases (like `v` -> `marker`) are fully resolved before generating manifest statistics.

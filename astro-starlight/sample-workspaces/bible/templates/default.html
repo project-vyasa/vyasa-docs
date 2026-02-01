@@ -31,7 +31,7 @@
             color: #888;
         }
 
-        .cmd-marker {
+        .cmd-verse {
             margin-right: 0.25rem;
             vertical-align: super;
             font-size: 0.7em;
@@ -62,10 +62,11 @@
     {% if node.Command %}
     {% if node.Command.cmd == "set" %}
     {# Skip rendering set commands #}
-    {% elif node.Command.cmd == "marker" %}
-    <span class="node cmd-marker">
+    {% elif node.Command.cmd == "verse" %}
+    <span class="node cmd-verse">
         <span class="arg"><strong>{{ node.Command.argument }}</strong></span>
     </span>
+    {{ self::render_nodes(nodes=node.Command.children) }}
     {% elif node.Command.cmd == "break" %}
     {% if node.Command.attributes.type == "line" %}<br />{% endif %}
     {% elif node.Command.cmd == "heading" %}
