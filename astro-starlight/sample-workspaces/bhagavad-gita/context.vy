@@ -7,6 +7,6 @@
 `command-def { name="translation" category="content" }
 `command-def { name="purport" category="content" }
 
-`alias-def { name="v" target="marker" }
+`alias-def { name="v" target="verse" }
 
 `set context { urn_scheme = "urn:vyasa:vedabase:bg:{chapter}:{id}" }

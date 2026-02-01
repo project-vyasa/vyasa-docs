@@ -1,10 +1,12 @@
-`v 1
+`m 1
 
+`v [
 `devanagari[
 धृतराष्ट्र उवाच |
 धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सव: ।| 
 मामका: पाण्डवाश्चैव किमकुर्वत सञ्जय ॥ १ ॥ |
 ]
+
 
 `iast[
 dhṛtarāṣṭra uvāca |
@@ -12,6 +14,7 @@ dharma-kṣetre kuru-kṣetre
 samavetā yuyutsavaḥ |
 māmakāḥ pāṇḍavāś caiva
 kim akurvata sañjaya |
+]
 ]
 
 `interlinear-streams { id="synonyms" pattern="term, meaning" }
@@ -56,6 +59,7 @@ kim akurvata sañjaya |
 `translation[
     Dhṛtarāṣṭra said: O Sañjaya, after my sons and the sons of Pāṇḍu assembled in the place of pilgrimage at `e1[Kurukṣetra], desiring to fight, what did they do?
 ]
+
 
 `purport[
     `e2[Bhagavad-gītā] is the widely read theistic science summarized in the `e2[Gītā-māhātmya] (`e2[Glorification of the Gītā]). There it says that one should read `e2[Bhagavad-gītā] very scrutinizingly with the help of a person who is a devotee of Śrī Kṛṣṇa and try to understand it without personally motivated interpretations. The example of clear understanding is there in the `e2[Bhagavad-gītā] itself, in the way the teaching is understood by Arjuna, who heard the `e2[Gītā] directly from the Lord. `br
