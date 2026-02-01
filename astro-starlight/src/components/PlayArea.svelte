@@ -510,7 +510,9 @@
                     bind:value={files[selectedFile]}
                     language={selectedFile.endsWith(".html")
                         ? "html"
-                        : "markdown"}
+                        : selectedFile.endsWith(".vy")
+                          ? "vy"
+                          : "markdown"}
                     class="h-full w-full"
                     {lineWrapping}
                 />
