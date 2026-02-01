@@ -8,7 +8,7 @@ These are defined in the embedded `stdlib.vy`.
 
 ## Core Commands
 
-### `marker` (Alias: `v`)
+### `marker` (Alias: `m`)
 Defines a URN-addressable segment and sets the active context ID.
 
 **Syntax**: `` `marker <number|dots> ``
@@ -19,7 +19,7 @@ The `marker` command establishes the unique identity (URN) of the content that f
 **Examples**:
 ```vyasa
 `marker 1     --> Verse 1 (inherits ID)
-`v 3.16       --> Chapter 3, Verse 16 (using alias 'v')
+`m 3.16       --> Chapter 3, Verse 16 (using alias 'm')
 ```
 
 ### `ref` (Alias: `r`, `cite`)

@@ -1,15 +1,18 @@
-`v 78
+`m 78
 
+`v [
 `devanagari[
 यत्र योगेश्वर: कृष्णो यत्र पार्थो धनुर्धर: । |
 तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम ॥ ७८ ॥ |
 ]
+
 
 `iast[
 yatra yogeśvaraḥ kṛṣṇo
 yatra pārtho dhanur-dharaḥ |
 tatra śrīr vijayo bhūtir
 dhruvā nītir matir mama |
+]
 ]
 
 `interlinear-streams { id="synonyms" pattern="term, meaning" }
@@ -57,6 +60,7 @@ dhruvā nītir matir mama |
 `translation[
     Wherever there is Kṛṣṇa, the master of all mystics, and wherever there is Arjuna, the supreme archer, there will also certainly be opulence, victory, extraordinary power, and morality. That is my opinion.
 ]
+
 
 `purport[
     The `e2[Bhagavad-gītā] began with an inquiry of Dhṛtarāṣṭra’s. He was hopeful of the victory of his sons, assisted by great warriors like Bhīṣma, Droṇa and Karṇa. He was hopeful that the victory would be on his side. But after describing the scene on the battlefield, Sañjaya told the King, “You are thinking of victory, but my opinion is that where Kṛṣṇa and Arjuna are present, there will be all good fortune.” He directly confirmed that Dhṛtarāṣṭra could not expect victory for his side. Victory was certain for the side of Arjuna because Kṛṣṇa was there. Kṛṣṇa’s acceptance of the post of charioteer for Arjuna was an exhibition of another opulence. Kṛṣṇa is full of all opulences, and renunciation is one of them. There are many instances of such renunciation, for Kṛṣṇa is also the master of renunciation.
