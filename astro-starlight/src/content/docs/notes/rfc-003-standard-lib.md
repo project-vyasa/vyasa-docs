@@ -3,7 +3,12 @@ title: "RFC-003: Standard Library & Configuration"
 status: "Implemented"
 created: "2026-01-26"
 ---
-2026-01-26
+
+# RFC 003: Standard Library & Configuration
+
+**Status**: Implemented
+**Date**: 2026-01-26
+**Topics**: Configuration, Standard Library, Bootstrapping
 
 ## Objective
 Decouple core command definitions from the compiler binary by introducing a **Standard Library** (`builtins.vy`) and a configuration mechanism. This allows:
@@ -54,6 +59,8 @@ std = "0.1.0"
 linguistics-pkg = "path/to/lib"
 ```
 
+```vyasa
+`command-def { name="sutra" args="idx" }
 `command-def { name="bhashya" args="author" }
 ```
 
