@@ -3,7 +3,12 @@ title: "RFC-002: Text Formatting Strategy"
 status: "Implemented"
 created: "2026-01-26"
 ---
-2026-01-25
+
+# RFC 002: Text Formatting Strategy
+
+**Status**: Implemented
+**Date**: 2026-01-26
+**Topics**: Syntax, Formatting, Standard Library
 
 ## Objective
 Define a strategy for handling character-level and block-level text formatting (e.g., bold, italics, lists, paragraphs) within the Vyasa language.

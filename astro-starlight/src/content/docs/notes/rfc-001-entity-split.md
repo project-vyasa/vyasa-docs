@@ -5,7 +5,10 @@ created: "2026-01-25"
 ---
 
 ## RFC 001: Disambiguating Entity Commands
-2026-01-25
+
+**Status**: Implemented
+**Date**: 2026-01-25
+**Topics**: Syntax, Semantics, State Management
 
 ## Context
 The `entity` command currently serves two distinct purposes:

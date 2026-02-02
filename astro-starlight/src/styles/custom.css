@@ -1,0 +1,34 @@
+/* Custom CSS to reduce heading sizes */
+
+:root {
+    --sl-font-size-h1: 2rem;
+    --sl-font-size-h2: 1.5rem;
+    --sl-font-size-h3: 1.25rem;
+    --sl-font-size-h4: 1.1rem;
+    --sl-font-size-h5: 1rem;
+    --sl-font-size-h6: 0.9rem;
+}
+
+.sl-markdown-content h1 {
+    font-size: var(--sl-font-size-h1);
+}
+
+.sl-markdown-content h2 {
+    font-size: var(--sl-font-size-h2);
+}
+
+.sl-markdown-content h3 {
+    font-size: var(--sl-font-size-h3);
+}
+
+.sl-markdown-content h4 {
+    font-size: var(--sl-font-size-h4);
+}
+
+.sl-markdown-content h5 {
+    font-size: var(--sl-font-size-h5);
+}
+
+.sl-markdown-content h6 {
+    font-size: var(--sl-font-size-h6);
+}

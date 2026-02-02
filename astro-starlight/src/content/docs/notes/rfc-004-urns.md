@@ -3,9 +3,11 @@ title: RFC-004 Context-Driven URNs
 description: Design for generating fully qualified URNs using context variables
 ---
 
-# RFC-004: Context-Driven URNs
+# RFC 004: Context-Driven URNs
 
-**Status:** Implemented
+**Status**: Implemented
+**Date**: 2026-01-28
+**Topics**: URN, Configuration, Context Variables
 
 ## Summary
 
