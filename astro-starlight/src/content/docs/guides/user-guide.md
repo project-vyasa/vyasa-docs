@@ -2,7 +2,7 @@
 title: User Guide
 description: Complete guide to using Vyasa for scriptural texts.
 sidebar:
-  order: 1
+  order: 2
 ---
 
 # Vyasa User Guide

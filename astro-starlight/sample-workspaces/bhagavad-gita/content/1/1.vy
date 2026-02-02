@@ -1,20 +1,20 @@
 ` [source: https://vedabase.io/en/library/bg/1/1/]
 
-`v 1 [
-`devanagari[
-धृतराष्ट्र उवाच |
-धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सव: ।| 
-मामका: पाण्डवाश्चैव किमकुर्वत सञ्जय ॥ १ ॥ |
-]
+`dhritarashtra `uvacha [
+    `v 1 [
+        `devanagari[
+        धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सव:| 
+        मामका: पाण्डवाश्चैव किमकुर्वत सञ्जय
+        ]
 
 
-`iast[
-dhṛtarāṣṭra uvāca |
-dharma-kṣetre kuru-kṣetre
-samavetā yuyutsavaḥ |
-māmakāḥ pāṇḍavāś caiva
-kim akurvata sañjaya |
-]
+        `iast[
+        dharma-kṣetre kuru-kṣetre
+        samavetā yuyutsavaḥ |
+        māmakāḥ pāṇḍavāś caiva
+        kim akurvata sañjaya
+        ]
+    ]
 ]
 
 `interlinear-streams { id="synonyms" pattern="term, meaning" }

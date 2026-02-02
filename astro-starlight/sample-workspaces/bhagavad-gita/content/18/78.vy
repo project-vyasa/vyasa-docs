@@ -1,18 +1,20 @@
 ` [source: https://vedabase.io/en/library/bg/18/78/]
 
-`v 78 [
-`devanagari[
-यत्र योगेश्वर: कृष्णो यत्र पार्थो धनुर्धर: । |
-तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम ॥ ७८ ॥ |
-]
+`sanjaya `uvacha [
+    `v 78 [
+        `devanagari[
+        यत्र योगेश्वर: कृष्णो यत्र पार्थो धनुर्धर:|
+        तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम
+        ]
 
 
-`iast[
-yatra yogeśvaraḥ kṛṣṇo
-yatra pārtho dhanur-dharaḥ |
-tatra śrīr vijayo bhūtir
-dhruvā nītir matir mama |
-]
+        `iast[
+        yatra yogeśvaraḥ kṛṣṇo
+        yatra pārtho dhanur-dharaḥ |
+        tatra śrīr vijayo bhūtir
+        dhruvā nītir matir mama
+        ]
+    ]
 ]
 
 `interlinear-streams { id="synonyms" pattern="term, meaning" }
