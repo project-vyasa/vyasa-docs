@@ -2,7 +2,7 @@
 title: Developer Guide
 description: Technical specification and guide for Vyasa parser/compiler developers.
 sidebar:
-  order: 2
+  order: 999
 ---
 
 # Vyasa Developer Guide

@@ -2,8 +2,8 @@
 <html>
 
 <head>
-    <title>{%- for node in primary.body -%}{%- if node.Command and node.Command.cmd == "knowledge-sheet" -%}{{
-        node.Command.attributes.title }}{%- endif -%}{%- endfor -%}</title>
+    <title>{%- for node in primary.body -%}{%- if node.type == "Command" and node.cmd == "knowledge-sheet" -%}{{
+        node.attributes.title }}{%- endif -%}{%- endfor -%}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
@@ -64,53 +64,53 @@
 
 <body>
     <div class="content">{%- macro render_node(node) -%}
-        {%- if node.Text -%}
-        {{- node.Text.value -}}
-        {%- elif node.Command -%}
-        {%- if node.Command.cmd == "knowledge-sheet" -%}
+        {%- if node.type == "Text" -%}
+        {{- node.value -}}
+        {%- elif node.type == "Command" -%}
+        {%- if node.cmd == "knowledge-sheet" -%}
         <!-- Render Metadata -->
         <div class="sheet-meta">
-            <div class="sheet-date">{{- node.Command.attributes.date | date(format="%B %e, %Y") | default(value="") -}}
+            <div class="sheet-date">{{- node.attributes.date | date(format="%B %e, %Y") | default(value="") -}}
             </div>
-            <div class="sheet-location">{{- node.Command.attributes.location | default(value="Unknown Location") -}}
+            <div class="sheet-location">{{- node.attributes.location | default(value="Unknown Location") -}}
             </div>
-            <h1 class="sheet-title">{{- node.Command.attributes.number -}}.&nbsp;&nbsp;&nbsp;{{-
-                node.Command.attributes.title -}}</h1>
+            <h1 class="sheet-title">{{- node.attributes.number -}}.&nbsp;&nbsp;&nbsp;{{-
+                node.attributes.title -}}</h1>
         </div>
 
-        {%- elif node.Command.cmd == "lines" -%}
-        <div class="lines">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
+        {%- elif node.cmd == "lines" -%}
+        <div class="lines">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
         </div>
 
-        {%- elif node.Command.cmd == "extras" -%}
-        <div class="extras">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor
+        {%- elif node.cmd == "extras" -%}
+        <div class="extras">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor
             -%}</div>
 
-        {%- elif node.Command.cmd == "center" -%}
-        <div class="align-center">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%-
+        {%- elif node.cmd == "center" -%}
+        <div class="align-center">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%-
             endfor -%}</div>
 
-        {%- elif node.Command.cmd == "right" -%}
-        <div class="align-right">{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%-
+        {%- elif node.cmd == "right" -%}
+        <div class="align-right">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%-
             endfor -%}</div>
 
-        {%- elif node.Command.cmd == "speaker" -%}
-        <strong>{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
+        {%- elif node.cmd == "speaker" -%}
+        <strong>{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
 
-        {%- elif node.Command.cmd == "heading" -%}
-        <h{{ node.Command.attributes.level | default(value="2" ) }}>{%- for child in node.Command.children -%}{{-
-            self::render_node(node=child) -}}{%- endfor -%}</h{{ node.Command.attributes.level | default(value="2" ) }}>
+        {%- elif node.cmd == "heading" -%}
+        <h{{ node.attributes.level | default(value="2" ) }}>{%- for child in node.children -%}{{-
+            self::render_node(node=child) -}}{%- endfor -%}</h{{ node.attributes.level | default(value="2" ) }}>
 
-        {%- elif node.Command.cmd == "emphasis" -%}
-        {%- if node.Command.attributes.level == "1" -%}
-        <strong>{%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
+        {%- elif node.cmd == "emphasis" -%}
+        {%- if node.attributes.level == "1" -%}
+        <strong>{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
         {%- endif -%}
 
-        {%- elif node.Command.cmd == "break" -%}
+        {%- elif node.cmd == "break" -%}
         <br />
 
         {%- else -%}
-        {%- for child in node.Command.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
+        {%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
         {%- endif -%}
         {%- endif -%}
         {%- endmacro -%}

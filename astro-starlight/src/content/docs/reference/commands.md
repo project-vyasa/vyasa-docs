@@ -70,7 +70,7 @@ Updates environment configuration (context, aliases, entities).
 ### `entity`
 Defines or references a semantic entity.
 
-**Syntax**: `` `entity <Name> { attributes... } ``
+**Syntax**: `` `entity <Name> { type="...", speaker="...", urn="..." } ``
 
 **Description**:
 Creates a specific Entity Node. If defined in the registry, it inherits those attributes. Useful for inline semantic tagging and indexing.
@@ -89,13 +89,22 @@ Creates a specific Entity Node. If defined in the registry, it inherits those at
 
 ## Structure Commands
 
-### `verse`
-A structural container for verse content.
+### `verse` (Alias: `v`)
+A structural container for verse content, optionally defining its identity.
 
-**Syntax**: `` `verse [ content... ] ``
+**Syntax**:
+- Standard: `` `verse <id> [ content... ] ``
+- Anonymous: `` `verse [ content... ] ``
 
 **Description**:
-Explicitly marks a block as a verse. It inherits identification from the most recent `marker` command.
+The `verse` command delimits a block as a verse.
+- If an `id` is provided (e.g., `v 1 [...]`), it acts like a `marker`, appending the ID to the active URN and setting the context.
+- If no `id` is provided, it inherits identification from the most recent `marker` command.
+
+**Example**:
+```vyasa
+`v 1 [ In the beginning... ]
+```
 
 ### `textstream`
 Explicitly marks a block of text as content.
@@ -179,8 +188,22 @@ Used for overlapping scopes or nesting.
 
 **Syntax**: `` `cmd;DELIM [ ... ]DELIM ``
 
+### Entity-Action Pattern
+A convention for defining Subject-Verb relationships naturally, designed for semantic graph mapping.
+
+**Pattern**: `Subject` `Action` `[ Content ]`
+
+1.  **Subject (Entity)**: A command representing the actor (e.g., `` `Krishna ``).
+2.  **Action (Verb)**: A command representing the event (e.g., `` `uvacha `` meaning "said").
+3.  **Content**: The block following the action.
+
+**Compiler Semantics**:
+When an Action command immediately follows an Entity command, the Entity is treated as the **Subject** of that Action.
+
+**Example**:
 ```vyasa
-`wj;RED[
-  `marker 1 ...
-]RED
+`Krishna `uvacha { to="Arjuna" } [
+  `v 1 [ ... ]
+]
 ```
+*Graph Translation*: `(Krishna)-[SAID {to: Arjuna}]->(Verse 1)`

@@ -4,7 +4,7 @@ description: Design for segment addressing scheme
 ---
 # RFC 005: Segment Addressing Scheme
 
-**Status**: Draft
+**Status**: Implemented
 **Date**: 2026-01-30
 **Topics**: URN, Linking, Interlinear Alignment
 
@@ -78,7 +78,7 @@ Targets a specific text segment within a command. This is used for split blocks 
 ```vyasa
 `marker 1.1
   `textstream [
-     `d [ Dharmaksetre | Kuruksetre ... ]
+     `d [ धर्मक्षेत्रे कुरुक्षेत्रे | समवेता युयुत्सव: ... ]
      `i [ dharmakṣētrē | kurukṣētrē ... ]
   ]
 ```
@@ -89,8 +89,8 @@ Targets a specific text segment within a command. This is used for split blocks 
 | **Marker** | `urn:vyasa:bg:1:1` | The root anchor. |
 | **Devanagari** | `urn:vyasa:bg:1:1/d` | Finds nested `d`, skipping `textstream`. |
 | **Transliteration** | `urn:vyasa:bg:1:1/i` | Finds nested `i`. |
-| **Word 1 (San)** | `urn:vyasa:bg:1:1/d/s:0` | "Dharmaksetre" |
-| **Word 2 (San)** | `urn:vyasa:bg:1:1/d/s:1` | "Kuruksetre" |
+| **Word 1 (San)** | `urn:vyasa:bg:1:1/d/s:0` | "धर्मक्षेत्रे कुरुक्षेत्रे" |
+| **Word 2 (San)** | `urn:vyasa:bg:1:1/d/s:1` | "समवेता युयुत्सव:" |
 
 ## 5. Implementation Plan
 1.  **Resolver**: Implement `resolve_segment(root: &Node, path: &str) -> Option<&Node>` in `vyasac::models`.

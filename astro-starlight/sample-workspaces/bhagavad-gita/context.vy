@@ -9,4 +9,17 @@
 
 `alias-def { name="v" target="verse" }
 
-`set context { urn_scheme = "urn:vyasa:vedabase:bg:{chapter}:{id}" }
+
+// Entities
+`command-def { name="dhritarashtra" category="entity" }
+`command-def { name="sanjaya" category="entity" }
+`command-def { name="arjuna" category="entity" }
+`command-def { name="krishna" category="entity" }
+
+// Actions
+`command-def { name="uvacha" category="action" }
+
+`set context { 
+    urn_scheme = "work:bg:{chapter}:{id}"
+    verse_scheme = "verse:bg:{chapter}:{id}"
+}

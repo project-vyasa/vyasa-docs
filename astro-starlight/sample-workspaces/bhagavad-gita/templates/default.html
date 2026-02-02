@@ -136,40 +136,40 @@
 <body>
 
     <div class="content">
+        {% macro render_children(node) %}
+        {% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}
+        {% endmacro %}
+
         {% macro render_node(node) %}
-        {% if node.Text %}
-        {{ node.Text.value | replace(from="\n\n", to="</p>
+        {% if node.type == "Text" %}
+        {{ node.value | replace(from="\n\n", to="</p>
         <p>") | replace(from="\n", to=" ") | safe }}
-            {% elif node.Command %}
-            {% if node.Command.cmd == "emphasis" %}
-            {% if node.Command.attributes.level == "1" %}
-            <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
-            {% elif node.Command.attributes.level == "2" %}
-            <em>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</em>
+            {% elif node.type == "Command" %}
+            {% if node.cmd == "emphasis" %}
+            {% if node.attributes.level == "1" %}
+            <strong>{{ self::render_children(node=node) }}</strong>
+            {% elif node.attributes.level == "2" %}
+            <em>{{ self::render_children(node=node) }}</em>
             {% else %}
-            <strong>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
+            <strong>{{ self::render_children(node=node) }}</strong>
             {% endif %}
-            {% elif node.Command.cmd == "break" %}
-            {% if node.Command.attributes.type == "line" %}<br />{% endif %}
-            {% if node.Command.attributes.type == "column" %}
-            <hr class="col-break" />{% endif %}
-            {% if node.Command.attributes.type == "page" %}
-            <hr class="pg-break" />{% endif %}
-            {% elif node.Command.cmd == "list" %}
-        <ul>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</ul>
-        {% elif node.Command.cmd == "item" %}
-        <li>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</li>
+            {% elif node.cmd == "break" %}
+            {% if node.attributes.type == "line" %}<br />{% endif %}
+            {% elif node.cmd == "list" %}
+        <ul>{{ self::render_children(node=node) }}</ul>
+        {% elif node.cmd == "item" %}
+        <li>{{ self::render_children(node=node) }}</li>
         {% else %}
         {# Fallback for unknown inline commands, just render children #}
-        {% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}
+        {{ self::render_children(node=node) }}
         {% endif %}
         {% endif %}
         {% endmacro %}
 
         {% for node in primary.body %}
-        {% if node.Command %}
-        {% set cmd = node.Command.cmd %}
-        {% set args = node.Command.argument | default(value="") %}
+        {% if node.type == "Command" %}
+        {% set cmd = node.cmd %}
+        {% set args = node.argument | default(value="") %}
 
         {% if cmd == "verse" %}
         <div class="header">
@@ -177,20 +177,20 @@
         </div>
 
         <div class="verse">
-            {% for v_child in node.Command.children %}
-            {% if v_child.Command %}
-            {% if v_child.Command.cmd == "devanagari" %}
+            {% for v_child in node.children %}
+            {% if v_child.type == "Command" %}
+            {% if v_child.cmd == "devanagari" %}
             <div class="devanagari">
-                {% for child in v_child.Command.children %}
-                {% if child.Text %}{{ child.Text.value }}
-                {% elif child.SegmentBreak %}<br />{% endif %}
+                {% for child in v_child.children %}
+                {% if child.type == "Text" %}{{ child.value }}
+                {% elif child.type == "SegmentBreak" %}<br />{% endif %}
                 {% endfor %}
             </div>
-            {% elif v_child.Command.cmd == "iast" %}
+            {% elif v_child.cmd == "iast" %}
             <div class="iast">
-                {% for child in v_child.Command.children %}
-                {% if child.Text %}{{ child.Text.value | replace(from="\n", to="<br />") | safe }}
-                {% elif child.SegmentBreak %}<br />{% endif %}
+                {% for child in v_child.children %}
+                {% if child.type == "Text" %}{{ child.value | replace(from="\n", to="<br />") | safe }}
+                {% elif child.type == "SegmentBreak" %}<br />{% endif %}
                 {% endfor %}
             </div>
             {% endif %}
@@ -201,29 +201,104 @@
         {% elif cmd == "synonyms" %}
         <div class="synonyms-box">
             <div class="section-title">Synonyms</div>
-            <!-- Render children directly. Interlinear stream produces flat list of term/meaning nodes -->
-            {% for child in node.Command.children %}
-            {% if child.Command %}
-            {% if child.Command.cmd == "term" %}
-            <div class="synonym-term">{% for grand in child.Command.children %}{{ grand.Text.value }}{% endfor %}</div>
-            {% elif child.Command.cmd == "meaning" %}
-            <div class="synonym-meaning">{% for grand in child.Command.children %}{{ grand.Text.value }}{% endfor %}
+            {% for child in node.children %}
+            {% if child.type == "Command" %}
+            {% if child.cmd == "term" %}
+            <div class="synonym-term">{% for grand in child.children %}{{ grand.value }}{% endfor %}</div>
+            {% elif child.cmd == "meaning" %}
+            <div class="synonym-meaning">{% for grand in child.children %}{{ grand.value }}{% endfor %}
             </div>
             {% endif %}
             {% endif %}
             {% endfor %}
         </div>
 
+        {% elif cmd == "uvacha" %}
+        {# Identify Speaker by peeking at previous node #}
+        {% set prev_index = loop.index0 - 1 %}
+        {% set speaker = "Unknown" %}
+        {# Tera array access might be tricky if index is invalid, but loop.index0 >= 1 if uvacha follows something. #}
+        {# We should checking bounds, but typically uvacha follows entity. #}
+        {% if prev_index >= 0 %}
+        {% set prev_node = primary.body[prev_index] %}
+        {% if prev_node.type == "Command" %}
+        {% set speaker = prev_node.cmd %}
+        {% endif %}
+        {% endif %}
+
+        {# Define Headers based on speaker #}
+        {% set header_dev = "" %}
+        {% set header_iast = "" %}
+
+        {% if speaker == "dhritarashtra" %}
+        {% set header_dev = "धृतराष्ट्र उवाच" %}
+        {% set header_iast = "dhṛtarāṣṭra uvāca" %}
+        {% elif speaker == "sanjaya" %}
+        {% set header_dev = "सञ्जय उवाच" %}
+        {% set header_iast = "sañjaya uvāca" %}
+        {% elif speaker == "arjuna" %}
+        {% set header_dev = "अर्जुन उवाच" %}
+        {% set header_iast = "arjuna uvāca" %}
+        {% elif speaker == "krishna" %}
+        {% set header_dev = "श्रीभगवानुवाच" %}
+        {% set header_iast = "śrī-bhagavān uvāca" %}
+        {% endif %}
+
+        <!-- No Top-Level English 'said' wrapper anymore -->
+
+        <!-- Render Children (Verse) -->
+        {% for child in node.children %}
+        {% if child.type == "Command" and child.cmd == "verse" %}
+        {% set v_node = child %}
+        <div class="header">
+            <div class="verse-ref">Verse {{ v_node.argument | default(value="") }}</div>
+        </div>
+        <div class="verse">
+            {% for v_child in v_node.children %}
+            {% if v_child.type == "Command" %}
+            {% if v_child.cmd == "devanagari" %}
+            <div class="devanagari">
+                {% if header_dev %}<div class="speaker-line" style="margin-bottom: 0.5rem;">{{ header_dev }}</div>{%
+                endif %}
+                {% for child in v_child.children %}
+                {% if child.type == "Text" %}{{ child.value }}{% elif child.type == "SegmentBreak" %}<br />{% endif %}
+                {% endfor %}
+            </div>
+            {% elif v_child.cmd == "iast" %}
+            <div class="iast">
+                {% if header_iast %}<div class="speaker-line" style="margin-bottom: 0.5rem;">{{ header_iast }}</div>{%
+                endif %}
+                {% for child in v_child.children %}
+                {% if child.type == "Text" %}{{ child.value | replace(from="\n", to="<br />") | safe }}{% elif
+                child.type == "SegmentBreak" %}<br />{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        {{ self::render_node(node=child) }}
+        {% endif %}
+        {% endfor %}
+
+
+        {% elif cmd == "Dhritarashtra" or cmd == "Sanjaya" or cmd == "Arjuna" or cmd == "Krishna" %}
+        <!-- Speaker Entity: Render inline or block-inline to merge with 'said' -->
+        <span class="entity-name" style="font-weight: bold; color: #2c3e50; font-size: 1.1rem; margin-right: 0.5rem;">
+            {{ cmd }}
+        </span>
+
         {% elif cmd == "translation" %}
         <div class="translation-box">
             <div class="section-title">Translation</div>
-            <p>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</p>
+            <p>{{ self::render_children(node=node) }}</p>
         </div>
 
         {% elif cmd == "purport" %}
         <div class="purport-box">
             <div class="section-title">Purport</div>
-            <p>{% for child in node.Command.children %}{{ self::render_node(node=child) }}{% endfor %}</p>
+            <p>{{ self::render_children(node=node) }}</p>
         </div>
         {% endif %}
         {% endif %}

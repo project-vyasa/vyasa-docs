@@ -8,7 +8,33 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
-## 2026-01-31: Semantic Refinement (Verse vs Marker)
+## 2026-02-01: Segment Addressing & Flow State
+*   **Feature**: Implemented **Segment Addressing** (RFC 005), allowing URNs with path components (e.g. `/d`, `/s:1`) to target specific sub-structures.
+*   **Feature**: Implemented **Flow State** (Context Persistence).
+    *   **Natural Sorting**: The compiler now respects numeric order in filenames (`1.vy` -> `2.vy`).
+    *   **State Threading**: Speaker context (`entity`) defined in one file persists to the next, enabling proper sequencing for multi-file works.
+*   **Impact**:
+    *   `vyasac/src/resolver.rs`: New module for URN resolution.
+    *   `vyasac/src/packer.rs`: Updated to sort files and thread state.
+
+## 2026-02-01: Template Logic Simplification
+*   **Refactor**: Changed `Node` serialization from Externally Tagged (`{ "Command": { ... } }`) to Internally Tagged (`{ "type": "Command", ... }`).
+    *   **Rationale**: Greatly simplifies Tera templates by removing the need for verbose checks like `{% if node.Command %}` and accessing `node.Command.cmd`.
+    *   **New Syntax**: `{% if node.type == "Command" %}` then access `node.cmd` directly.
+*   **Fix**: Corrected canonical URN generation logic in the compiler CLI to match the enrichment logic.
+    *   **Impact**: Verses now correctly generate `urn:verse:...` instead of falling back to default work URNs.
+
+## 2026-02-01: Entity-Action Pattern
+*   **Design Decision**: Adopted **Entity-Action Pattern** (`` `Subject `Verb [...] ``) for defining graph relationships (e.g., Speaker-Speech) to avoid dense key-value syntax.
+
+## 2026-01-31: Verse Elevation & Experience
+*   **Semantic Refinement**: The `verse` command (`v`) is now a first-class citizen with an optional `id` argument.
+    *   **Syntax**: `` `v 1 [ ... ] `` combines definition and content.
+    *   **Benefit**: Simplifies the authoring experience for standard scriptures, removing the need for separate `marker` commands for simple structures.
+*   **Editor Experience**:
+    *   Implemented **Word Wrap** (toggleable) in `PlayArea`.
+    *   Implemented **Syntax Highlighting** for `.vy` files, mapping commands to HTML-like tags for intuitive coloring.
+*   **Cleanup**: Removed unused legacy aliases (`col-break`, `pg-break`) to streamline the core language.
 *   **Refinement**: Reclaimed `verse` (`v`) as a built-in structural container.
 *   **Alias Change**: Re-aliased `marker` to `m` (was `v`) to avoid conflict and optimize for "Writer" experience.
 *   **Impact**:

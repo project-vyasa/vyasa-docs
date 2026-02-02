@@ -2,40 +2,36 @@
 <html>
 
 <head>
-    <title>{{ primary.environment.context.title | default(value="Untitled") }}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
-        rel="stylesheet">
+    <title>Bible Sample</title>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            max-width: 400px;
+            font-family: sans-serif;
             margin: 2rem auto;
-            padding: 1rem 1rem;
-            line-height: 1.6;
+            max-width: 400px;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .verse-num {
+            font-size: 0.75em;
+            vertical-align: super;
+            color: #aaa;
+            margin-right: 0.2rem;
+        }
+
+        .wj {
+            color: #c0392b;
         }
 
         .node {
-            margin-bottom: 0.5rem;
             display: inline;
-        }
-
-        .cmd-wj {
-            color: #A00;
-        }
-
-        .arg {
-            font-size: 0.8em;
-            color: #888;
-        }
-
-        .cmd-verse {
-            margin-right: 0.25rem;
-            vertical-align: super;
-            font-size: 0.7em;
-            color: #666;
         }
 
         h3 {
@@ -59,34 +55,37 @@
 <body>
     {% macro render_nodes(nodes) %}
     {% for node in nodes %}
-    {% if node.Command %}
-    {% if node.Command.cmd == "set" %}
+    {% if node.type == "Command" %}
+    {% if node.cmd == "set" %}
     {# Skip rendering set commands #}
-    {% elif node.Command.cmd == "verse" %}
+    {% elif node.cmd == "verse" %}
     <span class="node cmd-verse">
-        <span class="arg"><strong>{{ node.Command.argument }}</strong></span>
+        <span class="verse-num"><strong>{{ node.argument }}</strong></span>
     </span>
-    {{ self::render_nodes(nodes=node.Command.children) }}
-    {% elif node.Command.cmd == "break" %}
-    {% if node.Command.attributes.type == "line" %}<br />{% endif %}
-    {% elif node.Command.cmd == "heading" %}
-    {% if node.Command.attributes.level == "1" %}
-    <h3>{{ self::render_nodes(nodes=node.Command.children) }}</h3>
-    {% elif node.Command.attributes.level == "2" %}
-    <h4>{{ self::render_nodes(nodes=node.Command.children) }}</h4>
+    {{ self::render_nodes(nodes=node.children) }}
+    {% elif node.cmd == "break" %}
+    {% if node.attributes.type == "line" %}<br />{% endif %}
+    {% elif node.cmd == "heading" or node.cmd == "h1" %}
+    {# Original template logic for heading/h1 seems to map heading macro to h3/h4 based on level #}
+    {% if node.attributes.level == "1" %}
+    <h3>{{ self::render_nodes(nodes=node.children) }}</h3>
+    {% elif node.attributes.level == "2" %}
+    <h4>{{ self::render_nodes(nodes=node.children) }}</h4>
     {% else %}
-    <h3>{{ self::render_nodes(nodes=node.Command.children) }}</h3>
+    <h3>{{ self::render_nodes(nodes=node.children) }}</h3>
     {% endif %}
+    {% elif node.cmd == "wj" %}
+    <span class="wj">{{ self::render_nodes(nodes=node.children) }}</span>
     {% else %}
-    <span class="node cmd-{{ node.Command.cmd }}">
-        {% if node.Command.argument %}<span class="arg">[{{ node.Command.argument }}]</span>{% endif %}
-        {% if node.Command.children %}
-        {{ self::render_nodes(nodes=node.Command.children) }}
+    <span class="node cmd-{{ node.cmd }}">
+        {% if node.argument %}<span class="arg">[{{ node.argument }}]</span>{% endif %}
+        {% if node.children %}
+        {{ self::render_nodes(nodes=node.children) }}
         {% endif %}
     </span>
     {% endif %}
-    {% elif node.Text %}
-    {{ node.Text.value }}
+    {% elif node.type == "Text" %}
+    {{ node.value }}
     {% endif %}
     {% endfor %}
     {% endmacro %}

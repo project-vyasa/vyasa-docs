@@ -1,6 +1,8 @@
 ---
 title: Template Guide
 description: Learn how to create custom templates for Vyasa workspaces.
+sidebar:
+  order: 900
 ---
 
 Vyasa uses the **Tera** templating engine (which uses Jinja2-like syntax) to render your compiled content into HTML. This guide explains the structure of the data passed to your template and how to iterate through it.
@@ -13,7 +15,7 @@ Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
 
 When your template is rendered, it receives a `primary` object containing the `body` of your document. The `body` is a list of **Nodes**.
 
-Each **Node** is a dictionary (object) that will have exactly **one** of the following keys:
+Each **Node** is a dictionary (object) that has a `type` field indicating its variant:
 
 1.  `Command`: A structured command (e.g., `ref`, `wj`, `set`).
 2.  `Text`: A plain text segment.
@@ -24,14 +26,13 @@ A `Command` node represents a command parsed from your `.vy` file.
 
 ```json
 {
-  "Command": {
-    "cmd": "ref",           // The command name (e.g., "ref", "wj")
-    "argument": "1",        // The optional argument (e.g., [1])
-    "attributes": {         // Key-value pairs from attributes
-      "title": "John 14" 
-    },
-    "children": [ ... ]     // List of child Nodes (recursive)
-  }
+  "type": "Command",
+  "cmd": "ref",           // The command name (e.g., "ref", "wj")
+  "argument": "1",        // The optional argument (e.g., [1])
+  "attributes": {         // Key-value pairs from attributes
+    "title": "John 14" 
+  },
+  "children": [ ... ]     // List of child Nodes (recursive)
 }
 ```
 
@@ -40,20 +41,17 @@ A `Text` node contains the raw text content.
 
 ```json
 {
-  "Text": {
-    "value": "Hello world"  // The actual text content
-  }
+  "type": "Text",
+  "value": "Hello world"  // The actual text content
 }
 ```
-
-**Important**: You must access `.value` to get the string. Printing `node.Text` directly will print the object representation.
 
 ### 3. SegmentBreak Node
 A `SegmentBreak` represents a structural break.
 
 ```json
 {
-  "SegmentBreak": {}
+  "type": "SegmentBreak"
 }
 ```
 
@@ -73,33 +71,33 @@ The most robust way to render a recursive tree of nodes is to define a **Macro**
         {% for node in nodes %}
         
             <!-- Check which type of node it is -->
-            {% if node.Command %}
+            {% if node.type == "Command" %}
             
                 <!-- Handle specific commands specially -->
-                {% if node.Command.cmd == "reference" %}
-                    <br><span class="ref">[{{ node.Command.argument }}]</span>
+                {% if node.cmd == "reference" %}
+                    <br><span class="ref">[{{ node.argument }}]</span>
                     
-                {% elif node.Command.cmd == "heading" %}
+                {% elif node.cmd == "heading" %}
                     <!-- Render heading based on level -->
-                    <h{{ node.Command.attributes.level | default(value="1") }}>
-                        {{ self::render_nodes(nodes=node.Command.children) }}
-                    </h{{ node.Command.attributes.level | default(value="1") }}>
+                    <h{{ node.attributes.level | default(value="1") }}>
+                        {{ self::render_nodes(nodes=node.children) }}
+                    </h{{ node.attributes.level | default(value="1") }}>
                     
                 {% else %}
                     <!-- Default rendering for other commands -->
-                    <span class="cmd-{{ node.Command.cmd }}">
+                    <span class="cmd-{{ node.cmd }}">
                         <!-- Render children recursively -->
-                        {% if node.Command.children %}
-                            {{ self::render_nodes(nodes=node.Command.children) }}
+                        {% if node.children %}
+                            {{ self::render_nodes(nodes=node.children) }}
                         {% endif %}
                     </span>
                 {% endif %}
                 
-            {% elif node.Text %}
+            {% elif node.type == "Text" %}
                 <!-- Render text value -->
-                {{ node.Text.value }}
+                {{ node.value }}
                 
-            {% elif node.SegmentBreak %}
+            {% elif node.type == "SegmentBreak" %}
                 <!-- Render break -->
                 <hr class="segment" />
                 
@@ -123,8 +121,8 @@ The most robust way to render a recursive tree of nodes is to define a **Macro**
 The `set` command with argument `file` usually contains metadata like the title.
 
 ```html
-{% if node.Command.cmd == "set" and node.Command.argument == "file" %}
-    <h1>{{ node.Command.attributes.title }}</h1>
+{% if node.type == "Command" and node.cmd == "set" and node.argument == "file" %}
+    <h1>{{ node.attributes.title }}</h1>
 {% endif %}
 ```
 
@@ -132,8 +130,8 @@ The `set` command with argument `file` usually contains metadata like the title.
 You can map commands to CSS classes easily:
 
 ```html
-<span class="cmd-{{ node.Command.cmd }}">
-    {{ self::render_nodes(nodes=node.Command.children) }}
+<span class="cmd-{{ node.cmd }}">
+    {{ self::render_nodes(nodes=node.children) }}
 </span>
 ```
 
@@ -150,15 +148,13 @@ Data in Vyasa streams can be flexible. A command might not always have the attri
 
 **Unsafe:**
 ```html
-<h1>{{ node.Command.attributes.title }}</h1>
+<h1>{{ node.attributes.title }}</h1>
 ```
 
 **Safe:**
 ```html
-<h1>{{ node.Command.attributes.title | default(value="Untitled") }}</h1>
+<h1>{{ node.attributes.title | default(value="Untitled") }}</h1>
 ```
-
-This ensures your template renders even if `title` is missing from the source content.
 
 This ensures your template renders even if `title` is missing from the source content.
 
