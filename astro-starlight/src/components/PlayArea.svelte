@@ -3,6 +3,7 @@
     import init, { compile_workspace, init_hooks } from "../pkg/vyasac.js";
     import JSZip from "jszip";
     import { pathsToTree } from "../lib/treeUtils";
+    import { sqliteService } from "../lib/sqlite-service";
 
     // Library Components
     import {
@@ -28,6 +29,8 @@
         MoreHorizontal,
         ChevronLeft,
         ChevronRight,
+        Database,
+        Download,
     } from "lucide-svelte";
 
     let outputJSON = $state("");
@@ -59,6 +62,7 @@
     let selectedWorkspaceId = $state("");
     let availableTemplates = $state<string[]>([]);
     let selectedTemplate = $state("");
+    let isExported = $state(false);
 
     function log(...args: any[]) {
         console.log(...args);
@@ -240,6 +244,8 @@
     // --- Compilation ---
 
     async function runCompiler() {
+        const start = performance.now();
+        isExported = false; // Reset export state on new compilation
         try {
             fileError = "";
             log("Compiling...");
@@ -313,6 +319,98 @@
                 iframeSrc = res[path];
             }
         } catch (e) {}
+    }
+
+    async function exportToSqlite() {
+        try {
+            log("Exporting to SQLite...");
+            await runCompiler(); // Ensure we have latest JSON
+            const canvasData = JSON.parse(
+                outputJSON.replace(/^\s*output\//, ""),
+            ); // outputJSON is files map, need structure?
+
+            // Wait, runCompiler updates outputJSON with *output files*.
+            // We need the AST/pack structure. compile_workspace returns a map of filename -> content.
+            // The JSON pack is usually one of the outputs if the target is json.
+            // But here we are producing HTML by default.
+            // We should re-run compiler with JSON target or just assume standard pack structure if we were building it.
+            // Actually, for this prototype, let's just use the "canvas.json" or similar if we were building a pack.
+            // But compile_workspace is building *from* files.
+
+            // Let's run compile_workspace with target "json" to get the AST pack.
+            const input = JSON.parse(JSON.stringify(files));
+            // We need to pass a flag or just assume we want the pack.
+            // The current compile_workspace might not accept target arg easily if it's not exposed.
+            // Let's check init_hooks / compile_workspace signature. It takes (input_files, template_name).
+            // It doesn't seem to take a target.
+
+            // For now, let's try to see if we can get the AST.
+            // If compile_workspace uses standard builder, it might produce `output/pack.json` or similar if configured?
+            // Or maybe we just mock it for now with the AST from `ast.html` if it was json?
+
+            // Wait, previous `vyasac build` commands used `--target json`.
+            // The WASM `compile_workspace` calls `builder.build()`.
+            // If I can't pass target, I might need to rely on `vyasac.toml` in the files?
+
+            // Let's check if we can inject vyasac.toml with target="json"
+            // Let's check if we can inject vyasac.toml with target="json"
+            // input['vyasac.toml'] = 'target = "json"\n' + (input['vyasac.toml'] || '');
+
+            // Actually, let's just try to call it and see if we get .json files.
+            const resultStr = compile_workspace(input, "__JSON__");
+            const result = JSON.parse(resultStr);
+
+            // Find a .json file that looks like a pack
+            const jsonFile = Object.keys(result.files).find((k) =>
+                k.endsWith(".json"),
+            );
+            if (jsonFile) {
+                const jsonContent = JSON.parse(result.files[jsonFile]);
+                await sqliteService.importJson(jsonContent);
+                log("[SUCCESS] Exported to SQLite WASM!");
+
+                // Verify
+                const nodes = await sqliteService.query(
+                    "SELECT count(*) as count FROM nodes",
+                );
+                console.log("Nodes in DB:", nodes);
+                log(`Verified: ${nodes[0][0]} nodes in DB.`);
+                isExported = true;
+            } else {
+                logError(
+                    "No JSON output found for SQLite export. Make sure target is supported.",
+                );
+            }
+        } catch (e: any) {
+            logError("SQLite Export Error:", e.message || e);
+            console.error(e);
+        }
+    }
+
+    async function downloadDb() {
+        try {
+            const data = await sqliteService.exportDb();
+            if (data) {
+                const blob = new Blob([data as any], {
+                    type: "application/x-sqlite3",
+                });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "vyasa-nodes.db";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                log(
+                    `Download initiated. Size: ${(data.length / 1024).toFixed(2)} KB`,
+                );
+            } else {
+                logError("Download failed: No data returned.");
+            }
+        } catch (e: any) {
+            logError("Download Error:", e.message || e);
+        }
     }
 
     // --- UI Helpers ---
@@ -389,6 +487,23 @@
                         size="sm"
                     />
                     <div class="w-[1px] h-4 bg-border-base mx-1"></div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={Database}
+                        onclick={exportToSqlite}
+                        title="Export to SQLite"
+                    />
+                    <!--
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={Download}
+                        onclick={downloadDb}
+                        title="Download .db"
+                        disabled={!isExported}
+                    />
+                    -->
                     <Button
                         variant="primary"
                         size="sm"
@@ -696,7 +811,6 @@
         align-items: center;
         overflow: visible;
         position: relative;
-        z-index: 100; /* Boost z-index above sidebars */
     }
     .border-l {
         border-left: 1px solid var(--border-base);
