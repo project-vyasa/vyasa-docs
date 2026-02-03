@@ -8,6 +8,21 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-02-02: Ignore-Whitespace Mode
+*   **Feature**: Added `settings` map to `VyasaEnvironment` for workspace-wide configuration (separate from flow `context`).
+*   **Default**: Whitespace-only text nodes are now **stripped** and text values are **trimmed**.
+    *   Produces cleaner AST/JSON for structured content.
+    *   **Opt-out**: `` `set settings { whitespace = "preserve" } `` retains whitespace (for prose).
+*   **Impact**: `pipeline.rs` now includes `strip_whitespace()` pass; `intimate-note` sample updated with preserve setting.
+
+## 2026-02-02: Shared Workspace Processor
+*   **Refactor**: Created `workspace_processor.rs` module to centralize context loading.
+    *   `load_context_chain()`: Walks the directory tree loading `context.vy` at each level.
+    *   `WorkspaceFileIterator`: Efficient iterator with context caching.
+*   **Fix**: `packer.rs` now properly resolves subdirectory context (e.g., `content/18/context.vy` → `{chapter}="18"`).
+*   **Cleanup**: Removed dead alias resolution code from `enricher.rs` (already done by `alias_resolver.rs`).
+*   **Impact**: Ensures behavioral parity between `build` and `pack` commands.
+
 ## 2026-02-01: Segment Addressing & Flow State
 *   **Feature**: Implemented **Segment Addressing** (RFC 005), allowing URNs with path components (e.g. `/d`, `/s:1`) to target specific sub-structures.
 *   **Feature**: Implemented **Flow State** (Context Persistence).

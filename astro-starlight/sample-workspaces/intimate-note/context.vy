@@ -1,3 +1,5 @@
+`set settings { whitespace = "preserve" }
+
 `command-def { name="knowledge-sheet" args="number,title,date,location" category="structure" }
 `command-def { name="lines" category="formatting" }
 `command-def { name="extras" category="structure" }

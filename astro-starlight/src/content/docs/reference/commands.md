@@ -51,20 +51,21 @@ State properties are propagated to all subsequent nodes until changed or cleared
 ```
 
 ### `set`
-Updates environment configuration (context, aliases, entities).
+Updates environment configuration (settings, context, aliases, entities).
 
 **Syntax**: `` `set <target> { key="value" ... } ``
 **Shorthand**: `` `set { key="value" ... } `` (Equivalent to `set context { ... }`)
 
 **Targets**:
-- `context`: Updates global metadata (e.g., `work`, `urn_scheme`).
+- `settings`: Workspace-wide configuration (e.g., `whitespace`).
+- `context`: Flow variables (e.g., `work`, `urn_scheme`, `chapter`).
 - `entities`: Registers semantic entities.
-- `file`: Updates file-level metadata (e.g., `chapter`).
 
 **Examples**:
 ```vyasa
+`set settings { whitespace = "preserve" }  <- Opt-out of whitespace stripping
 `set context { work="Bible" urn_scheme="urn:bible:{book}:{chapter}:{id}" }
-`set file { chapter=1 }
+`set { chapter=1 }
 ```
 
 ### `entity`
