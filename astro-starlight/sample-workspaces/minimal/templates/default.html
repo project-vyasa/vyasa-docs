@@ -27,56 +27,25 @@
 
 <body>
     <div>
-        {% macro render_node(node) %}
-        {% if node.type == "Text" %}
-        {{ node.value }}
-        {% elif node.type == "Command" %}
-        {% if node.cmd == "heading" or node.cmd == "h1" or node.cmd == "h2" or node.cmd == "h3" %}
-        {# Normalize heading commands to h2 if not specified, or use attribute #}
-        {% set level = "2" %}
-        {% if node.attributes.level %}{% set level = node.attributes.level %}{% endif %}
-        {% if node.cmd == "h1" %}{% set level = "1" %}{% endif %}
-        {% if node.cmd == "h2" %}{% set level = "2" %}{% endif %}
-        {% if node.cmd == "h3" %}{% set level = "3" %}{% endif %}
-
-        <h{{ level }}>
-            {% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}
-        </h{{ level }}>
-
-        {% elif node.cmd == "emphasis" or node.cmd == "e1" or node.cmd == "e2" %}
-        {% set level = "1" %}
-        {% if node.attributes.level %}{% set level = node.attributes.level %}{% endif %}
-        {% if node.cmd == "e1" %}{% set level = "1" %}{% endif %}
-        {% if node.cmd == "e2" %}{% set level = "2" %}{% endif %}
-
-        {% if level == "1" %}
-        <strong>{% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}</strong>
-        {% elif level == "2" %}
-        <em>{% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}</em>
-        {% endif %}
-
-        {% elif node.cmd == "break" or node.cmd == "br" %}
-        <br />
-
-        {% elif node.cmd == "list" %}
-        <ul>{% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}</ul>
-
-        {% elif node.cmd == "item" %}
-        <li>{% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}</li>
-
-        {% elif node.cmd == "comment" %}
-        <!-- Ignore comments -->
-
-        {% else %}
-        <!-- Fallback for unknown commands -->
-        {% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}
-        {% endif %}
-        {% endif %}
-        {% endmacro %}
-
-        {% for node in primary.body %}
-        {{ self::render_node(node=node) }}
-        {% endfor %}
+        {{#each primary.body}}
+        {{#if (eq type "Text")}}{{value}}{{/if}}
+        {{#if (eq type "Command")}}
+        {{#if (eq cmd "heading")}}{{#if (eq attributes.level "1")}}<h1>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</h1>{{/if}}{{#if (eq attributes.level "2")}}<h2>{{#each children}}{{#if
+            (eq type "Text")}}{{value}}{{/if}}{{/each}}</h2>{{/if}}{{#if (eq attributes.level "3")}}<h3>{{#each
+            children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</h3>{{/if}}{{/if}}
+        {{#if (eq cmd "emphasis")}}{{#if (eq attributes.level "1")}}<strong>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</strong>{{/if}}{{#if (eq attributes.level "2")}}<em>{{#each
+            children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</em>{{/if}}{{/if}}
+        {{#if (eq cmd "break")}}<br />{{/if}}
+        {{#if (eq cmd "list")}}<ul>{{#each children}}{{#if (eq type "Command")}}{{#if (eq cmd "item")}}<li>{{#each
+                children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq type "Command")}}{{#if (eq cmd
+                "emphasis")}}{{#if (eq attributes.level "1")}}<strong>{{#each children}}{{#if (eq type
+                    "Text")}}{{value}}{{/if}}{{/each}}</strong>{{/if}}{{#if (eq attributes.level "2")}}<em>{{#each
+                    children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</em>{{/if}}{{/if}}{{/if}}{{/each}}</li>
+            {{/if}}{{/if}}{{/each}}</ul>{{/if}}
+        {{/if}}
+        {{/each}}
     </div>
 </body>
 

@@ -2,8 +2,8 @@
 <html>
 
 <head>
-    <title>{%- for node in primary.body -%}{%- if node.type == "Command" and node.cmd == "knowledge-sheet" -%}{{
-        node.attributes.title }}{%- endif -%}{%- endfor -%}</title>
+    <title>{{#each primary.body}}{{#if (eq type "Command")}}{{#if (eq cmd
+        "knowledge-sheet")}}{{attributes.title}}{{/if}}{{/if}}{{/each}}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
@@ -16,16 +16,24 @@
             line-height: 1.4;
         }
 
-        h2 {
+        h1,
+        h2,
+        h3 {
             margin: 1.5rem 0 0.5rem 0;
+        }
+
+        h2 {
             font-size: 1.2rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
         }
 
         .sheet-meta {
             margin-bottom: 1rem;
             border-bottom: 1px solid #ccc;
             padding-bottom: 0.5rem;
-            white-space: normal;
         }
 
         .align-center {
@@ -52,72 +60,60 @@
             white-space: pre-wrap;
         }
 
+        .sheet-meta {
+            white-space: normal;
+        }
+
         .lines {
             margin: 1rem 0;
+            white-space: pre-wrap;
         }
 
         .extras {
             font-style: italic;
         }
+
+        .align-center,
+        .align-right {
+            white-space: normal;
+        }
     </style>
 </head>
 
 <body>
-    <div class="content">{%- macro render_node(node) -%}
-        {%- if node.type == "Text" -%}
-        {{- node.value -}}
-        {%- elif node.type == "Command" -%}
-        {%- if node.cmd == "knowledge-sheet" -%}
-        <!-- Render Metadata -->
-        <div class="sheet-meta">
-            <div class="sheet-date">{{- node.attributes.date | date(format="%B %e, %Y") | default(value="") -}}
-            </div>
-            <div class="sheet-location">{{- node.attributes.location | default(value="Unknown Location") -}}
-            </div>
-            <h1 class="sheet-title">{{- node.attributes.number -}}.&nbsp;&nbsp;&nbsp;{{-
-                node.attributes.title -}}</h1>
-        </div>
+    <div class="content">
+        {{~#each primary.body~}}
+        {{~#if (eq type "Text")}}{{value}}{{/if~}}
+        {{~#if (eq type "SegmentBreak")}}
 
-        {%- elif node.cmd == "lines" -%}
-        <div class="lines">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
-        </div>
-
-        {%- elif node.cmd == "extras" -%}
-        <div class="extras">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor
-            -%}</div>
-
-        {%- elif node.cmd == "center" -%}
-        <div class="align-center">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%-
-            endfor -%}</div>
-
-        {%- elif node.cmd == "right" -%}
-        <div class="align-right">{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%-
-            endfor -%}</div>
-
-        {%- elif node.cmd == "speaker" -%}
-        <strong>{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
-
-        {%- elif node.cmd == "heading" -%}
-        <h{{ node.attributes.level | default(value="2" ) }}>{%- for child in node.children -%}{{-
-            self::render_node(node=child) -}}{%- endfor -%}</h{{ node.attributes.level | default(value="2" ) }}>
-
-        {%- elif node.cmd == "emphasis" -%}
-        {%- if node.attributes.level == "1" -%}
-        <strong>{%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}</strong>
-        {%- endif -%}
-
-        {%- elif node.cmd == "break" -%}
-        <br />
-
-        {%- else -%}
-        {%- for child in node.children -%}{{- self::render_node(node=child) -}}{%- endfor -%}
-        {%- endif -%}
-        {%- endif -%}
-        {%- endmacro -%}
-
-        {%- for node in primary.body -%}
-        {{- self::render_node(node=node) -}}
-        {%- endfor -%}
+        {{/if~}}
+        {{~#if (eq type "Command")~}}
+        {{~#if (eq cmd "knowledge-sheet")}}<div class="sheet-meta">
+            <div class="sheet-date">{{attributes.date}}</div>
+            <div class="sheet-location">{{#if attributes.location}}{{attributes.location}}{{else}}Unknown
+                Location{{/if}}</div>
+            <h1 class="sheet-title">{{attributes.number}}.&nbsp;&nbsp;&nbsp;{{attributes.title}}</h1>
+        </div>{{/if~}}
+        {{~#if (eq cmd "lines")}}<div class="lines">{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq
+            type "SegmentBreak")}}
+            {{/if}}{{/each}}</div>{{/if~}}
+        {{~#if (eq cmd "extras")}}<div class="extras">{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if~}}
+        {{~#if (eq cmd "center")}}<div class="align-center">{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if~}}
+        {{~#if (eq cmd "right")}}<div class="align-right">{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if~}}
+        {{~#if (eq cmd "speaker")}}<strong>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</strong>{{/if~}}
+        {{~#if (eq cmd "heading")}}{{#if (eq attributes.level "1")}}<h1>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</h1>{{/if}}{{#if (eq attributes.level "2")}}<h2>{{#each children}}{{#if
+            (eq type "Text")}}{{value}}{{/if}}{{/each}}</h2>{{/if}}{{#if (eq attributes.level "3")}}<h3>{{#each
+            children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</h3>{{/if}}{{/if~}}
+        {{~#if (eq cmd "emphasis")}}{{#if (eq attributes.level "1")}}<strong>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</strong>{{/if}}{{/if~}}
+        {{~#if (eq cmd "break")}}<br />{{/if~}}
+        {{~/if~}}
+        {{~/each~}}
     </div>
 </body>
 

@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% for node in primary.body %}{% if node.Command and node.Command.cmd == "set" and node.Command.argument ==
-        "file" %}{{ node.Command.attributes.title | default(value="Untitled") }}{% endif %}{% endfor %}</title>
+    <title>Bhagavad Gita</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,15 +20,6 @@
             line-height: 1.6;
             color: #333;
             background-color: #fdfdfd;
-        }
-
-        .noto-serif-vyasa {
-            font-family: "Noto Serif", serif;
-            font-optical-sizing: auto;
-            font-weight: 500;
-            font-style: normal;
-            font-variation-settings:
-                "wdth" 100;
         }
 
         .header {
@@ -77,10 +67,8 @@
             align-items: baseline;
         }
 
-        /* Remove old entry wrapper styling */
         .section-title {
             grid-column: 1 / -1;
-            /* Span full width */
             text-transform: uppercase;
             font-size: 0.8rem;
             letter-spacing: 1px;
@@ -93,12 +81,6 @@
             font-weight: bold;
             color: #2c3e50;
             white-space: nowrap;
-        }
-
-        .synonym-term::after {
-            content: "  ";
-            color: #7f8c8d;
-            font-weight: normal;
         }
 
         .synonym-meaning {
@@ -122,179 +104,70 @@
             text-indent: 1rem;
         }
 
-        .section-title {
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 1px;
-            color: #7f8c8d;
-            margin-bottom: 0.5rem;
+        .entity-name {
             font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+        }
+
+        .speaker-line {
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
 
 <body>
-
     <div class="content">
-        {% macro render_children(node) %}
-        {% for child in node.children %}{{ self::render_node(node=child) }}{% endfor %}
-        {% endmacro %}
-
-        {% macro render_node(node) %}
-        {% if node.type == "Text" %}
-        {{ node.value | replace(from="\n\n", to="</p>
-        <p>") | replace(from="\n", to=" ") | safe }}
-            {% elif node.type == "Command" %}
-            {% if node.cmd == "emphasis" %}
-            {% if node.attributes.level == "1" %}
-            <strong>{{ self::render_children(node=node) }}</strong>
-            {% elif node.attributes.level == "2" %}
-            <em>{{ self::render_children(node=node) }}</em>
-            {% else %}
-            <strong>{{ self::render_children(node=node) }}</strong>
-            {% endif %}
-            {% elif node.cmd == "break" %}
-            {% if node.attributes.type == "line" %}<br />{% endif %}
-            {% elif node.cmd == "list" %}
-        <ul>{{ self::render_children(node=node) }}</ul>
-        {% elif node.cmd == "item" %}
-        <li>{{ self::render_children(node=node) }}</li>
-        {% else %}
-        {# Fallback for unknown inline commands, just render children #}
-        {{ self::render_children(node=node) }}
-        {% endif %}
-        {% endif %}
-        {% endmacro %}
-
-        {% for node in primary.body %}
-        {% if node.type == "Command" %}
-        {% set cmd = node.cmd %}
-        {% set args = node.argument | default(value="") %}
-
-        {% if cmd == "verse" %}
-        <div class="header">
-            <div class="verse-ref">Verse {{ args }}</div>
+        {{#each primary.body}}
+        {{#if (eq type "Command")}}
+        {{#if (eq cmd "verse")}}<div class="header">
+            <div class="verse-ref">Verse {{argument}}</div>
         </div>
-
-        <div class="verse">
-            {% for v_child in node.children %}
-            {% if v_child.type == "Command" %}
-            {% if v_child.cmd == "devanagari" %}
-            <div class="devanagari">
-                {% for child in v_child.children %}
-                {% if child.type == "Text" %}{{ child.value }}
-                {% elif child.type == "SegmentBreak" %}<br />{% endif %}
-                {% endfor %}
-            </div>
-            {% elif v_child.cmd == "iast" %}
-            <div class="iast">
-                {% for child in v_child.children %}
-                {% if child.type == "Text" %}{{ child.value | replace(from="\n", to="<br />") | safe }}
-                {% elif child.type == "SegmentBreak" %}<br />{% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
+        <div class="verse">{{#each children}}{{#if (eq cmd "devanagari")}}<div class="devanagari">{{#each
+                children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq type "SegmentBreak")}}<br />{{/if}}{{/each}}
+            </div>{{/if}}{{#if (eq cmd "iast")}}<div class="iast">{{#each children}}{{#if (eq type
+                "Text")}}{{value}}{{/if}}{{#if (eq type "SegmentBreak")}}<br />{{/if}}{{/each}}</div>{{/if}}{{/each}}
+        </div>{{/if}}
+        {{#if (eq cmd "synonyms")}}<div class="synonyms-box">
+            <div class="section-title">Synonyms</div>{{#each children}}{{#if (eq type "Command")}}{{#if (eq cmd
+            "term")}}<div class="synonym-term">{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</div>
+            {{/if}}{{#if (eq cmd "meaning")}}<div class="synonym-meaning">{{#each children}}{{#if (eq type
+                "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if}}{{/if}}{{/each}}
+        </div>{{/if}}
+        {{#if (eq cmd "uvacha")}}{{#each children}}{{#if (eq cmd "verse")}}<div class="header">
+            <div class="verse-ref">Verse {{argument}}</div>
         </div>
-
-        {% elif cmd == "synonyms" %}
-        <div class="synonyms-box">
-            <div class="section-title">Synonyms</div>
-            {% for child in node.children %}
-            {% if child.type == "Command" %}
-            {% if child.cmd == "term" %}
-            <div class="synonym-term">{% for grand in child.children %}{{ grand.value }}{% endfor %}</div>
-            {% elif child.cmd == "meaning" %}
-            <div class="synonym-meaning">{% for grand in child.children %}{{ grand.value }}{% endfor %}
-            </div>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-        </div>
-
-        {% elif cmd == "uvacha" %}
-        {# Identify Speaker by peeking at previous node #}
-        {% set prev_index = loop.index0 - 1 %}
-        {% set speaker = "Unknown" %}
-        {% if prev_index >= 0 %}
-        {% set prev_node = primary.body[prev_index] %}
-        {% if prev_node.type == "Command" %}
-        {% set speaker = prev_node.cmd %}
-        {% endif %}
-        {% endif %}
-
-        {# Dynamic entity lookup for speaker labels #}
-        {% if entities[speaker] %}
-        {% set entity = entities[speaker] %}
-        {% set header_dev = entity.label_dev | default(value="") %}
-        {% set header_iast = entity.label_iast | default(value="") %}
-        {% else %}
-        {% set header_dev = "" %}
-        {% set header_iast = "" %}
-        {% endif %}
-
-        <!-- No Top-Level English 'said' wrapper anymore -->
-
-        <!-- Render Children (Verse) -->
-        {% for child in node.children %}
-        {% if child.type == "Command" and child.cmd == "verse" %}
-        {% set v_node = child %}
-        <div class="header">
-            <div class="verse-ref">Verse {{ v_node.argument | default(value="") }}</div>
-        </div>
-        <div class="verse">
-            {% for v_child in v_node.children %}
-            {% if v_child.type == "Command" %}
-            {% if v_child.cmd == "devanagari" %}
-            <div class="devanagari">
-                {% if header_dev %}<div class="speaker-line" style="margin-bottom: 0.5rem;">{{ header_dev }}</div>{%
-                endif %}
-                {% for child in v_child.children %}
-                {% if child.type == "Text" %}{{ child.value }}{% elif child.type == "SegmentBreak" %}<br />{% endif %}
-                {% endfor %}
-            </div>
-            {% elif v_child.cmd == "iast" %}
-            <div class="iast">
-                {% if header_iast %}<div class="speaker-line" style="margin-bottom: 0.5rem;">{{ header_iast }}</div>{%
-                endif %}
-                {% for child in v_child.children %}
-                {% if child.type == "Text" %}{{ child.value | replace(from="\n", to="<br />") | safe }}{% elif
-                child.type == "SegmentBreak" %}<br />{% endif %}
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-        </div>
-        {% else %}
-        {{ self::render_node(node=child) }}
-        {% endif %}
-        {% endfor %}
-
-
-        {% elif cmd == "Dhritarashtra" or cmd == "Sanjaya" or cmd == "Arjuna" or cmd == "Krishna" %}
-        <!-- Speaker Entity: Render inline or block-inline to merge with 'said' -->
-        <span class="entity-name" style="font-weight: bold; color: #2c3e50; font-size: 1.1rem; margin-right: 0.5rem;">
-            {{ cmd }}
-        </span>
-
-        {% elif cmd == "translation" %}
-        <div class="translation-box">
+        <div class="verse">{{#each children}}{{#if (eq cmd "devanagari")}}<div class="devanagari">{{#each
+                children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq type "SegmentBreak")}}<br />{{/if}}{{/each}}
+            </div>{{/if}}{{#if (eq cmd "iast")}}<div class="iast">{{#each children}}{{#if (eq type
+                "Text")}}{{value}}{{/if}}{{#if (eq type "SegmentBreak")}}<br />{{/if}}{{/each}}</div>{{/if}}{{/each}}
+        </div>{{/if}}{{/each}}{{/if}}
+        {{#if (eq cmd "Dhritarashtra")}}<span class="entity-name">Dhṛtarāṣṭra</span>{{/if}}
+        {{#if (eq cmd "Sanjaya")}}<span class="entity-name">Sañjaya</span>{{/if}}
+        {{#if (eq cmd "Arjuna")}}<span class="entity-name">Arjuna</span>{{/if}}
+        {{#if (eq cmd "Krishna")}}<span class="entity-name">Kṛṣṇa</span>{{/if}}
+        {{#if (eq cmd "translation")}}<div class="translation-box">
             <div class="section-title">Translation</div>
-            <p>{{ self::render_children(node=node) }}</p>
-        </div>
-
-        {% elif cmd == "purport" %}
-        <div class="purport-box">
+            <p>{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq type
+                "SegmentBreak")}}<br /><br />{{/if}}{{#if (eq type "Command")}}{{#if (eq cmd "emphasis")}}{{#if (eq
+                attributes.level "2")}} <em>{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</em>
+                {{else}} <strong>{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</strong>
+                {{/if}}{{else}}{{#each children}}{{#if (eq type
+                "Text")}}{{value}}{{/if}}{{/each}}{{/if}}{{/if}}{{/each}}</p>
+        </div>{{/if}}
+        {{#if (eq cmd "purport")}}<div class="purport-box">
             <div class="section-title">Purport</div>
-            <p>{{ self::render_children(node=node) }}</p>
-        </div>
-        {% endif %}
-        {% endif %}
-        {% endfor %}
+            <p>{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq type "SegmentBreak")}}</p>
+            <p>{{/if}}{{#if (eq type "Command")}}{{#if (eq cmd "break")}}</p>
+            <p>{{/if}}{{#if (eq cmd "emphasis")}}{{#if (eq attributes.level "2")}} <em>{{#each children}}{{#if (eq type
+                    "Text")}}{{value}}{{/if}}{{/each}}</em> {{else}} <strong>{{#each children}}{{#if (eq type
+                    "Text")}}{{value}}{{/if}}{{/each}}</strong> {{/if}}{{/if}}{{/if}}{{/each}}</p>
+        </div>{{/if}}
+        {{#if (eq cmd "break")}}<br />{{/if}}
+        {{/if}}
+        {{/each}}
     </div>
-
 </body>
 
 </html>
