@@ -168,3 +168,54 @@ When rendering preformatted text (e.g., poetry), standard Jinja2 tags can inject
 ```html
 <div class="preformatted">{%- for child in children -%}{{ render(child) }}{%- endfor -%}</div>
 ```
+
+## Custom Filters
+
+Vyasa provides custom Tera filters to simplify common template patterns.
+
+### `is_cmd(name)`
+Check if a node is a specific command:
+```html
+{% if node | is_cmd(name="verse") %}
+    <div class="verse">{{ node.argument }}</div>
+{% endif %}
+```
+
+### `is_text`
+Check if a node is a text node:
+```html
+{% if node | is_text %}
+    {{ node.value }}
+{% endif %}
+```
+
+## Context Shortcuts
+
+The template context includes shortcuts for common lookups:
+
+| Variable | Description |
+|----------|-------------|
+| `primary` | The primary document |
+| `secondary` | Secondary documents (if any) |
+| `env` | Full environment (`primary.environment`) |
+| `entities` | Entity registry (`env.entities`) |
+| `ctx` | Flow context (`env.context`) |
+| `settings` | Workspace settings (`env.settings`) |
+
+### Entity Lookup Pattern
+Access entity attributes from `context.vy`:
+
+**In `context.vy`:**
+```vyasa
+`set entities {
+    krishna = { label_dev = "श्रीभगवानुवाच" label_iast = "śrī-bhagavān uvāca" }
+}
+```
+
+**In template:**
+```html
+{% if entities[speaker] %}
+    {% set entity = entities[speaker] %}
+    <div class="speaker">{{ entity.label_dev }}</div>
+{% endif %}
+```

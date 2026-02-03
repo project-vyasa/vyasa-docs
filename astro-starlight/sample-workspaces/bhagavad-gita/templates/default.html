@@ -217,8 +217,6 @@
         {# Identify Speaker by peeking at previous node #}
         {% set prev_index = loop.index0 - 1 %}
         {% set speaker = "Unknown" %}
-        {# Tera array access might be tricky if index is invalid, but loop.index0 >= 1 if uvacha follows something. #}
-        {# We should checking bounds, but typically uvacha follows entity. #}
         {% if prev_index >= 0 %}
         {% set prev_node = primary.body[prev_index] %}
         {% if prev_node.type == "Command" %}
@@ -226,22 +224,14 @@
         {% endif %}
         {% endif %}
 
-        {# Define Headers based on speaker #}
+        {# Dynamic entity lookup for speaker labels #}
+        {% if entities[speaker] %}
+        {% set entity = entities[speaker] %}
+        {% set header_dev = entity.label_dev | default(value="") %}
+        {% set header_iast = entity.label_iast | default(value="") %}
+        {% else %}
         {% set header_dev = "" %}
         {% set header_iast = "" %}
-
-        {% if speaker == "dhritarashtra" %}
-        {% set header_dev = "धृतराष्ट्र उवाच" %}
-        {% set header_iast = "dhṛtarāṣṭra uvāca" %}
-        {% elif speaker == "sanjaya" %}
-        {% set header_dev = "सञ्जय उवाच" %}
-        {% set header_iast = "sañjaya uvāca" %}
-        {% elif speaker == "arjuna" %}
-        {% set header_dev = "अर्जुन उवाच" %}
-        {% set header_iast = "arjuna uvāca" %}
-        {% elif speaker == "krishna" %}
-        {% set header_dev = "श्रीभगवानुवाच" %}
-        {% set header_iast = "śrī-bhagavān uvāca" %}
         {% endif %}
 
         <!-- No Top-Level English 'said' wrapper anymore -->

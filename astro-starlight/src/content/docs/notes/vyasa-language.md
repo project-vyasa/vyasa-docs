@@ -8,6 +8,13 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-02-02: Tera Template Simplification
+*   **Feature**: Custom Tera filters (`is_cmd`, `is_text`) for cleaner template conditionals.
+*   **Feature**: Context shortcuts (`env`, `entities`, `ctx`, `settings`) injected into template context.
+*   **Feature**: `_macros.html` stdlib template with `render_children`, `text_content` macros.
+*   **Refactor**: BG template uses dynamic `entities[speaker]` lookup — removed hardcoded if/elif chains.
+*   **Impact**: `backend/html/tera.rs` updated; samples use entity labels from `context.vy`.
+
 ## 2026-02-02: Ignore-Whitespace Mode
 *   **Feature**: Added `settings` map to `VyasaEnvironment` for workspace-wide configuration (separate from flow `context`).
 *   **Default**: Whitespace-only text nodes are now **stripped** and text values are **trimmed**.
