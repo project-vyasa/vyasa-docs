@@ -10,11 +10,19 @@
 `alias-def { name="v" target="verse" }
 
 
-// Entities
+// Entities with display labels
 `command-def { name="dhritarashtra" category="entity" }
 `command-def { name="sanjaya" category="entity" }
 `command-def { name="arjuna" category="entity" }
 `command-def { name="krishna" category="entity" }
+
+// Entity Registry: Speaker display labels
+`set entities {
+    dhritarashtra = { label_dev = "धृतराष्ट्र उवाच" label_iast = "dhṛtarāṣṭra uvāca" }
+    sanjaya = { label_dev = "सञ्जय उवाच" label_iast = "sañjaya uvāca" }
+    arjuna = { label_dev = "अर्जुन उवाच" label_iast = "arjuna uvāca" }
+    krishna = { label_dev = "श्रीभगवानुवाच" label_iast = "śrī-bhagavān uvāca" }
+}
 
 // Actions
 `command-def { name="uvacha" category="action" }
