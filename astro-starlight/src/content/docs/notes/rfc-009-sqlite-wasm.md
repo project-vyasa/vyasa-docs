@@ -18,6 +18,22 @@ The current `vyasac.wasm` bundle is **~4.5 MB** (gzip: ~1.3 MB). As we consider 
 
 This note explores the bundle size implications of adding SQLite WASM.
 
+### Bundle Composition (Benchmark 2026-02-02)
+
+| Crate | Purpose | Est. Size |
+|-------|---------|-----------|
+| **tera** | Jinja2 template engine | ~400-500 KB |
+| **handlebars** | Alternative templates (redundant?) | ~200-300 KB |
+| **serde_json** | JSON serialization | ~150-200 KB |
+| **regex** | Pattern matching | ~200-300 KB |
+| **chrono** | Date/time handling | ~100-150 KB |
+| **wasm-bindgen** | JS interop | ~50-100 KB |
+| **Parser (parser.rs)** | Custom Vyasa parser | ~200-300 KB |
+| **Data sections** | Static strings, tables | ~1.5-2 MB |
+
+> [!IMPORTANT]
+> Both **tera** and **handlebars** are included. Removing handlebars could save ~200-300 KB.
+
 ## 2. SQLite WASM Library Options
 
 | Library | Uncompressed | Gzipped | Notes |
@@ -75,8 +91,91 @@ Tera is a powerful Jinja2-like template engine, but it adds significant weight t
 2. **Evaluate wa-sqlite**: Prototype integration, confirm it meets our needs.
 3. **Lazy Loading PoC**: Test fetching AST nodes on-demand from SQLite.
 
-## 6. References
+## 6. Proposed SQLite Schema
 
-- [wa-sqlite GitHub](https://github.com/nicosn/wa-sqlite)
+A minimal schema for storing Vyasa data:
+
+```sql
+-- Core document metadata
+CREATE TABLE documents (
+    id INTEGER PRIMARY KEY,
+    path TEXT UNIQUE NOT NULL,
+    title TEXT,
+    urn TEXT,
+    parent_id INTEGER REFERENCES documents(id)
+);
+
+-- AST nodes (flat representation)
+CREATE TABLE nodes (
+    id INTEGER PRIMARY KEY,
+    doc_id INTEGER REFERENCES documents(id),
+    parent_id INTEGER REFERENCES nodes(id),
+    position INTEGER,  -- Order within parent
+    type TEXT CHECK(type IN ('Command', 'Text', 'SegmentBreak')),
+    cmd TEXT,          -- Command name (if type='Command')
+    argument TEXT,     -- [argument]
+    value TEXT         -- Text content (if type='Text')
+);
+
+-- Node attributes (key-value)
+CREATE TABLE node_attrs (
+    node_id INTEGER REFERENCES nodes(id),
+    key TEXT,
+    value TEXT,
+    PRIMARY KEY (node_id, key)
+);
+
+-- Entity registry
+CREATE TABLE entities (
+    id INTEGER PRIMARY KEY,
+    name TEXT UNIQUE,
+    category TEXT,
+    label_dev TEXT,
+    label_iast TEXT
+);
+
+-- Context/settings (JSON blob for flexibility)
+CREATE TABLE meta (
+    key TEXT PRIMARY KEY,
+    value TEXT  -- JSON
+);
+
+-- Indexes for common queries
+CREATE INDEX idx_nodes_doc ON nodes(doc_id);
+CREATE INDEX idx_nodes_cmd ON nodes(cmd) WHERE type = 'Command';
+CREATE INDEX idx_docs_urn ON documents(urn);
+```
+
+### Query Examples
+
+**Get all verses from a document:**
+```sql
+SELECT n.*, na.key, na.value
+FROM nodes n
+LEFT JOIN node_attrs na ON n.id = na.node_id
+WHERE n.doc_id = ? AND n.cmd = 'verse';
+```
+
+**Get entity labels:**
+```sql
+SELECT name, label_dev, label_iast FROM entities WHERE category = 'entity';
+```
+
+## 7. JSON vs SQLite Pack Format
+
+| Aspect | JSON Pack | SQLite Pack |
+|--------|-----------|-------------|
+| **Size** | ~1-2 MB for large works | ~0.5-1 MB (normalized, indexed) |
+| **Query** | Full load + JS filter | SQL queries, lazy loading |
+| **Streaming** | No | Row-by-row possible |
+| **Offline** | IndexedDB/localStorage | SQLite OPFS/IndexedDB VFS |
+| **Tooling** | Any JSON viewer | DB Browser, SQL clients |
+
+**Recommendation**: Use SQLite for large works (100+ documents); JSON for small samples.
+
+## 8. References
+
+- [wa-sqlite GitHub](https://github.com/rhashimoto/wa-sqlite)
 - [Official SQLite WASM](https://sqlite.org/wasm/doc/trunk/index.md)
 - [sql.js](https://github.com/sql-js/sql.js)
+

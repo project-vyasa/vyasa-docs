@@ -53,46 +53,24 @@
 </head>
 
 <body>
-    {% macro render_nodes(nodes) %}
-    {% for node in nodes %}
-    {% if node.type == "Command" %}
-    {% if node.cmd == "set" %}
-    {# Skip rendering set commands #}
-    {% elif node.cmd == "verse" %}
-    <span class="node cmd-verse">
-        <span class="verse-num"><strong>{{ node.argument }}</strong></span>
-    </span>
-    {{ self::render_nodes(nodes=node.children) }}
-    {% elif node.cmd == "break" %}
-    {% if node.attributes.type == "line" %}<br />{% endif %}
-    {% elif node.cmd == "heading" or node.cmd == "h1" %}
-    {# Original template logic for heading/h1 seems to map heading macro to h3/h4 based on level #}
-    {% if node.attributes.level == "1" %}
-    <h3>{{ self::render_nodes(nodes=node.children) }}</h3>
-    {% elif node.attributes.level == "2" %}
-    <h4>{{ self::render_nodes(nodes=node.children) }}</h4>
-    {% else %}
-    <h3>{{ self::render_nodes(nodes=node.children) }}</h3>
-    {% endif %}
-    {% elif node.cmd == "wj" %}
-    <span class="wj">{{ self::render_nodes(nodes=node.children) }}</span>
-    {% else %}
-    <span class="node cmd-{{ node.cmd }}">
-        {% if node.argument %}<span class="arg">[{{ node.argument }}]</span>{% endif %}
-        {% if node.children %}
-        {{ self::render_nodes(nodes=node.children) }}
-        {% endif %}
-    </span>
-    {% endif %}
-    {% elif node.type == "Text" %}
-    {{ node.value }}
-    {% endif %}
-    {% endfor %}
-    {% endmacro %}
-
     <div class="content">
-        <h1>{{ primary.environment.context.title }}</h1>
-        {{ self::render_nodes(nodes=primary.body) }}
+        <h1>{{primary.environment.context.title}}</h1>
+        {{#each primary.body}}
+        {{#if (eq type "Text")}}{{value}}{{/if}}
+        {{#if (eq type "Command")}}
+        {{#if (eq cmd "set")}}{{!-- Skip set commands --}}{{/if}}
+        {{#if (eq cmd "verse")}}<span class="verse-num"><strong>{{argument}}</strong></span>{{#each children}}{{#if (eq
+        type "Text")}}{{value}}{{/if}}{{/each}}{{/if}}
+        {{#if (eq cmd "wj")}}<span class="wj">{{#each children}}{{#if (eq type "Command")}}{{#if (eq cmd "verse")}}<span
+                class="verse-num"><strong>{{argument}}</strong></span>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}{{/if}}{{/if}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</span>{{/if}}
+        {{#if (eq cmd "break")}}{{#if (eq attributes.type "line")}}<br />{{/if}}{{/if}}
+        {{#if (eq cmd "heading")}}{{#if (eq attributes.level "2")}}<h4>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</h4>{{else}}<h3>{{#each children}}{{#if (eq type
+            "Text")}}{{value}}{{/if}}{{/each}}</h3>{{/if}}{{/if}}
+        {{/if}}
+        {{/each}}
     </div>
 </body>
 
