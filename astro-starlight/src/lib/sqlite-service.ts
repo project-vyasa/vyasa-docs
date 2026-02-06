@@ -4,14 +4,14 @@
 export class SQLiteService {
     private sqlite3: any = null;
     private db: number | null = null;
-    private dbName: string = 'vyasa-v1';
+    private dbName: string = 'vyasa-v2';
     private SQLiteModule: any = null;
     private memoryVfs: any = null;
 
     async init() {
         if (this.db) return;
 
-        console.log('Initializing SQLite WASM...');
+        console.log('Initializing SQLite WASM (vyasa-v2)...');
         // Dynamic imports to avoid SSR/Build issues
         const { default: SQLiteAsyncESMFactory } = await import('wa-sqlite/dist/wa-sqlite-async.mjs');
         const { IDBBatchAtomicVFS } = await import('wa-sqlite/src/examples/IDBBatchAtomicVFS.js');
@@ -48,32 +48,186 @@ export class SQLiteService {
         console.log('SQLite database opened');
 
         // Initialize schema
-        await this.exec(`
-            CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY,
-                path TEXT UNIQUE NOT NULL,
-                urn TEXT
-            );
-            CREATE TABLE IF NOT EXISTS nodes (
-                doc_id INTEGER NOT NULL,
-                parent_id INTEGER,
-                position INTEGER,
-                type TEXT,
-                cmd TEXT,
-                argument TEXT,
-                value TEXT,
-                FOREIGN KEY(doc_id) REFERENCES documents(id)
-            );
-            CREATE TABLE IF NOT EXISTS node_attrs (
-                node_id INTEGER NOT NULL,
-                key TEXT,
-                value TEXT,
-                FOREIGN KEY(node_id) REFERENCES nodes(rowid)
-            );
-            CREATE INDEX IF NOT EXISTS idx_nodes_doc ON nodes(doc_id);
-            CREATE INDEX IF NOT EXISTS idx_nodes_cmd ON nodes(cmd);
-        `);
-        console.log('SQLite database opened and schema initialized');
+        try {
+            await this.exec(`
+                CREATE TABLE IF NOT EXISTS files (
+                    path TEXT PRIMARY KEY,
+                    content TEXT NOT NULL,
+                    hash TEXT,
+                    modified_at DATETIME,
+                    mime_type TEXT
+                );
+                CREATE TABLE IF NOT EXISTS nodes (
+                    id TEXT PRIMARY KEY,
+                    parent_id TEXT,
+                    type TEXT NOT NULL,
+                    name TEXT,
+                    attributes JSON,
+                    body TEXT,
+                    location JSON,
+                    FOREIGN KEY(parent_id) REFERENCES nodes(id)
+                );
+                CREATE INDEX IF NOT EXISTS idx_nodes_parent ON nodes(parent_id);
+            `);
+            console.log('SQLite database opened and schema initialized (RFC-012)');
+        } catch (e) {
+            console.error('Schema Init Failed:', e);
+            throw e;
+        }
+    }
+
+    async bulkPutFiles(files: Record<string, string>) {
+        if (!this.db) await this.init();
+        console.log(`Bulk inserting ${Object.keys(files).length} files to DB...`);
+        try {
+            await this.exec('BEGIN TRANSACTION');
+
+            const sql = "INSERT OR REPLACE INTO files (path, content, modified_at) VALUES (?, ?, datetime('now'))";
+            const stmt = await this.prepare(sql);
+
+            for (const [path, content] of Object.entries(files)) {
+                await this.runPrepared(stmt, [path, content]);
+            }
+            await this.sqlite3.finalize(stmt);
+            await this.exec('COMMIT');
+            console.log('Bulk insert complete.');
+        } catch (e) {
+            console.error('Bulk insert failed:', e);
+            try { await this.exec('ROLLBACK'); } catch (re) { }
+            throw new Error(`Bulk Put Failed: ${e}`);
+        }
+    }
+
+    async getAllFiles(): Promise<Record<string, string>> {
+        if (!this.db) await this.init();
+        console.log('Reading all files from DB...');
+        const rows = await this.query('SELECT path, content FROM files');
+        const result: Record<string, string> = {};
+        for (const row of rows) {
+            result[row[0]] = row[1];
+        }
+        console.log(`Read ${Object.keys(result).length} files from DB.`);
+        return result;
+    }
+
+    async updateFile(path: string, content: string) {
+        if (!this.db) await this.init();
+        // Using exec for single updates is fine for now
+        const stmt = await this.prepare("INSERT OR REPLACE INTO files (path, content, modified_at) VALUES (?, ?, datetime('now'))");
+        await this.runPrepared(stmt, [path, content]);
+        await this.sqlite3.finalize(stmt);
+    }
+
+    async clearFiles() {
+        if (!this.db) await this.init();
+        console.log('Clearing all files from VFS...');
+        await this.exec('DELETE FROM files');
+        console.log('VFS Cleared.');
+    }
+
+    async bulkPutNodes(nodesMap: Record<string, any>) {
+        if (!this.db) await this.init();
+        const paths = Object.keys(nodesMap);
+        if (paths.length === 0) return;
+
+        console.log(`Bulk inserting ${paths.length} nodes to DB...`);
+        try {
+            await this.exec('BEGIN TRANSACTION');
+            await this.exec('DELETE FROM nodes'); // Replace strategy for now
+
+            const sql = `INSERT INTO nodes (id, parent_id, type, name, attributes, body, location) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            const stmt = await this.prepare(sql);
+
+            for (const [path, doc] of Object.entries(nodesMap)) {
+                // Synthetic Root Node for the File
+                const fileId = path;
+                const type = "file";
+                const name = path.split('/').pop() || path;
+                const attrs = JSON.stringify({ environment: doc.environment });
+                const loc = JSON.stringify({});
+
+                // Insert File Node
+                await this.runPrepared(stmt, [fileId, null, type, name, attrs, "", loc]);
+
+                // Recursive insert of body nodes
+                if (Array.isArray(doc.body)) {
+                    for (let i = 0; i < doc.body.length; i++) {
+                        await this.insertNodeRecursive(stmt, doc.body[i], fileId, i);
+                    }
+                }
+            }
+            await this.sqlite3.finalize(stmt);
+            await this.exec('COMMIT');
+            console.log('Bulk insert nodes complete.');
+
+        } catch (e) {
+            console.error('Bulk insert nodes failed:', e);
+            try { await this.exec('ROLLBACK'); } catch (re) { }
+            // Don't throw for now, just log
+        }
+    }
+
+    private async insertNodeRecursive(stmt: any, node: any, parentId: string | null, index: number) {
+        if (!node) return;
+
+        // Generate or use existing ID? Rust side might not have UUIDs.
+        // If node has no ID, we generate one?
+        // Let's assume node has 'id'. If not, skip?
+        // The Rust 'Node' struct doesn't seem to have a UUID 'id' field strictly.
+        // It has 'name'.
+        // Let's rely on JSON serialization.
+
+        // Actually, for this MVP, let's just insert the top-level files as nodes
+        // and store the whole JSON in 'attributes' or 'body'.
+        // This effectively treats SQLite as a Document Store for the graph.
+
+        const id = crypto.randomUUID();
+
+        let type = node.type || "unknown";
+        let name = "node";
+        let body = "";
+        let attrs = "{}";
+        let location = JSON.stringify(node.location || {});
+
+        if (type === "Command") {
+            name = node.cmd;
+            if (node.argument) attrs = JSON.stringify({ argument: node.argument, ...node.attributes });
+            else attrs = JSON.stringify(node.attributes || {});
+        } else if (type === "Text") {
+            name = "#text";
+            body = node.value || "";
+        } else if (type === "SegmentBreak") {
+            name = "---";
+        }
+
+        await this.runPrepared(stmt, [id, parentId, type, name, attrs, body, location]);
+
+        // Children?
+        if (node.children && Array.isArray(node.children)) {
+            for (let i = 0; i < node.children.length; i++) {
+                await this.insertNodeRecursive(stmt, node.children[i], id, i);
+            }
+        }
+    }
+
+    // Helper for prepared statements
+    async prepare(sql: string) {
+        const str = this.sqlite3.str_new(this.db, sql);
+        const prep = await this.sqlite3.prepare_v2(this.db, this.sqlite3.str_value(str));
+        this.sqlite3.str_finish(str);
+        return (prep.stmt !== undefined) ? prep.stmt : prep;
+    }
+
+    async runPrepared(stmt: number, params: any[]) {
+        this.sqlite3.reset(stmt);
+        for (let i = 0; i < params.length; i++) {
+            const val = params[i];
+            if (val === null) this.sqlite3.bind_null(stmt, i + 1);
+            else if (typeof val === 'number') this.sqlite3.bind_double(stmt, i + 1, val);
+            else this.sqlite3.bind_text(stmt, i + 1, String(val));
+        }
+        const rc = await this.sqlite3.step(stmt);
+        if (rc !== 101) throw new Error('Step failed: ' + rc);
     }
 
     async exportDb(): Promise<Uint8Array | null> {

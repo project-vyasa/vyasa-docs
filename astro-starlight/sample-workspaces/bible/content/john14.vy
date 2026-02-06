@@ -1,6 +1,7 @@
 ` [source: https://www.bible.com/bible/111/JHN.14.NIV]
 
 `set context { title="John 14 (NIV)" }
+`h1 { class="chapter-title" } [ John 14 ]
 
 `h1 [Jesus Comforts His Disciples]
 `wj [

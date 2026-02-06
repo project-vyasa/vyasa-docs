@@ -31,6 +31,8 @@
         ChevronRight,
         Database,
         Download,
+        Copy,
+        Trash2,
     } from "lucide-svelte";
 
     let outputJSON = $state("");
@@ -44,8 +46,6 @@
     let outputFiles = $state<string[]>([]);
     let selectedOutputFile = $state<string>("");
     let logs = $state("System Logs:\n");
-
-    // Tree State
     let treeData = $state<TreeNode[]>([]);
     let outputTreeData = $state<TreeNode[]>([]);
     let expandedIds = $state(new Set<string>());
@@ -76,14 +76,15 @@
 
     function logError(...args: any[]) {
         console.error(...args);
-        logs +=
-            "[ERROR] " +
-            args
-                .map((a) =>
-                    typeof a === "object" ? JSON.stringify(a) : String(a),
-                )
-                .join(" ") +
-            "\n";
+        args.forEach((a) => {
+            if (a instanceof Error) {
+                logs += `[ERROR] ${a.message}\n${a.stack || ""}\n`;
+            } else if (typeof a === "object") {
+                logs += `[ERROR] ${JSON.stringify(a)}\n`;
+            } else {
+                logs += `[ERROR] ${String(a)}\n`;
+            }
+        });
     }
 
     function getBasePath() {
@@ -158,6 +159,14 @@
             }
 
             files = newFiles;
+
+            // Bridge: Sync to Sqlite VFS
+            log("Syncing to SQLite VFS...");
+            await sqliteService.clearFiles();
+            await sqliteService.bulkPutFiles(files);
+            // Verify by reading back
+            files = await sqliteService.getAllFiles();
+
             treeData = pathsToTree(Object.keys(files));
             console.log("Tree Data Updated:", treeData.length, "nodes");
 
@@ -232,6 +241,12 @@
                 }
             }
             files = newFiles;
+
+            // Bridge: Sync to Sqlite
+            await sqliteService.clearFiles();
+            await sqliteService.bulkPutFiles(files);
+            files = await sqliteService.getAllFiles();
+
             if (Object.keys(files).length > 0)
                 selectedFile = Object.keys(files)[0];
             scanTemplates();
@@ -256,7 +271,11 @@
                 /*ignore*/
             }
 
-            const input = JSON.parse(JSON.stringify(files));
+            // Bridge: Ensure DB is synced with Editor State
+            await sqliteService.bulkPutFiles(files);
+            // Read from DB for the "Single Source of Truth" contract
+            const input = await sqliteService.getAllFiles();
+            log("Compiler Input Files:", Object.keys(input));
             const tmplArg =
                 selectedTemplate !== "default.html"
                     ? selectedTemplate
@@ -269,6 +288,14 @@
             log(
                 `[SUCCESS] Compiled ${result.stats.file_count} files in ${Math.round(result.stats.duration_ms)}ms.`,
             );
+
+            // Bridge: Sync Output Graph to DB
+            if (result.nodes) {
+                await sqliteService.bulkPutNodes(result.nodes);
+                log(
+                    `Persisted ${Object.keys(result.nodes).length} documents (and children) to 'nodes' table.`,
+                );
+            }
 
             outputJSON = JSON.stringify(result.files, null, 2);
             outputFiles = Object.keys(result.files)
@@ -422,15 +449,19 @@
 
     // Layout State
     let leftWidth = $state(240);
-    let rightWidth = $state(400);
+    let rightWidth = $state(500);
 
     // Compute header grid columns to match AppShell body: [Left Sidebar] [Content] [Right Sidebar]
     let headerGridCols = $derived(`${leftWidth}px 1fr ${rightWidth}px`);
 
     onMount(async () => {
         // Calculate initial split to be roughly 50/50 between editor and preview
-        const available = window.innerWidth - leftWidth;
-        rightWidth = Math.floor(available / 2);
+        if (typeof window !== "undefined") {
+            const available = window.innerWidth - leftWidth;
+            if (available > 0) {
+                rightWidth = Math.floor(available / 2);
+            }
+        }
 
         await init();
         await loadWorkspaceList();
@@ -672,10 +703,32 @@
         <!-- Output Debug -->
         {#snippet panelBottom()}
             <Panel title="Console" icon={Code}>
+                {#snippet actions()}
+                    <div class="flex gap-1">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            icon={Copy}
+                            onclick={() => {
+                                navigator.clipboard.writeText(logs);
+                            }}
+                            title="Copy Logs"
+                        />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            icon={Trash2}
+                            onclick={() => {
+                                logs = "System Logs:\n";
+                            }}
+                            title="Clear Logs"
+                        />
+                    </div>
+                {/snippet}
                 <div
                     class="h-full overflow-auto p-2 font-mono text-xs bg-black text-green-400"
                 >
-                    <pre>{logs}</pre>
+                    <pre class="whitespace-pre-wrap break-all">{logs}</pre>
                 </div>
             </Panel>
         {/snippet}
@@ -814,5 +867,12 @@
     }
     .border-l {
         border-left: 1px solid var(--border-base);
+    }
+
+    .whitespace-pre-wrap {
+        white-space: pre-wrap;
+    }
+    .break-all {
+        word-break: break-all;
     }
 </style>
