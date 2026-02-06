@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhagavad Gita</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif', serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fdfdfd;
+        }
+
+        .header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .verse-ref {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        .verse {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .devanagari {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .iast {
+            font-family: 'Noto Serif', serif;
+            font-style: italic;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .synonyms-box {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            border-left: 4px solid #d35400;
+            display: grid;
+            grid-template-columns: min-content 1fr;
+            column-gap: 1rem;
+            row-gap: 0.5rem;
+            align-items: baseline;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .synonym-term {
+            font-weight: bold;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+
+        .synonym-term::after {
+            content: " -- ";
+            color: #7f8c8d;
+            font-weight: normal;
+        }
+
+        .synonym-meaning {
+            color: #555;
+        }
+
+        .translation-box {
+            font-size: 1.0rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .purport-box {
+            font-size: 1rem;
+            text-align: justify;
+        }
+
+        .purport-box p {
+            margin-bottom: 1rem;
+            text-indent: 1rem;
+        }
+
+        .entity-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Add verse-num/wj just in case, though gita mostly doesn't use them */
+        .verse-num {
+            font-size: 0.75em;
+            vertical-align: super;
+            color: #999;
+            margin-right: 0.25em;
+            font-weight: bold;
+        }
+
+        .wj {
+            color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        {{ body }}
+    </div>
+</body>
+
+</html>

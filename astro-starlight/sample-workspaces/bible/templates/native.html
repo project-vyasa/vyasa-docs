@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Holy Bible</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2rem auto;
+            max-width: 400px;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #444;
+        }
+
+        .chapter-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+        }
+
+        /* Bible Specific Styles */
+        .verse-num {
+            font-size: 0.75em;
+            vertical-align: super;
+            color: #999;
+            margin-right: 0.25em;
+            font-weight: bold;
+        }
+
+        .wj {
+            color: #c0392b;
+            /* Words of Jesus in Red */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        {{ body }}
+    </div>
+</body>
+
+</html>

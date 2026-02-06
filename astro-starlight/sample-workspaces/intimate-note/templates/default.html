@@ -1,120 +1,132 @@
-<!DOCTYPE html>
-<html>
+{{#*inline "render_node"}}
+{{#if (eq type "Text")}}{{value}}{{/if}}
+{{#if (eq type "SegmentBreak")}}<br />{{/if}}
+{{#if (eq type "Command")}}
+{{#if (eq cmd "div")}}
+<div{{#each attributes}} {{@key}}="{{this}}" {{/each}}>{{#each children}}{{> render_node}}{{/each}}</div>
+    {{else}}
+    {{#if (eq cmd "span")}}
+    <span{{#each attributes}} {{@key}}="{{this}}" {{/each}}>{{#each children}}{{> render_node}}{{/each}}</span>
+        {{else}}
+        {{#if (eq cmd "strong")}}
+        <strong{{#each attributes}} {{@key}}="{{this}}" {{/each}}>{{#each children}}{{> render_node}}{{/each}}</strong>
+            {{else}}
+            {{#if (eq cmd "br")}}
+            <br />
+            {{else}}
+            {{#if (eq cmd "h1")}}
+            <h1{{#each attributes}} {{@key}}="{{this}}" {{/each}}>{{#each children}}{{> render_node}}{{/each}}</h1>
+                {{else}}
+                {{#if (eq cmd "h2")}}
+                <h2{{#each attributes}} {{@key}}="{{this}}" {{/each}}>{{#each children}}{{> render_node}}{{/each}}</h2>
+                    {{else}}
+                    {{#if (eq cmd "heading")}}
+                    {{#if (eq attributes.level "1")}}
+                    <h1>{{#each children}}{{> render_node}}{{/each}}</h1>
+                    {{else}}
+                    {{#if (eq attributes.level "2")}}
+                    <h2>{{#each children}}{{> render_node}}{{/each}}</h2>
+                    {{else}}
+                    {{#if (eq attributes.level "3")}}
+                    <h3>{{#each children}}{{> render_node}}{{/each}}</h3>
+                    {{else}}
+                    <h4>{{#each children}}{{> render_node}}{{/each}}</h4>
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{else}}
+                    <!-- Fallback -->
+                    {{#each children}}{{> render_node}}{{/each}}
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{/if}}
+                    {{/inline}}
 
-<head>
-    <title>{{#each primary.body}}{{#if (eq type "Command")}}{{#if (eq cmd
-        "knowledge-sheet")}}{{attributes.title}}{{/if}}{{/if}}{{/each}}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Noto Serif', serif;
-            max-width: 700px;
-            padding: 0 1rem;
-            line-height: 1.4;
-        }
+                    <!DOCTYPE html>
+                    <html>
 
-        h1,
-        h2,
-        h3 {
-            margin: 1.5rem 0 0.5rem 0;
-        }
+                    <head>
+                        <title>Native Note</title>
+                        <style>
+                            body {
+                                font-family: 'Noto Serif', serif;
+                                max-width: 700px;
+                                padding: 0 1rem;
+                                line-height: 1.4;
+                            }
 
-        h2 {
-            font-size: 1.2rem;
-        }
+                            h1,
+                            h2,
+                            h3 {
+                                margin: 1.5rem 0 0.5rem 0;
+                            }
 
-        h3 {
-            font-size: 1.1rem;
-        }
+                            h2 {
+                                font-size: 1.2rem;
+                            }
 
-        .sheet-meta {
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 0.5rem;
-        }
+                            h3 {
+                                font-size: 1.1rem;
+                            }
 
-        .align-center {
-            text-align: center;
-        }
+                            .sheet-meta {
+                                margin-bottom: 1rem;
+                                border-bottom: 1px solid #ccc;
+                                padding-bottom: 0.5rem;
+                            }
 
-        .align-right {
-            text-align: right;
-        }
+                            .align-center {
+                                text-align: center;
+                            }
 
-        .sheet-date,
-        .sheet-location {
-            font-style: italic;
-            color: #888;
-            margin-bottom: 0.2rem;
-        }
+                            .align-right {
+                                text-align: right;
+                            }
 
-        .sheet-title {
-            margin: 0.5rem 0;
-            font-size: 1.4rem;
-        }
+                            .sheet-date,
+                            .sheet-location {
+                                font-style: italic;
+                                color: #888;
+                                margin-bottom: 0.2rem;
+                            }
 
-        .content {
-            white-space: pre-wrap;
-        }
+                            .sheet-title {
+                                margin: 0.5rem 0;
+                                font-size: 1.4rem;
+                            }
 
-        .sheet-meta {
-            white-space: normal;
-        }
+                            .content {
+                                white-space: pre-wrap;
+                            }
 
-        .lines {
-            margin: 1rem 0;
-            white-space: pre-wrap;
-        }
+                            .sheet-meta,
+                            .align-center,
+                            .align-right {
+                                white-space: normal;
+                            }
 
-        .extras {
-            font-style: italic;
-        }
+                            .lines {
+                                margin: 1rem 0;
+                                white-space: pre-wrap;
+                            }
 
-        .align-center,
-        .align-right {
-            white-space: normal;
-        }
-    </style>
-</head>
+                            .extras {
+                                font-style: italic;
+                            }
+                        </style>
+                    </head>
 
-<body>
-    <div class="content">
-        {{~#each primary.body~}}
-        {{~#if (eq type "Text")}}{{value}}{{/if~}}
-        {{~#if (eq type "SegmentBreak")}}
+                    <body>
+                        <div class="content">
+                            {{#each primary.body}}
+                            {{> render_node}}
+                            {{/each}}
+                        </div>
+                    </body>
 
-        {{/if~}}
-        {{~#if (eq type "Command")~}}
-        {{~#if (eq cmd "knowledge-sheet")}}<div class="sheet-meta">
-            <div class="sheet-date">{{attributes.date}}</div>
-            <div class="sheet-location">{{#if attributes.location}}{{attributes.location}}{{else}}Unknown
-                Location{{/if}}</div>
-            <h1 class="sheet-title">{{attributes.number}}.&nbsp;&nbsp;&nbsp;{{attributes.title}}</h1>
-        </div>{{/if~}}
-        {{~#if (eq cmd "lines")}}<div class="lines">{{#each children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{#if (eq
-            type "SegmentBreak")}}
-            {{/if}}{{/each}}</div>{{/if~}}
-        {{~#if (eq cmd "extras")}}<div class="extras">{{#each children}}{{#if (eq type
-            "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if~}}
-        {{~#if (eq cmd "center")}}<div class="align-center">{{#each children}}{{#if (eq type
-            "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if~}}
-        {{~#if (eq cmd "right")}}<div class="align-right">{{#each children}}{{#if (eq type
-            "Text")}}{{value}}{{/if}}{{/each}}</div>{{/if~}}
-        {{~#if (eq cmd "speaker")}}<strong>{{#each children}}{{#if (eq type
-            "Text")}}{{value}}{{/if}}{{/each}}</strong>{{/if~}}
-        {{~#if (eq cmd "heading")}}{{#if (eq attributes.level "1")}}<h1>{{#each children}}{{#if (eq type
-            "Text")}}{{value}}{{/if}}{{/each}}</h1>{{/if}}{{#if (eq attributes.level "2")}}<h2>{{#each children}}{{#if
-            (eq type "Text")}}{{value}}{{/if}}{{/each}}</h2>{{/if}}{{#if (eq attributes.level "3")}}<h3>{{#each
-            children}}{{#if (eq type "Text")}}{{value}}{{/if}}{{/each}}</h3>{{/if}}{{/if~}}
-        {{~#if (eq cmd "emphasis")}}{{#if (eq attributes.level "1")}}<strong>{{#each children}}{{#if (eq type
-            "Text")}}{{value}}{{/if}}{{/each}}</strong>{{/if}}{{/if~}}
-        {{~#if (eq cmd "break")}}<br />{{/if~}}
-        {{~/if~}}
-        {{~/each~}}
-    </div>
-</body>
-
-</html>
+                    </html>
