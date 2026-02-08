@@ -1,5 +1,7 @@
 `knowledge-sheet { number="1" title="This Begins A New Practice" date="1995-06-21" location="Big Sur, California" }
 
+`knowledge [
+
 This begins a new practice of weekly dispatches of Knowledge from Guruji. Every center around the world will receive the Knowledge so it can be read for people to copy down at weekly Satsang. Here is the first segment Guruji dictated at Big Sur, 21 June, 1995.
 
 `center[* * * *]
@@ -23,3 +25,5 @@ Behind every object is infinity. An object is limited. Take an object and reduce
 The object behind the object is infinity. The person behind the person is love.
 
 Maya is getting caught up in the event, personality, object. Knowledge, love, Brahman is seeing beyond the event, personality, or object. See? Just a little shift.
+
+]

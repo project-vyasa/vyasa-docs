@@ -1,5 +1,7 @@
 `knowledge-sheet { number="107" title="The Personal and Impersonal" date="1997-06-25" location="Montreal Ashram" }
 
+
+`knowledge [
 How can we reconcile the impersonal with the personal?
 
 In love you raise the object to life. When you love an object it becomes life. For children everything is personal. Children take each object they play with and make it totally personal. Even a stone has a face; even the sun laughs. When you attach emotion, the whole creation becomes personal. When you remove the emotion, even people become objects. Violence is removing the emotion. How a person can kill another person: it is when they do not see them as a person, they see them as an object. But even a stone attracts reverence when it becomes personal.
@@ -17,6 +19,7 @@ The impersonal cannot attract reverence. Most people see God as impersonal and t
 You are the Reality. You are not the thoughts, you are not the emotions nor actions. You are not even a person...!
 
 `speaker[Exercise]: What you now see as impersonal, see it as personal. And when you feel any negative emotion towards anybody, see them as impersonal. And pretend that you yourself are a robot.
+]
 
 `extras[
 `h2[NEWS FLASH]
@@ -31,3 +34,4 @@ People are seeing a totally different Guruji which they have never experienced b
 
 If you want to send an email to Guruji or Bhanu, please send it to tejasvi@giasbga.vsnl.net.in
 ]
+

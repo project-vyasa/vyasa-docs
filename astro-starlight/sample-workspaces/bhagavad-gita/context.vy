@@ -5,7 +5,7 @@
 `command-def { name="term" category="content" }
 `command-def { name="meaning" category="content" }
 `command-def { name="translation" category="content" }
-`command-def { name="purport" category="content" }
+`command-def { name="purport" whitespace="preserve" category="content" }
 
 `alias-def { name="v" target="verse" }
 

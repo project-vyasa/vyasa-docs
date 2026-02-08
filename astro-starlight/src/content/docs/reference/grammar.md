@@ -87,26 +87,26 @@ Vyasa reserves the characters `` ` ``, `|`, `[`, `]`, `\`, `{`, `}` for syntax.
 ## Examples
 
 ### Basic Command
-```vyasa
+```text
 `preface { title="Foreword" } [
   This is the preface text.
 ]
 ```
 
 ### Command with Argument
-```vyasa
+```text
 `chapter 1 { title="Obsfervation" }
 ```
 
 ### Delimited Blocks (Polymorphic closing)
-```vyasa
+```text
 `div;mybox [
   Content inside the box.
 ]mybox
 ```
 
 ### Nested Attributes
-```vyasa
+```text
 `set entities { 
   krishna={ type="person", bio="The Supreme Personality of Godhead" } 
 }

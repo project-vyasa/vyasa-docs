@@ -17,3 +17,7 @@
 `template `break `for "html" {
    `br
 }
+
+`template `chapter-title `for "html" {
+   `h1 { class="chapter-title" } [ $.text ]
+}

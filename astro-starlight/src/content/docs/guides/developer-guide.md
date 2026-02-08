@@ -84,8 +84,9 @@ The implementation uses a shared compilation pipeline:
     *   **State & Entities**: Propagates state from `state` commands and aliases (Registry).
     *   Future: Will resolve cross-references and URNs.
 
-6.  **Backend compilation** (`src/backend/`):
-    *   **Tera** / **Handlebars**: Renders the AST to HTML using templates.
+7.  **Backend compilation** (`src/backend/`):
+    *   **HTML**: `SimpleHtmlBackend` (`simple.rs`) renders the AST to HTML.
+    *   **Projector** (`src/projector.rs`): Applies Native Templates (`src/backend/html/default_template.html` is the default shell).
     *   **SQLite**: Serializes the AST structure into a relational database for querying.
 
 ### Codebase Layout
@@ -103,9 +104,11 @@ cargo build --release
 ```
 
 **WASM**:
+**WASM**:
 ```bash
-wasm-pack build --target web
+wasm-pack build --target web --release
 ```
+*(Note: `wasm-opt` may need to be disabled in `Cargo.toml` due to bulk-memory/SIMD validation issues on some platforms).*
 
 ### Database Schema (SQLite)
 

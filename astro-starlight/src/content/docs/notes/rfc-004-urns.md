@@ -26,7 +26,7 @@ Previously, URNs were defined globally in `vyasac.toml` using a single `urn_sche
 
 The URN scheme is now defined as a standard context variable within `context.vy`.
 
-```vyasa
+```text
 `set context { urn_scheme = "urn:vyasa:vedabase:bg:{chapter}:{id}" }
 ```
 
@@ -53,17 +53,17 @@ let env_scheme = document.environment.context.get("urn_scheme").cloned();
 ## Example
 
 **`bhagavad-gita/context.vy` (Root)**
-```vyasa
+```text
 `set context { urn_scheme = "urn:vyasa:vedabase:bg:{chapter}:{id}" }
 ```
 
 **`bhagavad-gita/content/18/context.vy`**
-```vyasa
+```text
 `set context { chapter = "18" }
 ```
 
 **`bhagavad-gita/content/18/78.vy`**
-```vyasa
+```text
 `r 78
 ```
 

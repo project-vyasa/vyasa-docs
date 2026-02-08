@@ -59,7 +59,7 @@ std = "0.1.0"
 linguistics-pkg = "path/to/lib"
 ```
 
-```vyasa
+```text
 `command-def { name="sutra" args="idx" }
 `command-def { name="bhashya" args="author" }
 ```

@@ -39,6 +39,7 @@
     let fileError = $state("");
     let iframeSrc = $state("");
     let lineWrapping = $state(true);
+    let consoleContainer: HTMLDivElement;
 
     // State
     let files = $state<Record<string, string>>({});
@@ -72,6 +73,11 @@
                     typeof a === "object" ? JSON.stringify(a) : String(a),
                 )
                 .join(" ") + "\n";
+        tick().then(() => {
+            if (consoleContainer) {
+                consoleContainer.scrollTop = consoleContainer.scrollHeight;
+            }
+        });
     }
 
     function logError(...args: any[]) {
@@ -83,6 +89,11 @@
                 logs += `[ERROR] ${JSON.stringify(a)}\n`;
             } else {
                 logs += `[ERROR] ${String(a)}\n`;
+            }
+        });
+        tick().then(() => {
+            if (consoleContainer) {
+                consoleContainer.scrollTop = consoleContainer.scrollHeight;
             }
         });
     }
@@ -199,10 +210,32 @@
     function scanTemplates() {
         // Log files to debug tree data
         console.log("Files loaded:", Object.keys(files));
+
+        // 1. Determine template directory from vyasac.toml
+        let templateDir = "templates"; // Default
+        if (files["vyasac.toml"]) {
+            // Simple regex match for template_dir in TOML
+            const match = files["vyasac.toml"].match(
+                /template_dir\s*=\s*["']([^"']+)["']/,
+            );
+            if (match && match[1]) {
+                templateDir = match[1];
+                // Remove leading slash if present (zip paths)
+                if (templateDir.startsWith("/"))
+                    templateDir = templateDir.slice(1);
+                // Remove trailing slash if present
+                if (templateDir.endsWith("/"))
+                    templateDir = templateDir.slice(0, -1);
+            }
+        }
+
         const temps = new Set<string>();
-        temps.add("ast.html");
+        temps.add("AST.json");
+        temps.add("Built-in HTML");
+
+        const dirPrefix = templateDir + "/";
         for (const path of Object.keys(files)) {
-            if (path.startsWith("templates/") && path.endsWith(".html")) {
+            if (path.startsWith(dirPrefix) && path.endsWith(".html")) {
                 const name = path.split("/").pop();
                 if (name) temps.add(name);
             }
@@ -210,15 +243,15 @@
         availableTemplates = Array.from(temps).sort();
 
         if (!availableTemplates.includes(selectedTemplate)) {
-            if (availableTemplates.includes("default.html"))
+            // Default preference logic
+            if (availableTemplates.includes("native.html")) {
+                selectedTemplate = "native.html";
+            } else if (availableTemplates.includes("default.html")) {
                 selectedTemplate = "default.html";
-            else {
-                const nonAst = availableTemplates.find((t) => t !== "ast.html");
-                selectedTemplate =
-                    nonAst ||
-                    (availableTemplates.length > 0
-                        ? availableTemplates[0]
-                        : "");
+            } else if (availableTemplates.includes("Built-in HTML")) {
+                selectedTemplate = "Built-in HTML";
+            } else {
+                selectedTemplate = "AST.json";
             }
         }
     }
@@ -275,11 +308,14 @@
             await sqliteService.bulkPutFiles(files);
             // Read from DB for the "Single Source of Truth" contract
             const input = await sqliteService.getAllFiles();
-            log("Compiler Input Files:", Object.keys(input));
-            const tmplArg =
-                selectedTemplate !== "default.html"
-                    ? selectedTemplate
-                    : undefined;
+            // log("Compiler Input Files:", Object.keys(input));
+
+            let tmplArg: string | undefined = selectedTemplate;
+            if (selectedTemplate === "Built-in HTML") {
+                tmplArg = undefined;
+            } else if (selectedTemplate === "AST.json") {
+                tmplArg = "AST.json";
+            }
 
             const resultStr = compile_workspace(input, tmplArg);
             const result = JSON.parse(resultStr);
@@ -313,10 +349,25 @@
                 expandedIds = newExpanded;
             }
 
-            const html =
-                outputFiles.find((k) => k.endsWith(".html")) || outputFiles[0];
-            if (html) selectOutputFile(html);
-            else iframeSrc = "";
+            // Handle AST view special case
+            if (selectedTemplate === "AST.json" || selectedTemplate === "") {
+                // In JSON target mode, we look for .json files
+                const jsonFile = outputFiles.find((k) => k.endsWith(".json"));
+                if (jsonFile) {
+                    selectOutputFile(jsonFile);
+                } else {
+                    // Fallback if no json file found (shouldn't happen with Target::Json)
+                    outputFiles.length > 0
+                        ? selectOutputFile(outputFiles[0])
+                        : (iframeSrc = "");
+                }
+            } else {
+                const html =
+                    outputFiles.find((k) => k.endsWith(".html")) ||
+                    outputFiles[0];
+                if (html) selectOutputFile(html);
+                else iframeSrc = "";
+            }
         } catch (e: any) {
             logError("Compilation Error:", e);
             fileError = e.toString();
@@ -343,7 +394,25 @@
         try {
             const res = JSON.parse(outputJSON);
             if (res && res[path]) {
-                iframeSrc = res[path];
+                if (path.endsWith(".json")) {
+                    // Start formatting it nicely
+                    try {
+                        const jsonObj = JSON.parse(res[path]);
+                        const formatted = JSON.stringify(jsonObj, null, 2);
+                        // Wrap in simple HTML for the iframe
+                        iframeSrc = `
+                            <html>
+                            <body style="margin:0; padding:10px; font-family: monospace; white-space: pre-wrap; word-break: break-all;">
+${formatted}
+                            </body>
+                            </html>
+                        `;
+                    } catch (e) {
+                        iframeSrc = res[path];
+                    }
+                } else {
+                    iframeSrc = res[path];
+                }
             }
         } catch (e) {}
     }
@@ -567,9 +636,9 @@
                     <div class="flex-1">
                         <Select
                             options={[
-                                { label: "AST (Built-in)", value: "ast.html" },
+                                { label: "AST (JSON)", value: "AST.json" },
                                 ...availableTemplates
-                                    .filter((t) => t !== "ast.html")
+                                    .filter((t) => t !== "AST.json")
                                     .map((t) => ({ label: t, value: t })),
                             ]}
                             bind:value={selectedTemplate}
@@ -726,6 +795,7 @@
                     </div>
                 {/snippet}
                 <div
+                    bind:this={consoleContainer}
                     class="h-full overflow-auto p-2 font-mono text-xs bg-black text-green-400"
                 >
                     <pre class="whitespace-pre-wrap break-all">{logs}</pre>

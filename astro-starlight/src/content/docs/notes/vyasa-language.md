@@ -8,6 +8,37 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-02-07: Default Template & Optimization
+*   **Experience**: Added "Built-in HTML" option in PlayArea using a baked-in, clean `src/backend/html/default_template.html` (Noto Serif typography, no custom classes).
+*   **Refinement**: Renamed "AST" to "AST (JSON)" for clarity.
+*   **Optimization**: Removed `handlebars` dependency and optimized WASM build (LTO enabled, ~500KB binary).
+
+## 2026-02-07: Title Command & Structure Refinement
+*   **Feature**: Introduced `title` as a first-class structural command.
+    *   **Semantics**: Distinct from `heading` level 1. Represents the formal title of a document or work.
+    *   **Output**: Renders as `<h1 class="title">` in HTML.
+*   **Discussion**: Evaluated `h1`-`h6` vs `section` debate.
+    *   Retained `h1` aliases for pragmatism (HTML similarity).
+    *   `title` serves as the semantic root for the document's identity.
+
+## 2026-02-06: Native Templates & Projection
+*   **Major Feature**: Implemented **Native Templates** (RFC-011).
+    *   **Concept**: Vyasa can now define its own output format using `template` blocks.
+    *   **Syntax**: `` `template `cmd_name `for "html" { ... } ``.
+    *   **Engine**: `Projector` module replaces Handlebars/Tera.
+*   **Benefit**: Removes external dependencies, reduces WASM size, and keeps the entire build definition within the Vyasa language.
+*   **Binding**: Templates bind to AST nodes. `$.text`, `$.argument`, `$.attributes` are available in scope.
+
+## 2026-02-04: Graph Sink
+*   **Arch**: Compiler now outputs `nodes` map (AST) alongside files.
+*   **Persistence**: `sqlite-service.ts` bridges this AST into the `nodes` table in the browser DB.
+*   **Result**: "Git-in-a-DB" is fully operational for both source code and compiled graph.
+
+## 2026-02-03: SQLite VFS
+*   **Arch**: Implemented `SqliteFileSystem` (VFS) in Rust.
+*   **Flow**: Browser (JS) -> SQLite (OPFS) -> Rust VFS -> Compiler.
+*   **Benefit**: Zero-copy (conceptually) access to source files from the compiler running in WASM.
+
 ## 2026-02-02: Tera Template Simplification
 *   **Feature**: Custom Tera filters (`is_cmd`, `is_text`) for cleaner template conditionals.
 *   **Feature**: Context shortcuts (`env`, `entities`, `ctx`, `settings`) injected into template context.

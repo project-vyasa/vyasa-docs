@@ -16,7 +16,7 @@ This RFC compares two competing patterns for defining speakers in Vyasa: the **G
 ### A. Generic Pattern
 Used in `intimate-note`. The speaker is an argument to a generic command.
 
-```vyasa
+```text
 `speaker[Dhritarashtra] `uvacha [ ... ]
 ```
 
@@ -31,7 +31,7 @@ Used in `intimate-note`. The speaker is an argument to a generic command.
 ### B. Explicit Entity Pattern
 Used in `bhagavad-gita`. The speaker is a first-class command.
 
-```vyasa
+```text
 `Dhritarashtra `uvacha [ ... ]
 ```
 

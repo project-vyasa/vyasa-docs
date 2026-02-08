@@ -63,11 +63,11 @@ Segment addressing empowers you to "overlay" additional graphs onto the Source g
 
 **Example**:
 *   `source.vy`: Defines the text.
-    ```vyasa
+    ```text
     `marker 1.1 `d [ Dharma-kshetre ]
     ```
 *   `commentary.vy`: References specific nodes to add meaning.
-    ```vyasa
+    ```text
     `ref "urn:vyasa:bg:1:1/d/s:1" { note="Field of Dharma" }
     ```
 This keeps your source text pure while allowing infinite layers of interpretation (Commentary, Translation, linguistic analysis) to point effectively to the exact segment they discuss.
@@ -75,8 +75,11 @@ This keeps your source text pure while allowing infinite layers of interpretatio
 ### Syntax Patterns
 While the underlying model is "Entity with Attributes", Vyasa supports defining aliases to create natural Subject-Verb syntax.
 
-*   **Define Alias**: `` `alias-def { name="sanjaya" target="entity" params="speaker=Sanjaya" } ``
-*   **Define Action**: `` `alias-def { name="spoken" target="entity" params="action=uvacha" } ``
+### Syntax Patterns
+While the underlying model is "Entity with Attributes", Vyasa supports defining aliases to create natural Subject-Verb syntax.
+
+*   **Define Alias**: `` `alias-def { name="sanjaya" target="entity" params="{speaker='Sanjaya'}" } ``
+*   **Define Action**: `` `alias-def { name="spoken" target="entity" params="{action='uvacha'}" } ``
 *   **Usage**: `` `sanjaya `spoken ``
 
 This updates the Flow State just like the verbose `` `entity { speaker="Sanjaya" ... } `` command.
