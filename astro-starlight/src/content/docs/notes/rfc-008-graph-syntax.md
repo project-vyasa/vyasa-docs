@@ -36,7 +36,7 @@ If we want a linear text format that maps 1:1 to this structure, we need:
 
 ### Concept 1: The "Context Graph" (Hierarchy)
 Most formatting languages handle the `CONTAINS` tree well via nesting.
-```vyasa
+```text
 `work bg [
   `chapter 1 [
     `verse 1 [ ... ]
@@ -51,7 +51,7 @@ This is where Vyasa's "Flow State" comes in. The `SPEAKS` edge is orthogonal to 
 **Graph-Native Syntax**:
 We need to "attach" an edge from an external node (Speaker) to the current stream of nodes (Verses).
 
-```vyasa
+```text
 // Declare Node
 `entity dhritarashtra
 
@@ -65,7 +65,7 @@ We need to "attach" an edge from an external node (Speaker) to the current strea
 ### Concept 3: Property Projection
 The text inside the block is just a property (`text` or `content`).
 
-```vyasa
+```text
 `verse 1 {
   text="dharma-kshetre..."
   translation="On the field of dharma..."
@@ -76,7 +76,7 @@ The text inside the block is just a property (`text` or `content`).
 
 If we merge these, we get:
 
-```vyasa
+```text
 `work bg {
   `chapter 1 {
     // Edge: (Dhritarashtra)-[SPEAKS]->(...)
@@ -108,7 +108,7 @@ It assumes `SPEAKS` (or generic `ATTRIBUTE`) for Flow State.
 
 If we wanted to be fully graph-native, we might make the Edge Type explicit:
 
-```vyasa
+```text
 // Current
 `sanjaya `uvacha `verse 1 [...]
 
@@ -127,7 +127,7 @@ In a graph, this is either a **Hyperedge** or a **Reified Event Node**:
 
 **Vyasa Syntax**:
 We handle this via **Action Attributes** (equivalent to Edge Properties):
-```vyasa
+```text
 `arjuna `uvacha { addressed_to="Krishna" witness="Sanjaya" location="Kurukshetra" }
 ```
 This effectively "reifies" the `uvacha` action into a rich edge that carries all the contextual metadata to the target Verse nodes.

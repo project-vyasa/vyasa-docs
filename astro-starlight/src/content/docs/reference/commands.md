@@ -17,7 +17,7 @@ Defines a URN-addressable segment and sets the active context ID.
 The `marker` command establishes the unique identity (URN) of the content that follows. Arguments are appended to the active URN scheme defined in the project's `context.vy`. Subsequent content nodes automatically inherit this identity.
 
 **Examples**:
-```vyasa
+```text
 `marker 1     --> Verse 1 (inherits ID)
 `m 3.16       --> Chapter 3, Verse 16 (using alias 'm')
 ```
@@ -31,7 +31,7 @@ References or cites another text segment.
 Used to create a citation or cross-reference to another segment (marker). This does *not* set the ID of the current block, but rather points to an existing one.
 
 **Example**:
-```vyasa
+```text
 As stated in `ref "John 3:16" ...
 ```
 
@@ -44,7 +44,7 @@ Updates the contextual state (e.g., speaker, scene) for subsequent nodes.
 State properties are propagated to all subsequent nodes until changed or cleared. This allows you to tag large sections of text without repeating attributes on every node.
 
 **Examples**:
-```vyasa
+```text
 `state { speaker="Sanjaya" }
 `reference 1.1 ... (Inherits speaker="Sanjaya")
 `state { speaker="" }  <-- Clears the state
@@ -62,7 +62,7 @@ Updates environment configuration (settings, context, aliases, entities).
 - `entities`: Registers semantic entities.
 
 **Examples**:
-```vyasa
+```text
 `set settings { whitespace = "preserve" }  <- Opt-out of whitespace stripping
 `set context { work="Bible" urn_scheme="urn:bible:{book}:{chapter}:{id}" }
 `set { chapter=1 }
@@ -77,14 +77,14 @@ Defines or references a semantic entity.
 Creates a specific Entity Node. If defined in the registry, it inherits those attributes. Useful for inline semantic tagging and indexing.
 
 **Registy Example**:
-```vyasa
+```text
 `set entities {
   Krishna = { type="Deity" role="Avatar" }
 }
 ```
 
 **Usage**:
-```vyasa
+```text
 `entity Krishna     <-- Inherits type="Deity"
 ```
 
@@ -103,7 +103,7 @@ The `verse` command delimits a block as a verse.
 - If no `id` is provided, it inherits identification from the most recent `marker` command.
 
 **Example**:
-```vyasa
+```text
 `v 1 [ In the beginning... ]
 ```
 
@@ -124,7 +124,7 @@ Defines a repeating pattern of commands for text blocks.
 Allows implicit tagging of lines within a block matching the pattern ID.
 
 **Example**:
-```vyasa
+```text
 `interlinear-streams { id="verse" pattern="d, i, e" }
 
 `verse[
@@ -155,7 +155,7 @@ Defines a new custom command.
 Allows extending the language vocabulary within a document or project.
 
 **Example**:
-```vyasa
+```text
 `command-def uvacha { category="verb" }
 `uvacha [ Said... ]
 ```
@@ -166,7 +166,7 @@ Defines a shortcut for an existing command with preset attributes.
 **Syntax**: `` `alias-def { name="alias" target="cmd" params="k=v" } ``
 
 **Example**:
-```vyasa
+```text
 `alias-def { name="speaking" target="state" params="action=speaking" }
 `speaking  <-- Equivalent to `state { action="speaking" }`
 ```
@@ -180,7 +180,7 @@ Defines a shortcut for an existing command with preset attributes.
 ### Segments (`|`)
 Used for hard alignment anchors within a text node.
 
-```vyasa
+```text
 `d[Word A | Word B]
 ```
 
@@ -202,7 +202,7 @@ A convention for defining Subject-Verb relationships naturally, designed for sem
 When an Action command immediately follows an Entity command, the Entity is treated as the **Subject** of that Action.
 
 **Example**:
-```vyasa
+```text
 `Krishna `uvacha { to="Arjuna" } [
   `v 1 [ ... ]
 ]

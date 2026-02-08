@@ -27,7 +27,7 @@ A template is just a mapping of **Node Properties** -> **Visual Elements**.
 
 We can use the existing Vyasa Command syntax to define templates.
 
-```vyasa
+```text
 // Define a template for 'verse' nodes
 `template `verse {
   // Implicit context: 'this' is the node
@@ -84,7 +84,7 @@ The `slot` command indicates where the children of the node should be rendered (
 ```
 
 **Vyasa Native**:
-```vyasa
+```text
 `div .verse-container [
   `span .sanskrit-text [ $.text ]
   `if ($.translation) `p .translation [ $.translation ]

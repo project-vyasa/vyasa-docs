@@ -34,7 +34,7 @@ Relying solely on `entity` state (`uvacha`) is insufficient because it treats th
 
 [RFC 008](./rfc-008-graph-syntax) (Section 4) briefly touched on this by proposing **Action Attributes**:
 
-```vyasa
+```text
 `arjuna `uvacha { 
   addressed_to="Krishna" 
   witness="Sanjaya" 
@@ -52,7 +52,7 @@ We propose separating **Static Context** (Scene) from **Dynamic Interaction** (S
 
 The `scene` command sets the stage. It persists until changed (Stateful).
 
-```vyasa
+```text
 `scene {
   location = "Hastinapura"
   time = "Night of Day 10"
@@ -70,7 +70,7 @@ Instead of overloading `speaker`, we treat the communication as an **Event** whe
 #### Scenario 1: Targeted Speech (Diadic)
 One speaker, one listener.
 
-```vyasa
+```text
 `uvacha {
   speaker = "Krishna"
   listener = "Arjuna"
@@ -80,7 +80,7 @@ One speaker, one listener.
 #### Scenario 2: Group Discussion (Polyadic)
 One speaker, specific group of active listeners.
 
-```vyasa
+```text
 `uvacha {
   speaker = "Suta"
   listeners = ["Shaunaka", "Sages"]
@@ -90,7 +90,7 @@ One speaker, specific group of active listeners.
 #### Scenario 3: The "Presence" Context (Audience)
 "Not all stars" (Active participants vs Passive bystanders).
 
-```vyasa
+```text
 `state {
   active = ["Krishna", "Arjuna"]
   presence = ["Sanjaya", "Hanuman (on flag)"] 
@@ -105,7 +105,7 @@ One speaker, specific group of active listeners.
 ### Option 1: Verbose Event Definition
 Explicitly defining the event node.
 
-```vyasa
+```text
 `event {
   who = ["Ram", "Lakshman"]
   where = "Forest"
@@ -116,7 +116,7 @@ Explicitly defining the event node.
 ### Option 2: Flow State Attributes (Recommended)
 Piggybacking on the existing flow state commands (`set-state` or specialized aliases).
 
-```vyasa
+```text
 // Set the Scene (Persists)
 `scene "Kurukshetra"
 
@@ -139,7 +139,7 @@ Piggybacking on the existing flow state commands (`set-state` or specialized ali
 ## 6. Schema/Validation
 We need to update `context.vy` to allow defining these attributes globally so generic validators don't warn about "unknown attribute 'location'".
 
-```vyasa
+```text
 `schema {
   attribute `location
   attribute `time
@@ -154,7 +154,7 @@ A proposed alternative to "Stateful Commands" is the **Subgraph Tuple**—a dist
 ### Syntax Concept
 Using parentheses `( ... )` to define a scoped event/interaction subgraph.
 
-```vyasa
+```text
 // Example 1: Complex Scene
 ( `krisna `uvacha `arjuna `event{ time="just now" } `bheeshma `sages `warriors )
 
@@ -167,7 +167,7 @@ User clarification: "This should just be a header that 'applies' to one or more 
 
 If we treat the **Tuple** as a Command itself, we avoid ambiguity.
 
-```vyasa
+```text
 // Syntax: `( ... ) acts as a "Structured State Setter"
 `( `Krishna `uvacha `Arjuna `as "Gita-Acharya" )
 

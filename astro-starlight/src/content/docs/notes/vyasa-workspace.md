@@ -7,6 +7,29 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-02-07: Dynamic Template Configuration
+*   **Feature**: Added `template_dir` configuration key in `vyasac.toml`.
+*   **Behavior**: PlayArea parsing logic scan this directory (defaulting to `templates/`) to populate the template dropdown.
+*   **Goal**: Allow flexible workspace structures where templates might reside in `theme/` or other custom paths.
+
+## 2026-02-05: Graph Persistence (The "Sink")
+*   **Goal**: Close the loop by persisting compiler output back to the database.
+*   **Implementation**:
+    *   **Compiler**: Returns a map of `CompiledDocument` ASTs.
+    *   **SQLite Service**: Recursively inserts AST nodes into the `nodes` table.
+    *   **Schema**: `files` (source) and `nodes` (graph) are now synchronized.
+*   **Benefit**: Enables graph querying (e.g., "Find all `v` commands spoken by `Krishna`").
+
+## 2026-02-03: The "Git-in-a-DB" Architecture
+*   **Major Shift**: Moved away from in-memory WASM FS (memfs) to a database-backed Virtual File System.
+*   **Architecture**:
+    *   **Browser (PlayArea)**: Manages `wa-sqlite` (OPFS) as the source of truth.
+    *   **WASM (Compiler)**: Reads source files directly from the DB via `SqliteFileSystem`.
+*   **Significance**:
+    *   **Zero-Copy**: No need to "upload" files to WASM memory manually.
+    *   **Persistence**: Changes survive page reloads naturally.
+    *   **Incremental**: The DB state *is* the build state.
+
 ## 2026-01-30: SQLite Source Packaging
 *   **Goal**: Provide an "App-Ready" distribution format for Vyasa content.
 *   **Format**: Monolithic SQLite database (`.db`) containing normalized tables: `manifest`, `streams`, `nodes`, `registry`.

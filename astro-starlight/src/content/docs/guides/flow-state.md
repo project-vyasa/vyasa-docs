@@ -26,14 +26,14 @@ State defined in one file persists to the next. This allows you to carry over bo
 
 **Example**:
 *   `1.vy` (Chapter 1):
-    ```vyasa
+    ```text
     `entity { type="person" speaker="Dhritarashtra" action="uvacha" }
     `uvacha [ O Sanjaya... ]
     ```
     *(Here, we explicitly set the state. The `uvacha` command inherits it.)*
 
 *   `2.vy` (Chapter 2):
-    ```vyasa
+    ```text
     `verse [
         What happened next?
     ]
@@ -78,7 +78,7 @@ Vyasa supports fine-grained addressing of content using URNs with path component
 
 ### Example
 Given:
-```vyasa
+```text
 `marker 1.1
   `d [ WordA | WordB ]
 ```

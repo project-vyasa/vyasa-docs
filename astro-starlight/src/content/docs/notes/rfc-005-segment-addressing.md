@@ -75,7 +75,7 @@ Targets a specific text segment within a command. This is used for split blocks 
 ## 4. Examples
 
 **Source**:
-```vyasa
+```text
 `marker 1.1
   `textstream [
      `d [ धर्मक्षेत्रे कुरुक्षेत्रे | समवेता युयुत्सव: ... ]

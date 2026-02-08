@@ -55,7 +55,7 @@ We propose using **Explicit Semantic Commands** with optional shorthands (aliase
   - **Best Practice**: Use explicit `` `br `` commands for line breaks within text blocks (like purports) instead of relying on double newlines. This ensures consistent rendering across different templates and output formats.
 
 - **Lists**:
-  ```vyasa
+  ```text
   `list[
       `item[Point 1]
       `item[Point 2]
