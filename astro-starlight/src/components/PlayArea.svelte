@@ -312,7 +312,7 @@
 
             let tmplArg: string | undefined = selectedTemplate;
             if (selectedTemplate === "Built-in HTML") {
-                tmplArg = undefined;
+                tmplArg = "__BUILTIN__";
             } else if (selectedTemplate === "AST.json") {
                 tmplArg = "AST.json";
             }
