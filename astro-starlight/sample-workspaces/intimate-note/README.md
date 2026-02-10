@@ -8,7 +8,7 @@ It mimics the style of "Intimate Notes to the Sincere Seeker" (Knowledge Sheets)
 
 ### 1. Global Whitespace Preservation
 Unlike standard Markdown or HTML which collapse whitespace, this workspace preserves **all line breaks and spaces** by default.
--   **Implementation**: The template applies `white-space: pre-wrap` to the main content container.
+-   **Implementation**: The native template applies `white-space: pre-wrap` to the main content container.
 -   **Benefit**: You don't need special commands for poetry or lists. Just type as you want it to appear.
 
 ### 2. Semantic Commands
@@ -19,7 +19,7 @@ The workspace defines specific commands in `context.vy` to handle structural ele
 | `knowledge-sheet` | `{ number="107" title="..." ... }` | Metadata for the sheet (Number, Title, Date, Location). Renders as a formatted header. |
 | `speaker` | `` `speaker[Name] says: `` | Semantic tagging for dialogue in transcripts. Renders as **Bold**. |
 | `extras` | `` `extras[...] `` | A section for "News Flashes" or metadata at the bottom. Renders with italic styling and a separator. |
-| `lines` | `` `lines[...] `` | (Optional) Semantic grouping for stanzas. Mainly useful if specific block styling is needed. |
+| `lines` | `` `lines[...] `` | (Optional) Configured with `whitespace="preserve"`. Semantic grouping for stanzas where line breaks are honored. |
 
 ### 3. Text Alignment
 Simple formatting commands allow for visual control:
@@ -31,6 +31,5 @@ Simple formatting commands allow for visual control:
 -   **Layout**: Carefully tuned margins and line-height (1.4) for readability.
 
 ## Content Structure
--   **`context.vy`**: Defines the custom commands.
+-   **`context.vy`**: Defines the custom commands and **Native Templates** for HTML rendering.
 -   **`content/*.vy`**: The knowledge sheets.
--   **`templates/default.html`**: The Jinja2 template that implements the rendering logic and CSS.

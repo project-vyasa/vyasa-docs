@@ -15,28 +15,30 @@ Unlike external template engines (like Jinja2 or Handlebars), Vyasa templates ar
 Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
 :::
 
-## 1. Defining a Template
+## 1. Directory Structure
 
-Templates are defined using the `template` command. They map a **Source Command** to a **Target Output** (usually HTML).
-
-### Syntax
+Vyasa organizes templates by **Target Format** using a convention-based directory structure:
 
 ```text
-`template `source_cmd `for "target" {
-    ... definition ...
-}
+workspace/
+├── templates/
+│   ├── html/          <-- Target: "html"
+│   │   ├── default.html   <-- Default Shell
+│   │   ├── main.vy        <-- Template definitions
+│   │   └── reference.html <-- Optional shell (usage: --template reference)
+│   └── json/          <-- Target: "json"
 ```
 
-*   **`source_cmd`**: The command you want to customize (e.g., `verse`, `quote`).
-*   **"target"**: The output format (currently `"html"`).
-*   **Body**: A block of Vyasa commands that defines the structure.
+## 2. Defining a Template
 
-### Example
+When you place a `.vy` file inside a target folder (e.g., `templates/html/`), you can use **Implicit Syntax**.
 
-To render a `verse` as a specific HTML `div` structure:
+### Implicit Syntax (Recommended)
 
+File: `templates/html/main.vy`
 ```text
-`template `verse `for "html" {
+// Defines a template for `verse` in the "html" target
+`verse {
     `div { class="verse-box" } [
         `span { class="ref" } [ $.argument ]
         `p { class="content" } [ $.text ]
@@ -44,7 +46,27 @@ To render a `verse` as a specific HTML `div` structure:
 }
 ```
 
-## 2. Substitution Variables
+### Explicit Syntax
+
+You can also explicitly define the target, which is useful for single-file examples or overrides outside the `templates/` folder.
+
+```text
+`template `verse `for "html" {
+    ...
+}
+```
+
+### Structural Commands
+
+Templates are composed of commands that map to the target format. For HTML, the `SimpleHtmlBackend` supports:
+*   **Block**: `div`, `span`, `p`, `blockquote`
+*   **Text**: `em`, `strong`, `b`, `i`
+*   **List**: `ul`, `ol`, `li`
+*   **Link**: `a`
+*   **Heading**: `h1`, `h2`, `h3`, `title`
+*   **Breaks**: `br`
+
+## 3. Substitution Variables
 
 Inside the template body, you can use special variables starting with `$.` to inject content from the source node.
 
@@ -79,30 +101,6 @@ Output (HTML equivalent):
 </blockquote>
 ```
 
-## 3. HTML Mapping (Structural Commands)
-
-The HTML backend (`SimpleHtmlBackend`) has a built-in understanding of standard structural commands. You use these commands in your template to generate HTML tags.
-
-**Supported Structural Commands:**
-*   **Block**: `div`, `span`, `p`, `blockquote`
-*   **Text**: `em`, `strong`, `b`, `i`
-*   **List**: `ul`, `ol`, `li`
-*   **Link**: `a`
-*   **Heading**: `h1`, `h2`, `h3`, `title`
-*   **Breaks**: `br`
-
-### Example: Complex Structure
-
-```text
-`template `synonyms `for "html" {
-    `div { class="synonyms-box" } [
-        `h3 [ Synonyms ]
-        `ul { class="word-list" } [
-            $.text
-        ]
-    ]
-}
-```
 
 ## 4. Pass-Through Templates
 
@@ -112,7 +110,7 @@ Use `$.text` alone to unwrap the node.
 
 ```text
 // Remove the `uvacha` wrapper but keep its content
-`template `uvacha `for "html" {
+`uvacha {
     $.text
 }
 ```
@@ -138,7 +136,7 @@ If your context defines:
 
 And you have a command representing Krishna:
 ```text
-`template `krishna `for "html" {
+`krishna {
     `span { class="speaker" } [ Lord Krishna ]
 }
 ```
@@ -160,14 +158,14 @@ Instead of trying to "address" or "split" the segments inside the parent templat
 Source (`stream-def` applied):
 ```text
 `verse 1.1 [
-    `d [ dharma-kshetre... ]
-    `i [ field of dharma... ]
+    `d [ धर्मक्षेत्रे कुरुक्षेत्रे... ]
+    `i [ dharma-kshetre... ]
 ]
 ```
 
 Parent Template:
 ```text
-`template `verse `for "html" {
+`verse {
     `div { class="verse-card" } [
         $.text  // Renders `d` then `i`
     ]
@@ -176,11 +174,11 @@ Parent Template:
 
 Child Templates:
 ```text
-`template `d `for "html" {
+`d {
     `div { class="devanagari" } [ $.text ]
 }
 
-`template `i `for "html" {
+`i {
     `div { class="translation" } [ $.text ]
 }
 ```

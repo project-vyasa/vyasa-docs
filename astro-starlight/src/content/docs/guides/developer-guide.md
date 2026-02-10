@@ -117,3 +117,31 @@ When compiling with `--target sqlite`, the reference implementation uses:
 *   `attributes` (node_id, key, value)
 *   `registry` (name) - Exported from `context.vy`
 *   `registry_attributes` (entity_name, key, value)
+
+## Running Tests (RFC 014)
+
+The Vyasa compiler suite includes a comprehensive testing strategy (RFC 014) that exercises both the native Rust binary and the compiled WASM artifact.
+
+### Native Tests
+Run the standard Rust test suite. This includes unit tests and the RFC 014 integration tests running against the native `vyasac` library.
+
+```bash
+cargo test-native
+# Equivalent to: cargo test --test rfc_014_runner
+```
+
+### WASM Tests (Headless)
+Run the integration test suite against the compiled WASM binary using a Node.js wrapper. This ensures parity between the native and web implementations.
+*Requires `node` and `wasm-pack`.*
+
+```bash
+./test-wasm.sh
+# Wraps: VYASA_TEST_TARGET=wasm cargo test --test rfc_014_runner
+```
+
+### updating Snapshots
+The integration tests use snapshot testing for AST verification. To update the expected JSON output (e.g., after a syntax change):
+
+```bash
+VYASA_UPDATE_SNAPSHOTS=1 cargo test-native
+```
