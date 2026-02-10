@@ -1,9 +1,7 @@
 [workspace]
-name = "Bhagavad Gita Sample"
+name = "Bhagavad Gita"
 version = "0.1.0"
-source = "https://vedabase.io/en/library/bg/"
+authors = ["Vyasa"]
 
 [streams]
 primary = "content"
-
-templates = "templates"

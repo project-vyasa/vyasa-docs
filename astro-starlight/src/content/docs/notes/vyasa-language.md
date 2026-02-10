@@ -8,6 +8,14 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-02-08: Template System Refactoring
+*   **Structure**: Templates are now organized by target format (e.g., `templates/html/`).
+*   **Simplification**:
+    *   **Default**: `default.html` is automatically used if no string template is provided.
+    *   **Implicit**: `.vy` files in `templates/<target>/` are implicitly treated as templates for that target.
+    *   **Syntax**: Reduced verboisty. `` `verse { ... } `` in `templates/html/` implies `` `template `verse `for "html" ``.
+*   **Flexibility**: Support for multiple shell templates via `vyasac build --template <name>`.
+
 ## 2026-02-07: Default Template & Optimization
 *   **Experience**: Added "Built-in HTML" option in PlayArea using a baked-in, clean `src/backend/html/default_template.html` (Noto Serif typography, no custom classes).
 *   **Refinement**: Renamed "AST" to "AST (JSON)" for clarity.

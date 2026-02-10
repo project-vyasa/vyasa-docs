@@ -7,6 +7,11 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-02-08: Standardized Template Directory
+*   **Convention**: `templates/<target>/` is now the standard location for templates.
+*   **Shell**: `default.html` (formerly `native.html`) is the standard entry point.
+*   **Configuration**: Removed explicit `[templates]` section from `vyasac.toml` in favor of convention.
+
 ## 2026-02-07: Dynamic Template Configuration
 *   **Feature**: Added `template_dir` configuration key in `vyasac.toml`.
 *   **Behavior**: PlayArea parsing logic scan this directory (defaulting to `templates/`) to populate the template dropdown.
