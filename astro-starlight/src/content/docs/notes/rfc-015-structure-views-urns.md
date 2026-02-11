@@ -97,6 +97,42 @@ scheme = "urn:vyasa:work:canto:chapter:verse"
 
 #### Ad-hoc Markers & Segments
 For addressing content *within* a compilation unit (e.g., a specific line or anchor):
--   **Segments**: `|` creates an addressable segment. `urn:vyasa:bg:1:1:1#2` (2nd segment).
--   **Ad-hoc Markers**: `mark { id="foo" }` creates an explicit anchor. `urn:vyasa:bg:1:1:1#foo`.
-These append a fragment identifier to the structural URN.
+
+*   **Path vs. Fragment**: The Structural URN forms the **Path** (`urn:vyasa:bg:1:1:1`). Markers and Segments form the **Fragment** (`#...`).
+*   **Collision Avoidance**:
+    *   **Verse ID**: Part of the URN Path (`...:1`).
+    *   **Marker ID**: Part of the URN Fragment (`...:1#foo`). They live in different namespaces and cannot clobber each other.
+*   **Disambiguation**:
+    *   **Segments**: Automatically indexed integers (`#1`, `#2`).
+    *   **Markers**: Explicit string IDs (`#foo`). If a marker ID is numeric, it shadows the segment index.
+
+### 6. Multi-Verse Logic
+
+When a single compilation unit represents a range of verses (e.g., `13-14.vy`):
+*   **URN Path**: The file generates multiple URNs for the verses (`...:13`, `...:14`).
+*   **URN Fragments**: Any Markers or Segments within the content are semantically attached to the **last verse** in the range (`...:14#foo`).
+    *   *Rationale*: Purports often reference the entire block, and the "anchor" is effectively the end of the sequence.
+
+### 7. Command Context & Validity
+
+To maintain strict separation of concerns, the compiler enforces **Contextual Validity** for commands.
+
+1.  **Source Context** (`book.vy`):
+    *   **Allowed**: Semantic Commands (`verse`, `h1`, `p`), Flow Commands (`chapter`), Ad-hoc Markers (`mark`, `|`).
+    *   **Forbidden**: Presentation Commands (`div`, `span`, css classes). Using `div` in a source file is a **Compiler Error**.
+
+2.  **View Context** (`template.vy`, `reference.vy`):
+    *   **Allowed**: Presentation Commands (`div`, `span`), Logic (`if`, `each`), Content Accessors (`$.text`).
+    *   **Purpose**: Defining how the semantic nodes are rendered.
+
+### 7. Template Convention: Pairing
+
+We establish a 1:1 convention for HTML generation to keep customization predictable.
+
+*   **The Shell**: `reference.html` (Contains `<html>`, `<head>`, scripts, and `{{ body }}`).
+*   **The View**: `reference.vy` (Defines the `body` layout using Vyasa View syntax).
+*   **Shared Logic**: `context.vy` (Defines reusable functions/macros accessible to all views).
+
+When running `vyasac build --view reference`, the compiler:
+1.  Loads `reference.vy` to render the content body.
+2.  Injects that body into `reference.html`.
