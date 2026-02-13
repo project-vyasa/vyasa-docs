@@ -8,6 +8,15 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-02-12: Generic Content Extraction
+*   **Feature**: Implemented **Attribute-Driven Extraction** (`extract="..."`) for Collections.
+    *   **Goal**: Decouple the compiler from specific schemas (like "devanagari", "iast").
+    *   **Mechanism**:
+        *   `extract="cmd1, cmd2"`: Extracts content of child commands into `work.items.{i}.{cmd}`.
+        *   `infer_{key}="cmd1, cmd2"`: Infers context values based on command presence (e.g., `infer_speaker="arjuna"` -> sets `speaker=arjuna`).
+    *   **Entities**: Automatically flattens entity properties (e.g., `entities.arjuna.label` -> `speaker_label`).
+*   **Refactor**: Renamed `work.chapters` to `work.items` to be semantic-neutral.
+
 ## 2026-02-08: Template System Refactoring
 *   **Structure**: Templates are now organized by target format (e.g., `templates/html/`).
 *   **Simplification**:

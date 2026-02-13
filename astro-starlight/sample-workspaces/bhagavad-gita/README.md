@@ -29,6 +29,21 @@ The `context.vy` defines a sophisticated HTML template that:
 -   `synonyms`: Handles key-value pairs for word definitions.
 -   `purport`: Supports rich text (bold, italic, links) within the commentary.
 
+### 5. URN Configuration (RFC 015)
+URN generation is configured in `vyasac.toml`:
+```toml
+[urn]
+scheme = "urn:vyasa:bg:{chapter}:{verse}"
+hierarchy = ["chapter", "verse"]
+```
+Commands with `urn="true"` (like `verse` and `marker`) automatically receive generated URNs.
+
+### 6. Reference View
+A **reference view** (`reference.vy` + `reference.html`) produces a verses-only output:
+-   Strips all commentary (synonyms, translation, purport) — just 3 lines of overrides.
+-   All verse/devanagari/iast templates are inherited from the base `context.vy`.
+-   Uses a clean, minimal layout ideal for chanting or quick reference.
+
 ## Content Structure
 -   **`context.vy`**: The "schema" and "view" definition. It defines the `verse` command and its rendering template.
 -   **`content/X/Y.vy`**: Individual files for Chapter X, Verse Y (e.g., `content/1/1.vy`). This granular file structure allows for:

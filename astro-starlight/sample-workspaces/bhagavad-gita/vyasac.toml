@@ -5,3 +5,7 @@ authors = ["Vyasa"]
 
 [streams]
 primary = "content"
+
+[urn]
+scheme = "urn:vyasa:bg:{chapter}:{verse}"
+hierarchy = ["chapter", "verse"]

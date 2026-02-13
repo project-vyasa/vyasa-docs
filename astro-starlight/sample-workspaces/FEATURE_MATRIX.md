@@ -19,6 +19,10 @@ This matrix tracks the coverage of Vyasa language features across the available 
 | | Event Header | `` `( ... ) `` | ❌ | ❌ | ❌ | ❌ |
 | **Formatting** | Preserve Whitespace | `whitespace="preserve"` | ❌ | ❌ | ✅ | ✅ |
 | | Line Break | `` `break `` | ❌ | ✅ | ✅ | ❌ |
+| **URN** | URN Scheme | `[urn] scheme` | ❌ | ❌ | ❌ | ✅ |
+| | Hierarchy | `[urn] hierarchy` | ❌ | ❌ | ❌ | ✅ |
+| | `urn` Attribute | `urn="true"` | ❌ | ❌ | ❌ | ✅ |
+| **Views** | Reference View | `--view reference` | ❌ | ❌ | ❌ | ✅ |
 
 ## Legend
 - ✅ : Implemented
@@ -42,6 +46,7 @@ Demonstrates unstructured/semi-structured note-taking.
 ### bhagavad-gita
 The most complex sample, demonstrating structured data and state.
 - **State Management**: Uses `set entities` and `entity` commands to track speakers.
-- **Context**: Sets URN schemes.
+- **URN Config**: Defines `[urn]` scheme and hierarchy in `vyasac.toml`.
+- **Reference View**: Includes a `reference` view (`--view reference`) that outputs verses only (Devanāgarī + IAST), stripping all commentary.
 - **Complex Templates**: Renders multi-part verses (Sanskrit, Translation, Purport).
 - **Segments**: Uses `|` to separate fields in structured data rows.
