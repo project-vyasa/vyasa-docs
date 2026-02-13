@@ -1,12 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Reference View</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhagavad Gita — Reference</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif', serif;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.8;
+            color: #2c3e50;
+            background-color: #fefefe;
+        }
+
+        .verse-box {
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            border-left: 3px solid #d35400;
+            background: #fdf8f4;
+        }
+
+        .verse-ref {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #d35400;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .devanagari {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .iast {
+            font-style: italic;
+            color: #555;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .entity-name {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Collection View Styles */
+        .chapter-entry {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .chapter-entry h2 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #7f8c8d;
+        }
+
+        .chapter-entry p {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin: 0;
+        }
+
+        .speaker {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-weight: 600;
+            color: #d35400;
+            min-width: 120px;
+        }
+
+        h1 {
+            border-bottom: 2px solid #d35400;
+            padding-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        a {
+            color: #2980b9;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Reference View</h1>
     {{ body }}
 </body>
 

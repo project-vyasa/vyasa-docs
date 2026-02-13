@@ -27,8 +27,6 @@
 // Actions
 `command-def { name="uvacha" category="action" }
 
-`set context { 
-    urn_scheme = "work:bg:{chapter}:{id}"
-    verse_scheme = "verse:bg:{chapter}:{id}"
-}
-
+// URN scheme is now defined in vyasac.toml [urn] section
+// Legacy context-based scheme kept for reference:
+// `set context { urn_scheme = "work:bg:{chapter}:{id}" }

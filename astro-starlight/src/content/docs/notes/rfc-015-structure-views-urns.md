@@ -14,34 +14,49 @@ This RFC addresses four interrelated requirements for advancing the Vyasa docume
 
 ### 1. Views ("Reference/Chanting" Mode)
 
-#### Feedback Integration
-*   **Relationship to HTML**: View templates (`reference.vy`) are **Vyasa View Definitions**, not raw HTML.
-    *   They define the *content structure* for a specific view.
-    *   They can be referenced by the build system to generate any output (HTML, PDF, etc.).
-    *   Keeping them in `.vy` maintains a unified templating language, rather than mixing logic into `.html` files (which should remain "dumb" shells).
+#### Body Projection Directive
+A view template defines a `body` directive that acts as a **whitelist and sequencer** for document content.
 
-**reference.vy** (in `templates/html/`):
+-   **Whitelist**: Only commands listed in `body` appear in output. Everything else is implicitly excluded.
+-   **Sequencer**: Commands appear in the order specified in `body`, regardless of source document order.
+-   **Inheritance**: Child templates (e.g., `devanagari` inside `verse`) render normally using base templates from `context.vy`.
+
+**reference.vy** (entire file — verses only):
+```text
+`body [ `verse ]
+```
+
+**study.vy** (reordered — translation before verse):
 ```text
 `body [
-    `div { class="reference-view" } [
-        `verse  # Only include the verse component
-    ]
+    `translation
+    `verse
+    `synonyms
 ]
 ```
 
+#### Sibling Convention
+A `.vy` file paired with a `.html` file of the same name forms a view:
+-   `reference.html` — the HTML shell (styles, `{{ body }}`)
+-   `reference.vy` — the body projection (which commands, in what order)
+-   `context.vy` — shared base templates (loaded for all views)
+
 ### 2. Structural Templates (Implicit Layouts)
 
-*   **Syntax Note**: Per language standard, we use the command-based comment style ` ` [ comment ] ` for block comments, or potentially ` # ` if we formalize it. For this RFC, we'll use ` ` [ ... ] ` to align with existing documentation.
+The default view (`default.vy` or `context.vy`) defines how all content types are rendered.
+Without a `body` directive, all commands render in document order.
 
 ```text
-`body [
-    `div { class="verse-container" } [
-        ` [ The template explicitly lists these elements in this order ]
-        `verse
-        `synonyms
-        `translation
-        `purport
+// context.vy — base templates for all views
+`verse [
+    `div { class="verse-box" } [
+        `div { class="verse-ref" } [ Verse $.argument ]
+        `div { class="verse" } [ $.text ]
     ]
+]
+
+`translation [
+    `div { class="translation-box" } [ $.text ]
 ]
 ```
 
@@ -125,14 +140,32 @@ To maintain strict separation of concerns, the compiler enforces **Contextual Va
     *   **Allowed**: Presentation Commands (`div`, `span`), Logic (`if`, `each`), Content Accessors (`$.text`).
     *   **Purpose**: Defining how the semantic nodes are rendered.
 
-### 7. Template Convention: Pairing
+### 7. Template Convention: Sibling Pairing
 
-We establish a 1:1 convention for HTML generation to keep customization predictable.
+We establish a flat convention for HTML generation:
 
 *   **The Shell**: `reference.html` (Contains `<html>`, `<head>`, scripts, and `{{ body }}`).
-*   **The View**: `reference.vy` (Defines the `body` layout using Vyasa View syntax).
-*   **Shared Logic**: `context.vy` (Defines reusable functions/macros accessible to all views).
+*   **The View**: `reference.vy` (Defines the `body` projection — which commands to include and in what order).
+*   **Shared Logic**: `context.vy` (Base templates for all views. Loaded automatically; `.vy` files without a matching `.html` sibling are base templates).
 
-When running `vyasac build --view reference`, the compiler:
-1.  Loads `reference.vy` to render the content body.
-2.  Injects that body into `reference.html`.
+The compiler automatically pairs them:
+1.  Loads `context.vy` (and any other unpaired `.vy` files) as base templates.
+2.  When `reference.html` is selected, loads `reference.vy` as view overrides.
+3.  Applies the `body` projection to filter/reorder document content.
+4.  Injects the rendered body into `reference.html`.
+
+### 8. Collection Templates ("Whole Work" Processing)
+
+To generate indices, tables of contents, or glossaries, we introduce **Collection Templates**.
+*   **Concept**: Instead of processing a single content file, the compiler aggregates *all* compiled documents into a `Work` object.
+*   **Usage**: `vyasac build --collection toc` (looks for `templates/html/toc.vy`).
+*   **Context**: The template receives a global `work` object containing a flat list or hierarchical tree of all compilation units.
+
+### 9. Future Work: Segment Recitation Patterns (Ghana/Jata)
+
+Oral traditions often require reciting segments in complex combinatorial patterns for memorization (e.g., *Jata-patha*, *Ghana-patha*).
+
+*   **Requirement**: Generate output where segments (identified by `|`) are permuted according to a pattern.
+*   **Example**: If a verse has segments `1 | 2 | 3`:
+    *   *Jata*: `1-2-2-1`, `2-3-3-2`.
+*   **Design Implication**: This will likely require a dedicated `transform` pass or a specialized view helper (e.g., `{{#each (permute segments "1-2-2-1") }} ... {{/each}}`) rather than simple static templates.

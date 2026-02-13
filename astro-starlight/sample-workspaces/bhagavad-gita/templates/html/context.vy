@@ -5,12 +5,7 @@
     ]
 ]
 
-`v [
-    `div { class="verse-box" } [
-        `div { class="verse-ref" } [ Verse $.argument ]
-        `div { class="verse" } [ $.text ]
-    ]
-]
+
 
 `synonyms [
     `div { class="synonyms-box" } [
@@ -51,16 +46,28 @@
 
 // Speakers
 `dhritarashtra [
-    `span { class="entity-name" } [ Dhṛtarāṣṭra ]
+    `div { class="entity-header" } [
+        `div { class="entity-name-dev" } [ $.entities.dhritarashtra.label_dev ]
+        `div { class="entity-name-iast" } [ $.entities.dhritarashtra.label_iast ]
+    ]
 ]
 `sanjaya [
-    `span { class="entity-name" } [ Sañjaya ]
+    `div { class="entity-header" } [
+        `div { class="entity-name-dev" } [ $.entities.sanjaya.label_dev ]
+        `div { class="entity-name-iast" } [ $.entities.sanjaya.label_iast ]
+    ]
 ]
 `arjuna [
-    `span { class="entity-name" } [ Arjuna ]
+    `div { class="entity-header" } [
+        `div { class="entity-name-dev" } [ $.entities.arjuna.label_dev ]
+        `div { class="entity-name-iast" } [ $.entities.arjuna.label_iast ]
+    ]
 ]
 `krishna [
-    `span { class="entity-name" } [ Kṛṣṇa ]
+    `div { class="entity-header" } [
+        `div { class="entity-name-dev" } [ $.entities.krishna.label_dev ]
+        `div { class="entity-name-iast" } [ $.entities.krishna.label_iast ]
+    ]
 ]
 
 // Pass-through structural commands
@@ -73,4 +80,7 @@
 ]
 `e2 [
    `em [ $.text ]
+]
+`ref [
+    `a { href="$.argument" } [ $.text ]
 ]

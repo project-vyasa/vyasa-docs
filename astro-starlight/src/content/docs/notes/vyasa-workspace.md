@@ -7,6 +7,11 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-02-12: Configuration Cleanup
+*   **Removal**: Removed `[collection]` configuration from `vyasac.toml`.
+    *   **Constraint**: Collection behavior is now defined entirely within the template files (`reference.vy`) using attributes.
+*   **Semantics**: `work.chapters` is deprecated in favor of `work.items` (though aliases may exist during transition).
+
 ## 2026-02-08: Standardized Template Directory
 *   **Convention**: `templates/<target>/` is now the standard location for templates.
 *   **Shell**: `default.html` (formerly `native.html`) is the standard entry point.

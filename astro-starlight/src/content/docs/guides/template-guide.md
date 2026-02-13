@@ -183,4 +183,32 @@ Child Templates:
 }
 ```
 
-This composable approach keeps templates simple and modular.
+
+## 8. Collections & Extraction (Table of Contents)
+
+For "Whole Work" templates (like a Table of Contents), you use the `collection` command.
+
+### Generic Extraction
+
+Instead of just rendering content, you often want to **extract** specific data points from each item (chapter/document) to display in a summary table.
+
+```text
+`collection { 
+    extract="devanagari, translation" 
+    infer_speaker="krishna, arjuna" 
+} [
+    `each work.items [
+        `div { class="row" } [
+            `span { class="speaker" } [ $.speaker ]
+            `span { class="text" } [ $.devanagari ]
+        ]
+    ]
+]
+```
+
+*   **`extract="cmd1, cmd2"`**: Tells the compiler to look into each document, find the first occurrence of `cmd1`, and make its text available as `$.cmd1` in the loop context.
+*   **`infer_{key}="cmd1, cmd2"`**: Tells the compiler: "If you see `cmd1` in the document, set `$.{key}` to 'cmd1'".
+    *   Example: `infer_speaker="arjuna"` checks for an `arjuna` command. If found, `$.speaker` becomes "arjuna".
+*   **Entity Expansion**: If `$.speaker` is set to "arjuna", the compiler automatically looks up `entities.arjuna.*` in the global context and flattens it.
+    *   `entities.arjuna.label` becomes `$.speaker_label`.
+    *   `entities.arjuna.color` becomes `$.speaker_color`.
