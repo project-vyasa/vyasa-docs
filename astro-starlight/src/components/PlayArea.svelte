@@ -1,6 +1,9 @@
 <script lang="ts">
     import { onMount, tick } from "svelte";
-    import init, { compile_workspace, init_hooks } from "../pkg/vyasac.js";
+    import init, {
+        compile_workspace,
+        init_hooks,
+    } from "../vyasac-wasm/vyasac.js";
     import JSZip from "jszip";
     import { pathsToTree } from "../lib/treeUtils";
     import { sqliteService } from "../lib/sqlite-service";
