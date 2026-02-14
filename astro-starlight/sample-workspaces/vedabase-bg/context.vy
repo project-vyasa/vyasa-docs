@@ -1,3 +1,5 @@
+`title [Bhagavad Gita]
+
 // Domain Definitions for Bhagavad Gita
 `command-def { name="devanagari" category="content" }
 `command-def { name="iast" category="content" }

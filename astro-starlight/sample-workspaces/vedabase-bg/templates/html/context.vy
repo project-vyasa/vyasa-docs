@@ -1,3 +1,12 @@
+// Default View Body Projection (Order of rendering)
+`body [ 
+    `dhritarashtra `sanjaya `arjuna `krishna `uvacha 
+    `verse 
+    `synonyms 
+    `translation 
+    `purport 
+]
+
 `verse [
     `div { class="verse-box" } [
         `div { class="verse-ref" } [ Verse $.argument ]
@@ -29,6 +38,7 @@
     ]
 ]
 
+`command-def { name="purport" whitespace="preserve" category="content" }
 `purport [
     `div { class="purport-box" } [
         `div { class="section-title" } [ Purport ]
