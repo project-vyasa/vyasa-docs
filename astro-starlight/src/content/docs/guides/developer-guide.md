@@ -131,6 +131,7 @@ For developers working on the compiler internals, the following guides cover com
 *   [Templates & Projector Logic](/notes/vyasa-internals/templates-projector)
 *   [Configuration Loading & Precedence](/notes/vyasa-internals/configuration-loading)
 *   [Internals Q&A](/notes/vyasa-internals/questions-answers)
+*   [Hyperedge Nodes & Event Projection](/notes/vyasa-internals/event-projection)
 
 ## Running Tests (RFC 014)
 
