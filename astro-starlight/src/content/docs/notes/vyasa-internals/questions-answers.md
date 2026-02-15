@@ -50,3 +50,16 @@ In `vyasac`, interpolation happens in two distinct phases with slightly differen
     *   **Example**: A template `div [ $.id ]` becomes `div [ 1 ]`.
     *   **Source**: `template` definitions.
     *   **Scope**: Variables are resolved from the *command's attributes* first, then the *global context*. Note that key length matters: `$.variable_long` is matched before `$.variable` to prevent partial replacement errors.
+
+### 5. What are `Segments` and how do they help with Versioning?
+
+A **Segment** is a structural boundary within a stream of text, typically denoted by the `|` delimiter in Interlinear Streams.
+
+**The Problem**: In a word-addressable system, inserting a word would shift the ID of every subsequent word in the chapter, breaking external references (commentaries, translations).
+
+**The Solution**: Segments act as **Firebreaks**.
+*   They isolate ID shifting to the local segment.
+*   Addresses include the segment index: `Chapter.Verse.Segment.Word`.
+*   If you change text in Segment A, the addresses in Segment B remain unchanged.
+
+This makes the document robust to minor edits and corrections without invalidating the entire connection graph.
