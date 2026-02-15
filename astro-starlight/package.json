@@ -7,10 +7,10 @@
     "start": "astro dev",
     "build": "astro build",
     "build:wasm": "cd ../../vyasa/vyasac && wasm-pack build --target web --out-dir ../../vyasa-docs/astro-starlight/src/vyasac-wasm",
-    "build-samples": "node scripts/package-samples.js",
+    "build:samples": "node scripts/package-samples.js",
     "preview": "astro preview",
     "astro": "astro",
-    "predeploy": "npm run build-samples && npm run build",
+    "predeploy": "npm run build:samples && npm run build",
     "deploy": "gh-pages --nojekyll -d dist",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json"
   },

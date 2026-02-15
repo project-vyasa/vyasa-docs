@@ -8,6 +8,15 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-02-14: Collection View Fixes & RFC-016
+*   **Bug Fix**: Entity labels (e.g., `dhritarashtra_label_dev`) were not substituting in Collection View.
+    *   **Root Cause**: `builder.rs` searched `env.context` for flattened keys, but `config.rs` stored entity data in `env.entities` (a structured map).
+    *   **Fix**: `builder.rs` now queries `env.entities` directly, with fallback to `env.context`.
+*   **Bug Fix**: Collection View verses displayed without line breaks (while Single File View was correct).
+    *   **Root Cause**: `extract_text()` flattened `SegmentBreak` nodes to `\n`, which HTML collapses. Single File View rendered `SegmentBreak` as `<br />` via the Projector.
+    *   **Fix**: `extract_text()` now emits `<br />` for `SegmentBreak`, matching the backend's rendering.
+*   **RFC**: Created [RFC-016: Break-After Setting](/notes/rfc-016-break-after/) — a configurable `break_after` setting for automatic line breaks after Unicode punctuation (e.g., Devanagari Danda `।`).
+
 ## 2026-02-12: Generic Content Extraction
 *   **Feature**: Implemented **Attribute-Driven Extraction** (`extract="..."`) for Collections.
     *   **Goal**: Decouple the compiler from specific schemas (like "devanagari", "iast").

@@ -7,6 +7,11 @@ description: History of design decisions for the Vyasa workspace model.
 
 *In reverse chronological order*
 
+## 2026-02-14: Build Tooling Cleanup
+*   **Migration**: WASM output directory moved from `src/pkg` to `src/vyasac-wasm` for clarity.
+*   **Convention**: Build scripts renamed for consistency: `build-samples` → `build:samples`, alongside existing `build:wasm`.
+*   **Cleanup**: Removed redundant nested `vyasa-docs` directory from the `vyasa` workspace.
+
 ## 2026-02-12: Configuration Cleanup
 *   **Removal**: Removed `[collection]` configuration from `vyasac.toml`.
     *   **Constraint**: Collection behavior is now defined entirely within the template files (`reference.vy`) using attributes.

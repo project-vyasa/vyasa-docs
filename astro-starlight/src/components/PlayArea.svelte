@@ -318,6 +318,9 @@
                 tmplArg = "__BUILTIN__";
             } else if (selectedTemplate === "AST.json") {
                 tmplArg = "AST.json";
+            } else if (selectedTemplate.endsWith(".html")) {
+                // Strip extension so compiler looks for .vy first (to enable collection logic)
+                tmplArg = selectedTemplate.slice(0, -5);
             }
 
             const resultStr = compile_workspace(input, tmplArg);

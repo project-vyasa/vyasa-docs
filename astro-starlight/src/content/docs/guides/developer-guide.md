@@ -79,15 +79,20 @@ The implementation uses a shared compilation pipeline:
     *   Checks that all used commands are defined in the **Standard Library** (`stdlib.vy`) or via `command-def`.
     *   Validates arguments against allowed lists.
 
-6.  **Enricher** (`src/enricher.rs`):
+5.  **Enricher** (`src/enricher.rs`):
     *   Populates entity registries (`set entities`).
     *   **State & Entities**: Propagates state from `state` commands and aliases (Registry).
-    *   Future: Will resolve cross-references and URNs.
+    *   **URN Generation**: Generates URNs for nodes based on the configured scheme and context.
+
+6.  **Builder / Orchestrator** (`src/builder.rs`):
+    *   Orchestrates the build process for Projects and Collections.
+    *   Manages Context construction and metadata extraction.
 
 7.  **Backend compilation** (`src/backend/`):
-    *   **HTML**: `SimpleHtmlBackend` (`simple.rs`) renders the AST to HTML.
-    *   **Projector** (`src/projector.rs`): Applies Native Templates (`src/backend/html/default_template.html` is the default shell).
-    *   **SQLite**: Serializes the AST structure into a relational database for querying.
+    *   **Projector** (`src/projector.rs`): Expands Semantic Nodes into HTML using templates.
+        *   supports `if` logic, `each` loops, and `$.var` interpolation.
+    *   **HTML**: `SimpleHtmlBackend` (`simple.rs`) renders the final HTML primitives.
+    *   **SQLite**: Serializes the AST structure into a relational database.
 
 ### Codebase Layout
 
@@ -95,6 +100,7 @@ The implementation uses a shared compilation pipeline:
 *   **`src/pipeline.rs`**: Core `process_string` logic used by all targets.
 *   **`src/wasm.rs`**: WebAssembly bindings (`compile` function).
 *   **`src/models.rs`**: AST definitions.
+*   **`src/stdlib.vy`**: Standard Library definitions and default templates.
 
 ### Build Instructions
 
@@ -103,7 +109,6 @@ The implementation uses a shared compilation pipeline:
 cargo build --release
 ```
 
-**WASM**:
 **WASM**:
 ```bash
 wasm-pack build --target web --release
@@ -117,6 +122,15 @@ When compiling with `--target sqlite`, the reference implementation uses:
 *   `attributes` (node_id, key, value)
 *   `registry` (name) - Exported from `context.vy`
 *   `registry_attributes` (entity_name, key, value)
+
+## Appendix B: Internals & Contributor Notes
+
+For developers working on the compiler internals, the following guides cover complex topics:
+
+*   [Text Extraction & Whitespace Handling](/notes/vyasa-internals/text-extraction)
+*   [Templates & Projector Logic](/notes/vyasa-internals/templates-projector)
+*   [Configuration Loading & Precedence](/notes/vyasa-internals/configuration-loading)
+*   [Internals Q&A](/notes/vyasa-internals/questions-answers)
 
 ## Running Tests (RFC 014)
 
