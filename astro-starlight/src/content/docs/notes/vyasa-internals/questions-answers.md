@@ -31,3 +31,22 @@ To distinguish between **Language Primitives** and the **Standard Document Model
 
 *   **`builtins.vy`**: Immutable primitives required by the compiler (`command-def`, `set`, `template`). These map directly to Rust code.
 *   **`stdlib.vy`**: The standard convention for documents (`chapter`, `heading`). These are largely data-driven and could be replaced by a different model (e.g. legal or technical) without changing the compiler.
+
+### 4. What is Interpolation and where is it used?
+
+**Interpolation** is the process of substituting placeholders with dynamic values during compilation. It is the mechanism that makes Vyasa "data-driven".
+
+In `vyasac`, interpolation happens in two distinct phases with slightly different syntax:
+
+1.  **URN Generation (Enricher)**
+    *   **Context**: Constructing unique identifiers for nodes based on the document hierarchy.
+    *   **Syntax**: `{variable_name}`
+    *   **Example**: A scheme of `urn:vyasa:{work}:{id}` becomes `urn:vyasa:bg:1` when `work="bg"` and `id="1"`.
+    *   **Source**: Configuration (`vyasac.toml`).
+
+2.  **Template Expansion (Projector)**
+    *   **Context**: Transforming semantic commands into output (HTML, etc.).
+    *   **Syntax**: `$.variable_name`
+    *   **Example**: A template `div [ $.id ]` becomes `div [ 1 ]`.
+    *   **Source**: `template` definitions.
+    *   **Scope**: Variables are resolved from the *command's attributes* first, then the *global context*. Note that key length matters: `$.variable_long` is matched before `$.variable` to prevent partial replacement errors.
