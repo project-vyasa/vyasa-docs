@@ -1,26 +1,26 @@
 [
   {
-    "id": "bhagavad-gita",
-    "name": "bhagavad-gita",
-    "file": "bhagavad-gita.zip",
-    "hash": "608212f9"
+    "id": "vedabase-bg",
+    "name": "Bhagavad Gita",
+    "file": "vedabase-bg.zip",
+    "hash": "235f4ae1"
   },
   {
     "id": "bible",
-    "name": "bible",
+    "name": "Bible Sample",
     "file": "bible.zip",
-    "hash": "706ebb9c"
+    "hash": "f9970985"
   },
   {
     "id": "intimate-note",
-    "name": "intimate-note",
+    "name": "Intimate Note Sample",
     "file": "intimate-note.zip",
-    "hash": "3aace0c6"
+    "hash": "b5ade669"
   },
   {
     "id": "minimal",
-    "name": "minimal",
+    "name": "Minimal Sample",
     "file": "minimal.zip",
-    "hash": "047618b6"
+    "hash": "29947b3d"
   }
 ]

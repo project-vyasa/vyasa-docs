@@ -5,15 +5,12 @@ export function compile_workspace(files: any, template_name?: string | null): st
 
 export function init_hooks(): void;
 
-export function slugify(s: string): string;
-
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly compile_workspace: (a: any, b: number, c: number) => [number, number, number, number];
   readonly init_hooks: () => void;
-  readonly slugify: (a: number, b: number) => [number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;
