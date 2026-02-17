@@ -1,7 +1,10 @@
 <script lang="ts">
     console.log("Initializing PlayArea.svelte");
     import { onMount } from "svelte";
-    import init, { compile_workspace, init_hooks } from "../pkg/vyasac.js";
+    import init, {
+        compile_workspace,
+        init_hooks,
+    } from "../vyasac-wasm/vyasac.js";
     import JSZip from "jszip";
 
     let outputJSON = $state("");
