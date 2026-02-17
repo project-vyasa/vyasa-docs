@@ -1,96 +1,71 @@
-// Default View Body Projection (Order of rendering)
+// Default View Body Projection
 `body [ 
     `dhritarashtra `sanjaya `arjuna `krishna `uvacha 
     `verse 
-    `synonyms 
-    `translation 
-    `purport 
 ]
 
+// Generic Entity Templates
+`dhritarashtra [
+    `div { class="entity-header" } [ $.entities.dhritarashtra.label ]
+]
+`sanjaya [
+    `div { class="entity-header" } [ $.entities.sanjaya.label ]
+]
+`arjuna [
+    `div { class="entity-header" } [ $.entities.arjuna.label ]
+]
+`krishna [
+    `div { class="entity-header" } [ $.entities.krishna.label ]
+]
+
+// Uvacha Wrapper
+`uvacha [
+    `div { class="uvacha-label" } [ $.labels.uvacha ]
+    $.body
+]
+
+// Verse Container
 `verse [
     `div { class="verse-box" } [
         `div { class="verse-ref" } [ Verse $.argument ]
-        `div { class="verse" } [ $.text ]
+        $.body
     ]
 ]
 
-
-
-`synonyms [
-    `div { class="synonyms-box" } [
-        `div { class="section-title" } [ Synonyms ]
-        $.text
-    ]
+// Components
+`devanagari [
+    `div { class="devanagari" } [ $.body ]
 ]
 
-`term [
-    `div { class="synonym-term" } [ $.text ]
-]
-
-`meaning [
-    `div { class="synonym-meaning" } [ $.text ]
+`iast [
+    `div { class="iast" } [ $.body ]
 ]
 
 `translation [
     `div { class="translation-box" } [
         `div { class="section-title" } [ Translation ]
-        `p [ $.text ]
+        $.body
     ]
 ]
 
-`command-def { name="purport" whitespace="preserve" category="content" }
 `purport [
     `div { class="purport-box" } [
         `div { class="section-title" } [ Purport ]
-        `p [ $.text ]
+        $.body
     ]
 ]
 
-`devanagari [
-    `div { class="devanagari" } [ $.text ]
-]
-
-`iast [
-    `div { class="iast" } [ $.text ]
-]
-
-// Speakers
-`dhritarashtra [
-    `div { class="entity-header" } [
-        `div { class="entity-name-dev" } [ $.entities.dhritarashtra.label_dev ]
-        `div { class="entity-name-iast" } [ $.entities.dhritarashtra.label_iast ]
-    ]
-]
-`sanjaya [
-    `div { class="entity-header" } [
-        `div { class="entity-name-dev" } [ $.entities.sanjaya.label_dev ]
-        `div { class="entity-name-iast" } [ $.entities.sanjaya.label_iast ]
-    ]
-]
-`arjuna [
-    `div { class="entity-header" } [
-        `div { class="entity-name-dev" } [ $.entities.arjuna.label_dev ]
-        `div { class="entity-name-iast" } [ $.entities.arjuna.label_iast ]
-    ]
-]
-`krishna [
-    `div { class="entity-header" } [
-        `div { class="entity-name-dev" } [ $.entities.krishna.label_dev ]
-        `div { class="entity-name-iast" } [ $.entities.krishna.label_iast ]
+`synonyms [
+    `div { class="synonyms-box" } [
+        `div { class="section-title" } [ Synonyms ]
+        $.body
     ]
 ]
 
-// Pass-through structural commands
-`uvacha [
-    $.text
-]
+// Formatting
+`ref [ `a { href="$.argument" } [ $.body ] ]
+`e1 [ `strong [ $.body ] ]
+`e2 [ `em [ $.body ] ]
 
-`e1 [
-   `strong [ $.text ]
-]
-`e2 [
-   `em [ $.text ]
-]
-`ref [
-    `a { href="$.argument" } [ $.text ]
-]
+`term [ `div { class="synonym-term" } [ $.body ] ]
+`meaning [ `div { class="synonym-meaning" } [ $.body ] ]

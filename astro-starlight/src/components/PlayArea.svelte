@@ -347,11 +347,17 @@
             console.log("Output Files:", outputFiles);
             console.log("Output Tree Data:", outputTreeData);
 
-            // Auto-expand 'output' folder
+            // Auto-expand 'output' folder fully
             if (outputFiles.length > 0) {
                 const newExpanded = new Set(expandedIds);
-                newExpanded.add("output");
-                // Also expand subfolders if few? For now just root.
+                outputFiles.forEach((f) => {
+                    const parts = f.split("/");
+                    let p = "";
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        p = p ? `${p}/${parts[i]}` : parts[i];
+                        newExpanded.add(p);
+                    }
+                });
                 expandedIds = newExpanded;
             }
 
@@ -639,7 +645,14 @@ ${formatted}
                         title="Next File"
                     />
 
-                    <div class="flex-1">
+                    <div
+                        class="flex-1 text-xs text-neutral-500 font-mono truncate px-2 text-center"
+                        title={selectedOutputFile}
+                    >
+                        {selectedOutputFile}
+                    </div>
+
+                    <div class="w-40">
                         <Select
                             options={[
                                 { label: "AST (JSON)", value: "AST.json" },
@@ -713,7 +726,7 @@ ${formatted}
                                 <Tree
                                     data={outputTreeData}
                                     bind:expandedIds
-                                    selectedId={selectedOutputFile}
+                                    bind:selectedId={selectedOutputFile}
                                     onSelect={(node: any) =>
                                         !node.children &&
                                         selectOutputFile(node.id)}
