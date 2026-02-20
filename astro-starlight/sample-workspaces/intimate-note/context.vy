@@ -19,31 +19,31 @@
 }
 
 `template `knowledge `for "html" {
-   `div { class="knowledge" } [ $.text ]
+   `div { class="knowledge" } [ $.body ]
 }
 
 `template `lines `for "html" {
-   `div { class="lines" } [ $.text ]
+   `div { class="lines" } [ $.body ]
 }
 
 `template `center `for "html" {
-   `div { class="align-center" } [ $.text ]
+   `div { class="align-center" } [ $.body ]
 }
 
 `template `right `for "html" {
-   `div { class="align-right" } [ $.text ]
+   `div { class="align-right" } [ $.body ]
 }
 
 `template `speaker `for "html" {
-   `strong [ $.text ]
+   `strong [ $.body ]
 }
 
 `template `emphasis `for "html" {
-   `strong [ $.text ]
+   `strong [ $.body ]
 }
 
 `template `extras `for "html" {
-   `div { class="extras" } [ $.text ]
+   `div { class="extras" } [ $.body ]
 }
 
 `template `break `for "html" {
