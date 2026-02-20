@@ -7,11 +7,11 @@
    `span { class="verse-num" } [
       `strong [ $.argument ]
    ]
-   $.text
+   $.body
 }
 
 `template `wj `for "html" {
-   `span { class="wj" } [ $.text ]
+   `span { class="wj" } [ $.body ]
 }
 
 `template `break `for "html" {
@@ -19,5 +19,5 @@
 }
 
 `template `chapter-title `for "html" {
-   `h1 { class="chapter-title" } [ $.text ]
+   `h1 { class="chapter-title" } [ $.body ]
 }

@@ -2,6 +2,7 @@
 
 // Semantic Definitions 
 `command-def { name="translation" category="content" }
+
 `command-def { name="synonyms" category="content" }
 `command-def { name="purport" category="content" }
 
@@ -27,4 +28,33 @@
     uvacha = "said" 
 }
 
+// Definitions
 
+
+// Visual Templates
+`template `synonyms `for "html" {
+    `div { class="synonyms-box" } [ $.body ]
+}
+
+`template `term `for "html" {
+    `div { class="synonym-term" } [ $.body ]
+}
+
+`template `meaning `for "html" {
+    `div { class="synonym-meaning" } [ $.body ]
+}
+
+// Formatting for translation text (no box wrapper)
+`template `translation `for "html" {
+    `div { class="translation-box" } [ 
+        `strong [ Translation: ] 
+        $.body 
+    ]
+}
+
+`template `purport `for "html" {
+    `div { class="purport-box" } [ 
+        `h3 [ Purport ]
+        $.body 
+    ]
+}

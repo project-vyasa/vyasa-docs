@@ -518,6 +518,7 @@
         flex-direction: column;
         border-right: 1px solid var(--sl-color-hairline);
         min-width: 0;
+        min-height: 0; /* Critical for scrolling in flex column */
         margin-top: 0;
     }
     .column:last-child {
@@ -545,6 +546,7 @@
 
     .file-list {
         flex: 1;
+        min-height: 0; /* Allow shrinking for scroll */
         overflow-y: auto;
         padding: 1rem;
         background: var(--sl-color-bg);
@@ -601,9 +603,7 @@
         background: var(--sl-color-bg);
         border: none;
         outline: none;
-        resize: vertical;
-        flex: 1;
-        min-height: 100px; /* Ensure visibility */
+        overflow: auto;
         color: var(--sl-color-text);
     }
 
@@ -628,11 +628,13 @@
         flex: 1;
         background: white;
         border-bottom: 1px solid var(--sl-color-hairline);
+        overflow: auto;
     }
     iframe {
         width: 100%;
         height: 100%;
         border: none;
+        display: block;
     }
     .error {
         color: white;
@@ -741,6 +743,7 @@
 
     .tab-content {
         flex: 1;
+        min-height: 0; /* Allow shrinking */
         display: flex;
         flex-direction: column;
         background: var(--sl-color-bg);

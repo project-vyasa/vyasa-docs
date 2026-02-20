@@ -1,0 +1,8 @@
+`v 78 [
+    `iast[
+    yatra yogeśvaraḥ kṛṣṇo
+    yatra pārtho dhanur-dharaḥ
+    tatra śrīr vijayo bhūtir
+    dhruvā nītir matir mama
+    ]
+]

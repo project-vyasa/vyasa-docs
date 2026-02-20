@@ -670,7 +670,7 @@ ${formatted}
         {/snippet}
 
         {#snippet sidebarLeft()}
-            <div class="h-full flex flex-col">
+            <div class="h-full flex flex-col min-h-0">
                 <!-- Workspace Selector (Top) -->
                 <div class="p-2 border-b bg-surface-alt">
                     <Select
@@ -693,7 +693,7 @@ ${formatted}
                     {#snippet actions()}
                         <Button variant="ghost" size="icon" />
                     {/snippet}
-                    <div class="h-full overflow-auto py-2">
+                    <div class="h-full py-2 min-h-0">
                         {#key treeData}
                             <Tree
                                 data={treeData}
@@ -715,13 +715,13 @@ ${formatted}
                 </Panel>
 
                 <!-- Output Explorer (Bottom) -->
-                <div class="h-1/2 border-t">
+                <div class="flex-1 border-t min-h-0 flex flex-col">
                     <Panel
                         title="Output"
                         icon={CheckCircle}
                         class="h-full border-0"
                     >
-                        <div class="h-full overflow-auto py-2">
+                        <div class="h-full py-2 min-h-0">
                             {#key outputTreeData}
                                 <Tree
                                     data={outputTreeData}

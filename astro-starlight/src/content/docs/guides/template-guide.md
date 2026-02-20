@@ -41,7 +41,7 @@ File: `templates/html/main.vy`
 `verse {
     `div { class="verse-box" } [
         `span { class="ref" } [ $.argument ]
-        `p { class="content" } [ $.text ]
+        `p { class="content" } [ $.body ]
     ]
 }
 ```
@@ -72,7 +72,7 @@ Inside the template body, you can use special variables starting with `$.` to in
 
 | Variable | Description |
 | :--- | :--- |
-| `$.text` | The full content (children) of the source node. |
+| `$.body` | The processed content (children) of the command. Use this to render nested elements. |
 | `$.argument` | The argument of the command (e.g., the "1.1" in `` `verse 1.1 ``). |
 | `$.attribute` | Any attribute value from the source node (e.g., `$.class`, `$.id`). |
 
@@ -87,7 +87,7 @@ Template:
 ```text
 `template `quote `for "html" {
     `blockquote [
-        $.text
+        $.body
         `footer [ — $.author ]
     ]
 }
@@ -106,12 +106,12 @@ Output (HTML equivalent):
 
 Sometimes you want a command to be purely semantic (for the graph) but render transparently (flattened) in the output.
 
-Use `$.text` alone to unwrap the node.
+Use `$.body` alone to unwrap the node.
 
 ```text
 // Remove the `uvacha` wrapper but keep its content
 `uvacha {
-    $.text
+    $.body
 }
 ```
 
@@ -151,7 +151,7 @@ A common pattern in Vyasa is **Streams**—where a block contains a sequence of 
 Instead of trying to "address" or "split" the segments inside the parent template, you should:
 1.  Ensure the content is structured into commands (e.g., using `stream-def` to implicitly tag lines as `d`, `i`, `e`).
 2.  Define simple templates for those child commands.
-3.  Use `$.text` in the parent to render them all in order.
+3.  Use `$.body` in the parent to render them all in order.
 
 **Example:**
 
@@ -167,7 +167,7 @@ Parent Template:
 ```text
 `verse {
     `div { class="verse-card" } [
-        $.text  // Renders `d` then `i`
+        $.body  // Renders `d` then `i`
     ]
 }
 ```
@@ -175,11 +175,11 @@ Parent Template:
 Child Templates:
 ```text
 `d {
-    `div { class="devanagari" } [ $.text ]
+    `div { class="devanagari" } [ $.body ]
 }
 
 `i {
-    `div { class="translation" } [ $.text ]
+    `div { class="translation" } [ $.body ]
 }
 ```
 

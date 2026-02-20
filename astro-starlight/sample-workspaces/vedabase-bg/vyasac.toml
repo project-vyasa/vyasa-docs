@@ -9,3 +9,9 @@ primary = "content"
 [urn]
 scheme = "urn:vyasa:bg:{chapter}:{verse}"
 hierarchy = ["chapter", "verse"]
+
+[collection.reading]
+title = "Bhagavad Gita - Reading View"
+
+[collection.reference]
+title = "Bhagavad Gita - Reference View"

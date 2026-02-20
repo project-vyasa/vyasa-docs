@@ -15,19 +15,15 @@ This workflow builds the `vyasac` Rust project to WebAssembly and updates the `a
     cd /Users/anand/Projects/project-vyasa/vyasa/vyasac
     ```
 
-2.  Build WASM package (target: web).
+3.  Run the build command (from project root):
     ```bash
-    wasm-pack build --target web
+    cd vyasa/vyasac
+    wasm-pack build --target web --out-dir ../../vyasa-docs/astro-starlight/src/vyasac-wasm
     ```
 
-3.  Remove old package from `astro-starlight`.
+    (Note: You may need to clean first if you encounter errors)
     ```bash
-    rm -rf /Users/anand/Projects/project-vyasa/vyasa-docs/astro-starlight/src/pkg
-    ```
-
-4.  Copy new package to `astro-starlight`.
-    ```bash
-    cp -R pkg /Users/anand/Projects/project-vyasa/vyasa-docs/astro-starlight/src/pkg
+    cargo clean
     ```
 
 5.  (Optional) Verify by running the dev server.

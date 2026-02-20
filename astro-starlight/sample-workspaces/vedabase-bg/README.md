@@ -38,11 +38,10 @@ hierarchy = ["chapter", "verse"]
 ```
 Commands with `urn="true"` (like `verse` and `marker`) automatically receive generated URNs.
 
-### 6. Reference View
-A **reference view** (`reference.vy` + `reference.html`) produces a verses-only output:
--   Strips all commentary (synonyms, translation, purport) — just 3 lines of overrides.
--   All verse/devanagari/iast templates are inherited from the base `context.vy`.
--   Uses a clean, minimal layout ideal for chanting or quick reference.
+### 6. Collection Views
+The workspace generates two consolidated views:
+-   **Reading View** (`reading.html`): A continuous, single-page view of the entire text, suitable for linear reading. It displays Sanskrit, Transliteration, and Translation side-by-side.
+-   **Reference View** (`reference.html`): A verses-only output that strips commentary, optimized for recitation or quick reference. Both are configured in `vyasac.toml` under `[collection]`.
 
 ## Content Structure
 -   **`context.vy`**: The "schema" and "view" definition. It defines the `verse` command and its rendering template.
