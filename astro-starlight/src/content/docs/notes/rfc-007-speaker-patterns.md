@@ -4,7 +4,7 @@ description: Analysis of Generic vs. Explicit syntax for defining speakers.
 ---
 # RFC 007: Speaker Patterns
 
-**Status**: Draft
+**Status**: Implemented
 **Date**: 2026-02-01
 **Topics**: Entities, DSL Design, Developer Experience
 

@@ -137,4 +137,17 @@ We initially attempted to compile `rusqlite` (bundled mode) directly into the `v
 - **Goal**: Allow Rust output logic (`SqliteGraphSink`) to write directly to the DB without leaving WASM memory.
 - **Result**: Failed due to `wasm32-unknown-unknown` target missing C standard library headers (`stdio.h`) required by the C-based SQLite amalgamation.
 - **Decision**: Reverted to a hybrid approach where the Browser/JS manages the DB (via `wa-sqlite` which handles the VFS/OPFS bridging) and passes data to Rust.
-- **TODO**: Reconsider this when pure-Rust SQLite implementations (e.g. `sqlite-rs`) mature or when `rusqlite` adds better support for `wasm32-unknown-unknown` without WASI.
+- **Future Architectural Constraint**: As we build a query language with graph-like semantics for Vyasa, splitting the implementation between a JS database engine and a Rust query engine is a significant risk. We must avoid maintaining two implementations.
+- **Status (May 2026 Assessment)**: A fully feature-complete, production-ready "pure Rust" SQLite does not exist yet. However, bindings like `sqlite-wasm-rs` bridge the gap by compiling the C library to `wasm32-unknown-unknown` and providing OPFS VFS support directly to Rust. Newer alternatives like `Limbo` (an async, pure-Rust SQLite rewrite) are also emerging.
+- **Next Step**: When the custom query language requires deep database integration, we will evaluate migrating from the JS `wa-sqlite` to a Rust-managed WASM SQLite (like `sqlite-wasm-rs` or `Limbo`) to keep the query engine and database tightly coupled within the same WASM module.
+
+## Appendix: WASM Bundle Strategy (formerly RFC 009)
+
+The current `vyasac.wasm` bundle is ~4.5 MB (gzip: ~1.3 MB), which is acceptable for desktop apps but on the boundary for standard PWA distribution. 
+
+If we offload the AST persistence fully to SQLite (storing nodes/edges in tables instead of maintaining large JSON AST structures in memory), we could:
+1. **Remove Serde JSON**: Strip large serialization layers.
+2. **Lazy Loading**: Fetch AST nodes on-demand via SQL.
+3. **Template Engine Refactoring**: Migrating templates (e.g. `tera`) entirely to the JS side could save an additional ~300-500 KB, reducing the WASM module to just a pure SQL parser-and-graph-builder.
+
+These optimizations are deferred until the database engine choices (Rust vs JS) are fully resolved.

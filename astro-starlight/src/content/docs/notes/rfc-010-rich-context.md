@@ -5,7 +5,7 @@ description: Proposals for expressing people, place, and event context beyond si
 
 # RFC 010: Rich Context (People, Place, Event)
 
-**Status**: Draft
+**Status**: Implemented
 **Date**: 2026-02-03
 **Topics**: Context, Semantic Graph, Event Modeling
 

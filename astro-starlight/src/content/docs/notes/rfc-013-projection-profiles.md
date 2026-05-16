@@ -3,6 +3,10 @@ title: RFC 013 Output Projection Profiles & Scoped Context
 description: Proposal for flexible output projection configuration and template organization.
 ---
 
+# RFC 013: Projection Profiles
+
+**Status**: Implemented
+
 ## Summary
 Vyasa currently supports a single output target: HTML. This proposal introduces "Projection Profiles" to allow:
 1.  Defining multiple output targets in `vyasac.toml`.

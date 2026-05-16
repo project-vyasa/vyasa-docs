@@ -5,7 +5,7 @@ description: Proposal for a native, content-centric templating language for Vyas
 
 # RFC 011: Vyasa Native Templating
 
-**Status**: Draft
+**Status**: Implemented
 **Date**: 2026-02-03
 **Topics**: Templates, HTML Generation, DSL
 

@@ -17,6 +17,14 @@ When compiling a file, the environment is built in this order (last one wins):
 4.  **Local `context.vy`**: Folder-specific definitions.
 5.  **In-File Definitions**: `command-def` or `set` commands at the top of the file.
 
+## Projection Profiles (RFC 013)
+
+When the compiler is executed with a projection target (e.g. `vyasa build --projection voice`), an additional layer of scoped precedence is automatically injected:
+
+1.  **Global `context.vy`**: Loaded first.
+2.  **Projection `context.vy`**: Loaded second (e.g. `view/voice/context.vy`). This allows projection-specific definitions (like voice markup or html-specific commands) to cleanly override global definitions without polluting the main semantic namespace.
+3.  **Projection Templates**: The builder automatically switches the template directory to the projection's path (e.g., `view/voice/templates`).
+
 ## Logic: `config.rs`
 
 The `apply_definitions` function maps configuration nodes to the `VyasaEnvironment`. It handles:
