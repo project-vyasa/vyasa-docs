@@ -49,7 +49,7 @@ Your HTML templates can check these attributes to render the "said" label even f
 {{ node.children }}
 ```
 
-> **Note**: Standard content commands (like `uvacha` itself) do *not* automatically update the global state. You must use the `entity` (or `state`) command to effectively "open" a persistent context.
+> **Note (2026-05 Update)**: The Vyasa compiler now natively supports implicit state updates. If you use a standalone command defined in `context.vy` with `category="entity"`, it automatically sets the `speaker` state. If it is `category="action"`, it automatically sets the `action` state. Therefore, `` `Dhritarashtra `uvacha `` seamlessly opens the correct persistent context without requiring an explicit `` `entity `` or `` `state `` block!
 
 ---
 

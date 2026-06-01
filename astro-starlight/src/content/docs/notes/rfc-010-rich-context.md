@@ -190,3 +190,12 @@ When the parser encounters `` `( ... ) ``:
     *   `as "..."`: Property/Context
 3.  It sets this Event Node as the **Active Flow State** for subsequent Content Nodes.
 
+**Update (2026-05): Native Command Enrichment**
+While tuples `` `( ... ) `` offer a robust subgraph for complex interaction, the compiler's `enricher` pass has been updated to automatically derive flow state even from *standalone* commands. 
+If the parser encounters `` `Krishna `uvacha `` (without the tuple):
+1. It looks up the definitions of `Krishna` and `uvacha` in `context.vy`.
+2. Finding `category="entity"`, it injects `speaker: "Krishna"` into the active flow state.
+3. Finding `category="action"`, it injects `action: "uvacha"` into the flow state.
+
+This makes authoring highly repetitive sequences (like the Bhagavad Gita) extremely lightweight while still producing the same rich semantic output as a tuple header.
+

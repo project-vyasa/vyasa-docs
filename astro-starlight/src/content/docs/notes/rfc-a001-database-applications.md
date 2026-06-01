@@ -156,6 +156,7 @@ A grid to efficiently show rows in a table, usually stacked on top of a form vie
 
 
 ```rust
+// Rustic illustration of DSL
 
 // Grid with the same name as the entity is the default grid for the entity!
 grid EntitySummaryGrid {
@@ -194,28 +195,41 @@ form FormName {
 *   `doc`: Presents a document like visual treatment flow of content, may be pasted to Word or Google Docs for further collaboration.
 
 ```rust
+// Rustic illustration of DSL
 
 report ReportName {
   entity: EntityName
-  layout: grid // or card or doc 
-  record: layout {
-    field1, field2, field3 // field row 1
-    field4 // field row 2
-  } header { // Item header e.g. sentence field. or interpolated from multiple fields
-    `${field1}: ${field2}`
-  }
   label: "Report Name" // optional
-  sort: field0 asc
-  filter: [field0 == "value"]
+  layout:document // or grid or card 
+  record:  {
+    layout:document  { // e.g. order
+      field1, field2, field3 // field row 1
+      field4 // field row 2
+      related_entity1 layout:grid { // e.g. order_items for order
+        field1, field2
+        field3
+      }
+    }
+    header { // Entity-record header e.g. sentence field. or interpolated from multiple fields
+      `${field1}: ${field2}`
+    }
+    footer { // Entity-record footer
+      `Total Items: ${related_entity1.length}`,
+      `Order Total: ${related_entity1.map(e => e.price * e.quantity).sum()}`
+    }
+  }
+  sort: field0 asc // TODO: add support for multiple fields
+  filter: [field0 == "value"] // TODO: add support for multiple filters
+
   group[field1] {
     sort: desc
     header: "Outer Group Header with interpolation, aggregation and more "
-    group [field2] {
-      sort: asc
-      header: "Inner Group Header with interpolation, aggregation and more "
-      footer: "Inner Group Footer with interpolation, aggregation and more "
-    }
     footer: "Outer Group Footer with interpolation, aggregation and more "
+  }
+  group [field2] {
+    sort: asc
+    header: "Inner Group Header with interpolation, aggregation and more "
+    footer: "Inner Group Footer with interpolation, aggregation and more "
   }
   style: sheetname // for doc layouts
 }

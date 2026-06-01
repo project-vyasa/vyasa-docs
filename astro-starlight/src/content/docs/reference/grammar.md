@@ -53,7 +53,7 @@ Delimiter      ::= ";" Identifier
 /* Attributes */
 Attributes     ::= "{" AttributeMap "}"
 AttributeMap   ::= (Pair (","? Space? Pair)*)? ","?
-Pair           ::= Identifier Space? "=" Space? Value
+Pair           ::= (Identifier | QuotedString) Space? "=" Space? Value
 Value          ::= QuotedString | NestedValue | ValueString
 
 QuotedString   ::= '"' ( [^"\\] | "\\" . )* '"'

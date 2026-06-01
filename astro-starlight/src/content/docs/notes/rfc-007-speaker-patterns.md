@@ -76,4 +76,8 @@ For workspaces that are primarily narrative (Bible, Novels, Articles):
 *   **Reason**: Speakers appear ad-hoc; defining them all is overkill.
 
 ## 5. Implementation Impact
-No compiler changes are required to support either. This is purely a pattern choice for `context.vy` configuration and Template logic.
+**Update (2026-05):** The compiler's `enricher` pass has been updated to natively support the **Explicit Entity Pattern**. 
+
+When the parser encounters a standalone command whose definition has `category="entity"` (e.g., `` `dhritarashtra ``), the enricher automatically injects `speaker: "dhritarashtra"` into the active flow state. Similarly, `category="action"` commands inject the `action` state. 
+
+This means explicit entity commands no longer require complex logic in Templates to extract speaker state; they seamlessly integrate with the standard Vyasa state-propagation graph.
