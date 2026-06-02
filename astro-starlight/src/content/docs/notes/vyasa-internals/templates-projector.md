@@ -50,7 +50,7 @@ Iterating over lists (collections).
 ```vy
 `each { "work.chapters"
     `li {
-        `a { href="$.url" $.title }
+        `a { href="$.id" $.title }
     }
 }
 ```

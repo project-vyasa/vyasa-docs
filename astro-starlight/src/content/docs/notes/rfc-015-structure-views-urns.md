@@ -110,6 +110,23 @@ scheme = "urn:vyasa:work:canto:chapter:verse"
 `verse { id="1" }   # -> urn:vyasa:bg:1:1:1
 ```
 
+#### Implicit Path-based Hierarchy Inference
+Instead of requiring repetitive `context.vy` files or flow commands in every stream folder just to define the chapter or canto, `vyasac` infers the hierarchy variables directly from the filesystem.
+
+When a file is compiled (e.g., `content/mula/18/78.vy`), the compiler parses the relative path to the stream root:
+1. Path `18/78.vy` has components `["18", "78.vy"]`.
+2. The file stem is extracted: `["18", "78"]`.
+3. These components are aligned with the `hierarchy` array *backwards* (since files are leaves):
+   - `78` aligns with `verse` -> sets `verse=78` in the document context.
+   - `18` aligns with `chapter` -> sets `chapter=18` in the document context.
+
+This makes the directory structure the single source of truth. Users can still use `context.vy` to provide **folder-specific overrides** (e.g. `` `set meta { author="Prabhupada" } ``) which take precedence over inferred values.
+
+#### Compiler Validation, Warnings, and Errors
+To prevent users from making silent mistakes, the compiler generates warnings and errors during URN evaluation and path inference:
+- **Invalid Component Value (Warning):** If a path component (e.g., `13-17`) is mapped to a hierarchy level but contains characters that violate strict URN formatting rules, a warning is generated.
+- **Unresolved URN Variables (Error/Warning):** If the URN scheme (e.g., `urn:vyasa:bg:{chapter}:{verse}`) is evaluated but `{chapter}` or `{verse}` cannot be resolved (meaning it wasn't inferred from the path and wasn't provided in a `context.vy` or flow command), the compiler must generate a warning/error instead of silently leaving the literal `{chapter}` in the final URN.
+
 #### Ad-hoc Markers & Segments
 For addressing content *within* a compilation unit (e.g., a specific line or anchor):
 
