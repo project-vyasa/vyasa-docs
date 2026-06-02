@@ -19,15 +19,15 @@ export default defineConfig({
         sidebar: [
             {
                 label: 'Guides',
-                autogenerate: { directory: 'guides' },
+                items: [{ autogenerate: { "directory": "guides" } }]
             },
             {
                 label: 'Reference',
-                autogenerate: { directory: 'reference' },
+                items: [{ autogenerate: { "directory": "reference" } }]
             },
             {
                 label: 'Notes',
-                autogenerate: { directory: 'notes' },
+                items: [{ autogenerate: { "directory": "notes" } }]
             },
 
         ],
