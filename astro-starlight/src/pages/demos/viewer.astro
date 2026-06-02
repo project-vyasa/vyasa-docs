@@ -1,0 +1,32 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import VyasaViewer from '../../components/VyasaViewer.svelte';
+---
+
+<StarlightPage frontmatter={{ title: 'Vyasa Viewer Demo', template: 'splash' }}>
+  <p>
+    This demonstrates the consumer-facing <strong>Vyasa Viewer</strong> component. 
+    It is a lightweight client that consumes pre-rendered projections (via a JSON payload simulating the future SQLite DB)
+    and natively handles structural navigation and <code>urn:vyasa:</code> semantic link interception.
+  </p>
+
+  <div class="viewer-wrapper">
+    <VyasaViewer client:only="svelte" catalogs={[`${import.meta.env.BASE_URL}samples/index.json`]} />
+  </div>
+</StarlightPage>
+
+<style is:global>
+  /* Override Starlight's narrow content container for this demo page */
+  main .sl-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 1rem !important;
+  }
+  .sl-markdown-content {
+    max-width: 100% !important;
+  }
+  .viewer-wrapper {
+    margin-top: 1rem;
+    height: calc(100vh - 120px);
+  }
+</style>

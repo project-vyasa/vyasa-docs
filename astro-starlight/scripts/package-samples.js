@@ -31,22 +31,41 @@ for (const item of items) {
         // 1. Verify build
         // SKIPPING BUILD VERIFICATION due to local environment issues.
         // Assuming user has verified builds.
-        /*
         try {
-            console.log(`  Verifying build for ${item}...`);
-            // Run vyasac build using absolute path
-            const vyasacPath = '/Users/anand/Projects/project-vyasa/vyasa/vyasac/target/release/vyasac';
-            execSync(`${vyasacPath} build`, { cwd: itemPath, stdio: 'inherit' });
+            console.log(`  Building HTML projections for ${item}...`);
+            const vyasacPath = '/Users/anand/Projects/project-vyasa/vyasa/vyasac/target/debug/vyasac'; // Use debug since we are in dev
+            execSync(`${vyasacPath} build --target html`, { cwd: itemPath, stdio: 'inherit' });
             console.log(`  Build verified.`);
+            
+            // Generate mock JSON payload for Viewer
+            const distHtmlDir = path.join(itemPath, 'dist', 'html');
+            const payload = { html: {}, urns: [] };
+            if (fs.existsSync(distHtmlDir)) {
+                const htmlFiles = fs.readdirSync(distHtmlDir).filter(f => f.endsWith('.html'));
+                for (const f of htmlFiles) {
+                    const content = fs.readFileSync(path.join(distHtmlDir, f), 'utf8');
+                    payload.html[f] = content;
+                    
+                    // Crude TOC extraction from reference.html (Temporary mock for -view.db)
+                    if (f === 'reference.html') {
+                         const urnRegex = /id="(urn:vyasa:[^"]+)"/g;
+                         let match;
+                         while ((match = urnRegex.exec(content)) !== null) {
+                              if (!payload.urns.includes(match[1])) {
+                                  payload.urns.push(match[1]);
+                              }
+                         }
+                    }
+                }
+            }
+            const payloadPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.json`);
+            fs.writeFileSync(payloadPath, JSON.stringify(payload));
+            console.log(`  Mock Viewer Payload written to ${payloadPath}`);
+            
         } catch (error) {
-            console.error(`  Build FAILED for ${item}. Skipping packaging.`);
-            // Continue to next sample, or exit?
-            // "If build fails, the script should fail" -> implied for strict CI,
-            // but maybe we just want to skip broken samples?
-            // Let's fail hard for now as per "make sure... actually build".
+            console.error(`  Build FAILED for ${item}. Skipping packaging.`, error);
             process.exit(1);
         }
-        */
 
         // Read vyasac.toml for metadata
         let displayName = item;
@@ -120,6 +139,7 @@ for (const item of items) {
                 id: item, // generic ID from folder
                 name: displayName, // Display name from TOML
                 file: `${item}.zip`,
+                payloadUrl: `${item}.json`, // Viewer manifest link
                 hash: hash
             });
             console.log(`  Package created (Hash: ${hash}).`);
