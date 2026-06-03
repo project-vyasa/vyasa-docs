@@ -37,7 +37,7 @@ Node           ::= Comment
 
 /* Comments */
 Comment        ::= LineComment | BlockComment
-LineComment    ::= "`" (" " | "\t") [^\n]*
+LineComment    ::= ( "`" (" " | "\t") | "//" ) [^\n]*
 BlockComment   ::= "`[" .*? "]"
 
 /* Commands */
@@ -81,8 +81,15 @@ Vyasa reserves the characters `` ` ``, `|`, `[`, `]`, `\`, `{`, `}` for syntax.
 
 - **Robustness**: The parser attempts to be robust. If a special character (like `` ` `` or `]`) is encountered in a context where it does not form a valid command or structure, it is treated as literal text.
   - Example: `` `( `` parses as a literal backtick followed by `(`.
-  - **Note**: A backtick followed by a space or tab is parsed as a **Comment**.
-  - Example: `` ` This is a comment ``
+  
+## Comments
+
+Vyasa supports both line comments and block comments:
+- **Line Comments**: A line starting with a backtick followed by a space or tab (`` ` ``), OR double slashes (`//`).
+- **Block Comments**: Enclosed within `` `[ `` and `]`.
+
+> [!TIP]
+> **Best Practice:** It is highly recommended to use the `//` syntax exclusively in HTML templates for better visibility. For core content source documents (mula, translation, etc.), stick to the backtick-space (`` ` ``) comment syntax or block comments to avoid collisions with standard prose formatting.
 
 ## Examples
 

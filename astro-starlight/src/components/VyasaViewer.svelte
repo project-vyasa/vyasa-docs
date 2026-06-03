@@ -1,14 +1,28 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
+  import * as fflate from 'fflate';
+
+  // --- FEATURE BACKLOG TODOs ---
+  // TODO: Reduce bundle size by allowing reference to external style sheet
+  // TODO: Viewer landing view should be a brief blurb of the catalog and then a set of cards, one for each vyasa package. The sidebar to hold just the title names with large blank area is suboptimal.
+  // TODO: Pick few elements like next, previous buttons to cycle through the content efficiently.
+  // -----------------------------
 
   export let catalogs: string[] = ['/samples/index.json'];
 
   let catalogItems: any[] = [];
   let selectedWork: string | null = null;
-  let packageData: any = null;
+  
+  // Stores unzipped metadata and HTML text blobs
+  let packageData: {
+      manifest: any;
+      structure: any;
+      projections: Record<string, string>;
+  } | null = null;
 
   let activeUrn: string | null = null;
   let activeView: string = 'reference';
+  let availableViews: string[] = [];
   
   let iframeElement: HTMLIFrameElement;
 
@@ -54,15 +68,43 @@
               const payloadFullUrl = item.payloadUrl.startsWith('http') || item.payloadUrl.startsWith('/') 
                                      ? item.payloadUrl 
                                      : catalogBase + item.payloadUrl;
+              
               const res = await fetch(payloadFullUrl);
               if (res.ok) {
-                  packageData = await res.json();
-                  const availableViews = Object.keys(packageData.html).map(k => k.replace('.html', ''));
+                  const arrayBuffer = await res.arrayBuffer();
+                  
+                  // Unzip synchronously for now, since views are small enough
+                  const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
+                  
+                  const manifestStr = fflate.strFromU8(unzipped['manifest.json']);
+                  const structureStr = fflate.strFromU8(unzipped['structure.json']);
+                  
+                  const manifest = JSON.parse(manifestStr);
+                  const structure = JSON.parse(structureStr);
+                  
+                  const projections: Record<string, string> = {};
+                  const viewSet = new Set<string>();
+                  
+                  for (const [path, data] of Object.entries(unzipped)) {
+                      if (path.startsWith('projections/') && path.endsWith('.html') && data.length > 0) {
+                          const relPath = path.substring('projections/'.length);
+                          // Only register root level files in projections as "Views" (collections)
+                          if (!relPath.includes('/')) {
+                              viewSet.add(relPath.replace('.html', ''));
+                          }
+                          projections[relPath] = fflate.strFromU8(data);
+                      }
+                  }
+                  
+                  availableViews = Array.from(viewSet);
+                  
+                  packageData = { manifest, structure, projections };
+                  
                   if (availableViews.includes('reference')) activeView = 'reference';
                   else if (availableViews.length > 0) activeView = availableViews[0];
               }
           } catch (e) {
-              console.error("Failed to load package", e);
+              console.error("Failed to unpack vyview package", e);
           }
       }
   }
@@ -85,7 +127,7 @@
       if (parts.length > 1) {
           const params = new URLSearchParams(parts[1]);
           const view = params.get('view');
-          if (view && view !== activeView) {
+          if (view && view !== activeView && availableViews.includes(view)) {
               activeView = view;
               viewChanged = true;
           }
@@ -99,13 +141,12 @@
   }
 
   // Inject the message bridge into the HTML
-  $: rawHtml = packageData && packageData.html ? packageData.html[`${activeView}.html`] : '';
+  $: rawHtml = packageData ? packageData.projections[`${activeView}.html`] : '';
   $: srcdocContent = rawHtml ? injectBridge(rawHtml) : '';
 
-  // When srcdoc changes (view changes), we wait for the iframe to load to send the scroll message
+  // When srcdoc changes (view changes), wait for the iframe to load to send the scroll message
   function onIframeLoad() {
       if (activeUrn && iframeElement && iframeElement.contentWindow) {
-          // Add a tiny delay to ensure rendering is complete
           setTimeout(() => {
               iframeElement.contentWindow?.postMessage({ type: 'VYASA_SCROLL', id: activeUrn }, '*');
           }, 100);
@@ -166,18 +207,20 @@
           <div class="view-selector">
              <label><strong>Projection:</strong></label>
              <select bind:value={activeView}>
-                 {#each Object.keys(packageData.html) as file}
-                     <option value={file.replace('.html', '')}>{file.replace('.html', '')}</option>
+                 {#each availableViews as view}
+                     <option value={view}>{view}</option>
                  {/each}
              </select>
           </div>
 
           <h3>Table of Contents</h3>
           <ul class="toc-list">
-             {#if packageData.urns && packageData.urns.length > 0}
-                 {#each packageData.urns as urn}
+             {#if packageData.structure?.urns && packageData.structure.urns.length > 0}
+                 {#each packageData.structure.urns as urn}
                      <li>
-                        <a href="{urn}?view={activeView}" on:click={(e) => { e.preventDefault(); handleNavigation(urn + '?view=' + activeView); }}>{urn.split(':').pop()}</a>
+                        <a href="{urn.id}?view={activeView}" on:click={(e) => { e.preventDefault(); handleNavigation(urn.id + '?view=' + activeView); }}>
+                            {urn.title !== 'Untitled' ? urn.title : urn.id.replace(/^urn:[^:]+:[^:]+:/, '').replace(':', '.')}
+                        </a>
                      </li>
                  {/each}
              {:else}
@@ -196,7 +239,7 @@
             on:load={onIframeLoad}
          ></iframe>
       {:else if selectedWork}
-         <p>Loading package data...</p>
+         <p>Loading vyview package...</p>
       {:else}
          <div class="placeholder">Select a work from the catalog to begin reading.</div>
       {/if}
