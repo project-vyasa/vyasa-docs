@@ -77,28 +77,34 @@
         try {
             const base = getBasePath();
             const res = await fetch(
-                `${base}samples/index.json?t=${Date.now()}`,
+                `${base}samples/catalog.json?t=${Date.now()}`,
             );
             if (res.ok) {
                 // Determine if new format (objects) or legacy (strings)
                 const data = await res.json();
-                if (data.length > 0) {
-                    if (typeof data[0] === "string") {
-                        // Legacy fallback
-                        availableWorkspaces = data.map((s: string) => ({
-                            id: s,
-                            name: s,
-                            file: `${s}.zip`,
-                            hash: "",
-                        }));
-                    } else {
-                        availableWorkspaces = data;
-                    }
+                
+                let workspaces = [];
+                if (data.catalog && data.items) {
+                    workspaces = data.items;
+                } else if (Array.isArray(data)) {
+                    workspaces = data;
+                }
 
-                    if (availableWorkspaces.length > 0) {
-                        selectedWorkspaceId = availableWorkspaces[0].id;
-                        await loadWorkspace(selectedWorkspaceId);
-                    }
+                // Determine if new format (objects) or legacy (strings)
+                if (workspaces.length > 0 && typeof workspaces[0] === 'string') {
+                    availableWorkspaces = workspaces.map((s: string) => ({
+                        id: s,
+                        name: s,
+                        file: `${s}.zip`,
+                        hash: ''
+                    }));
+                } else {
+                    availableWorkspaces = workspaces;
+                }
+
+                if (availableWorkspaces.length > 0) {
+                    selectedWorkspaceId = availableWorkspaces[0].id;
+                    await loadWorkspace(selectedWorkspaceId);
                 }
             }
         } catch (e: any) {

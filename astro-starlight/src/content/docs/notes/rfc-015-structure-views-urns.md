@@ -100,8 +100,8 @@ We simplify the placeholders to key names, implying the `.id` property.
 **vyasac.toml**:
 ```toml
 [urn]
-# Tokens like :work, :canto imply {work.id}, {canto.id}
-scheme = "urn:vyasa:work:canto:chapter:verse"
+corpus = "vedabase.io:sb"
+hierarchy = ["canto", "chapter", "verse"]
 ```
 
 **Content (`1.vy`)**:

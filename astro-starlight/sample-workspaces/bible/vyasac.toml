@@ -1,6 +1,16 @@
 [workspace]
 name = "Bible Sample"
 source = "https://www.bible.com/bible/111/JHN.14.NIV"
-[streams]
-primary = "content"
-templates = "templates"
+path_schema = []
+
+[urn]
+publisher = "bible.com"
+corpus = "john"
+hierarchy = ["chapter", "verse"]
+
+[build]
+publication = "bible.com:JHN.14:default"
+layout = "document"
+templates = ["html"]
+target = "view"
+output = "bible.sqlite"

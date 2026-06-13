@@ -1,38 +1,51 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import * as fflate from 'fflate';
+  import { ViewerDb } from '../lib/ViewerDb';
 
-  // --- FEATURE BACKLOG TODOs ---
-  // TODO: Reduce bundle size by allowing reference to external style sheet
-  // TODO: Viewer landing view should be a brief blurb of the catalog and then a set of cards, one for each vyasa package. The sidebar to hold just the title names with large blank area is suboptimal.
-  // TODO: Pick few elements like next, previous buttons to cycle through the content efficiently.
-  // -----------------------------
+  export let catalogs: string[] = ['/samples/catalog.json'];
 
-  export let catalogs: string[] = ['/samples/index.json'];
-
+  let catalogMeta: any = null;
   let catalogItems: any[] = [];
   let selectedWork: string | null = null;
+  let activeWorkItem: any = null;
   
-  // Stores unzipped metadata and HTML text blobs
   let packageData: {
       manifest: any;
       structure: any;
       projections: Record<string, string>;
   } | null = null;
 
-  let activeUrn: string | null = null;
   let activeView: string = 'reference';
   let availableViews: string[] = [];
   
+  let urnComponents: string[] = [];
+  let schemeParts: string[] = [];
+  let filters: Record<string, string> = {};
+  let activeUrns: string[] = [];
+  
   let iframeElement: HTMLIFrameElement;
+  let viewerDb = new ViewerDb();
+  let loadedBlocks: Record<string, Record<string, string>> = {};
+  let srcdocContent = '';
+  
+  let errorMessage: string | null = null;
+  let isInspecting: boolean = false;
+  let isInspectingCatalog: boolean = false;
+  let inspectData: any = null;
 
   onMount(async () => {
       window.addEventListener('message', handleMessage);
-      window.addEventListener('popstate', handlePopState);
       try {
-          const res = await fetch(catalogs[0]);
+          const res = await fetch(`${catalogs[0]}?t=${Date.now()}`);
           if (res.ok) {
-              catalogItems = await res.json();
+              const data = await res.json();
+              if (data.catalog && data.items) {
+                  catalogMeta = data.catalog;
+                  catalogItems = data.items;
+              } else {
+                  // Fallback for older index.json arrays
+                  catalogItems = data;
+              }
           }
       } catch (e) {
           console.error("Failed to load catalog", e);
@@ -42,25 +55,17 @@
   onDestroy(() => {
       if (typeof window !== 'undefined') {
           window.removeEventListener('message', handleMessage);
-          window.removeEventListener('popstate', handlePopState);
       }
   });
 
-  function handlePopState(event: PopStateEvent) {
-      if (!event.state || event.state.vyasaViewerState !== 'package') {
-          packageData = null;
-          selectedWork = null;
-          activeUrn = null;
-      }
-  }
-
   async function loadWork(item: any) {
       selectedWork = item.id;
-      activeUrn = null;
+      activeWorkItem = item;
       packageData = null;
-      
-      // Push state so browser back button returns to catalog
-      history.pushState({ vyasaViewerState: 'package' }, '');
+      loadedBlocks = {};
+      srcdocContent = '';
+      filters = {};
+      errorMessage = null;
       
       if (item.payloadUrl) {
           try {
@@ -69,88 +74,374 @@
                                      ? item.payloadUrl 
                                      : catalogBase + item.payloadUrl;
               
-              const res = await fetch(payloadFullUrl);
-              if (res.ok) {
-                  const arrayBuffer = await res.arrayBuffer();
-                  
-                  // Unzip synchronously for now, since views are small enough
-                  const unzipped = fflate.unzipSync(new Uint8Array(arrayBuffer));
-                  
-                  const manifestStr = fflate.strFromU8(unzipped['manifest.json']);
-                  const structureStr = fflate.strFromU8(unzipped['structure.json']);
-                  
-                  const manifest = JSON.parse(manifestStr);
-                  const structure = JSON.parse(structureStr);
-                  
-                  const projections: Record<string, string> = {};
-                  const viewSet = new Set<string>();
-                  
-                  for (const [path, data] of Object.entries(unzipped)) {
-                      if (path.startsWith('projections/') && path.endsWith('.html') && data.length > 0) {
-                          const relPath = path.substring('projections/'.length);
-                          // Only register root level files in projections as "Views" (collections)
-                          if (!relPath.includes('/')) {
-                              viewSet.add(relPath.replace('.html', ''));
+              await viewerDb.loadFromUrl(payloadFullUrl + "?t=" + Date.now());
+              console.log("Loaded SQLite database");
+              
+              try {
+                  const manifestRows = await viewerDb.query("SELECT key, value FROM manifest");
+                  const manifest: Record<string, string> = {};
+                  for (const row of manifestRows) {
+                      manifest[row[0]] = row[1];
+                  }
+                  if (manifest['package_type'] !== 'view') {
+                      errorMessage = `Unsupported package type. Expected 'view', got '${manifest['package_type'] || 'unknown'}'. Please recompile with --target view.`;
+                      return;
+                  }
+              } catch (e) {
+                  // Fallback for older packages
+                  try {
+                      await viewerDb.query("SELECT 1 FROM urns LIMIT 1");
+                  } catch (err) {
+                      errorMessage = "Invalid package format. Missing necessary viewer tables. Please recompile with --target view.";
+                      return;
+                  }
+              }
+              
+              const manifestRows = await viewerDb.query("SELECT key, value FROM manifest");
+              const manifest: Record<string, string> = {};
+              for (const row of manifestRows) {
+                  manifest[row[0] as string] = row[1] as string;
+              }
+              console.log("Loaded manifest:", manifest);
+              
+              const urnsRows = await viewerDb.query("SELECT id, title, streams FROM urns ORDER BY id");
+              const structure = { urns: [] as any[] };
+              for (const row of urnsRows) {
+                  structure.urns.push({
+                      id: row[0],
+                      title: row[1],
+                      streams: JSON.parse(row[2] as string)
+                  });
+              }
+              // Sort urns numerically rather than lexicographically
+              try {
+                  structure.urns.sort((a, b) => {
+                      const aParts = String(a.id || '').split(':');
+                      const bParts = String(b.id || '').split(':');
+                      for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
+                          const aNum = parseInt(aParts[i], 10);
+                          const bNum = parseInt(bParts[i], 10);
+                          if (!isNaN(aNum) && !isNaN(bNum)) {
+                              if (aNum !== bNum) return aNum - bNum;
+                          } else {
+                              if (aParts[i] !== bParts[i]) return aParts[i].localeCompare(bParts[i]);
                           }
-                          projections[relPath] = fflate.strFromU8(data);
+                      }
+                      return aParts.length - bParts.length;
+                  });
+              } catch (err) {
+                  console.error("Sorting error:", err);
+              }
+              
+              const tplRows = await viewerDb.query("SELECT view_name, block_type, content FROM html_templates");
+              const projections: Record<string, string> = {};
+              const viewSet = new Set<string>();
+              
+              for (const row of tplRows) {
+                  const viewName = row[0] as string;
+                  const blockType = row[1] as string;
+                  const htmlContent = row[2] as string;
+                  viewSet.add(viewName);
+                  projections[`${viewName}_${blockType}`] = htmlContent;
+              }
+              
+              if (Object.keys(projections).length === 0 || manifest['stat_total_templates'] === '0') {
+                  errorMessage = "Invalid package format. The database contains no HTML templates. Please check your [[projection]] configuration in vyasac.toml and repack.";
+                  return;
+              }
+              
+              availableViews = Array.from(viewSet);
+              packageData = { manifest, structure, projections };
+              
+              if (availableViews.includes('reference')) activeView = 'reference';
+              else if (availableViews.length > 0) activeView = availableViews[0];
+              
+              const urnScheme = packageData.manifest['urn_scheme'] || 'urn:vyasa:{id}';
+              schemeParts = urnScheme.replace(/^urn:vyasa:/, '').split(':');
+              urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
+              
+              // Determine grouping levels: all URN components except the last (leaf) one.
+              // The leaf level is not used as a filter — it's what we display per item.
+              // Set initial filter to first value of each grouping level.
+              if (structure.urns.length > 0) {
+                  const firstUrnParts = structure.urns[0].id.replace(/^urn:vyasa:/, '').split(':');
+                  const leafIndex = urnComponents.length - 1; // last component is the leaf
+                  for (let i = 0; i < schemeParts.length; i++) {
+                      const s = schemeParts[i];
+                      if (s.startsWith('{') && s.endsWith('}')) {
+                          const comp = s.substring(1, s.length - 1);
+                          const compIdx = urnComponents.indexOf(comp);
+                          // Only pre-filter non-leaf components (grouping levels)
+                          if (compIdx < leafIndex) {
+                              filters[comp] = firstUrnParts[i];
+                          }
                       }
                   }
-                  
-                  availableViews = Array.from(viewSet);
-                  
-                  packageData = { manifest, structure, projections };
-                  
-                  if (availableViews.includes('reference')) activeView = 'reference';
-                  else if (availableViews.length > 0) activeView = availableViews[0];
               }
-          } catch (e) {
-              console.error("Failed to unpack vyview package", e);
+              
+              applyFilters();
+              
+          } catch (e: any) {
+              console.error("Failed to load vyview package", e);
+              errorMessage = "Failed to load vyview package: " + e.message;
           }
       }
   }
 
+  async function showInfo(item: any, event: Event) {
+      event.stopPropagation();
+      errorMessage = null;
+      isInspecting = true;
+      inspectData = { name: item.name, id: item.id, manifest: {}, structure: {}, templates: [] };
+      try {
+          const catalogBase = catalogs[0].substring(0, catalogs[0].lastIndexOf('/') + 1);
+          const payloadFullUrl = item.payloadUrl.startsWith('http') || item.payloadUrl.startsWith('/') 
+                                 ? item.payloadUrl 
+                                 : catalogBase + item.payloadUrl;
+          
+          await viewerDb.loadFromUrl(payloadFullUrl + "?t=" + Date.now());
+          
+          const manifestRows = await viewerDb.query("SELECT key, value FROM manifest ORDER BY key");
+          inspectData.streams = {};
+          for (const row of manifestRows) {
+              const key = row[0] as string;
+              const value = row[1] as string;
+              if (key.startsWith("stream_stats_")) {
+                  try {
+                      inspectData.streams[key.replace("stream_stats_", "")] = JSON.parse(value);
+                  } catch (e) {
+                      inspectData.streams[key.replace("stream_stats_", "")] = value;
+                  }
+              } else {
+                  inspectData.manifest[key] = value;
+              }
+          }
+          
+          try {
+              const metaRows = await viewerDb.query("SELECT category, key, value FROM _meta");
+              inspectData.meta = {};
+              for (const row of metaRows) {
+                  if (!inspectData.meta[row[0]]) inspectData.meta[row[0]] = {};
+                  inspectData.meta[row[0]][row[1]] = row[2];
+              }
+          } catch (e) {
+              inspectData.meta = { error: "No _meta table found" };
+          }
+          
+          try {
+              const urnsRows = await viewerDb.query("SELECT COUNT(*) FROM urns");
+              inspectData.structure.totalUrns = urnsRows[0][0];
+              const blocksRows = await viewerDb.query("SELECT COUNT(*) FROM html_blocks");
+              inspectData.structure.totalBlocks = blocksRows[0][0];
+              try {
+                  const itemsRows = await viewerDb.query("SELECT COUNT(DISTINCT id) FROM html_blocks");
+                  inspectData.structure.totalItems = itemsRows[0][0];
+              } catch (e) {
+                  inspectData.structure.totalItems = "Unknown";
+              }
+          } catch(e) {
+              inspectData.structure.error = "Missing structure tables (urns, html_blocks)";
+          }
+          
+          try {
+              const tplRows = await viewerDb.query("SELECT view_name, block_type FROM html_templates");
+              for (const row of tplRows) {
+                  inspectData.templates.push(`${row[0]}: ${row[1]}`);
+              }
+          } catch(e) {
+              inspectData.templates.push("Error: html_templates table missing");
+          }
+          
+          inspectData = {...inspectData}; // trigger reactivity
+      } catch (e: any) {
+          inspectData.error = "Failed to load database: " + e.message;
+      }
+  }
+
+  function closeInspect() {
+      isInspecting = false;
+      isInspectingCatalog = false;
+      inspectData = null;
+  }
+
   function goBackToCatalog() {
-      history.back();
+      packageData = null;
+      selectedWork = null;
+      activeWorkItem = null;
   }
 
   function handleMessage(event: MessageEvent) {
       if (event.data && event.data.type === 'VYASA_NAVIGATE') {
-          handleNavigation(event.data.href);
+          const href = event.data.href;
+          const parts = href.replace(/^urn:vyasa:/, '').split(':');
+          for (let i = 0; i < schemeParts.length; i++) {
+              const s = schemeParts[i];
+              if (s.startsWith('{') && s.endsWith('}')) {
+                  const comp = s.substring(1, s.length - 1);
+                  if (parts[i]) {
+                      filters[comp] = parts[i];
+                  }
+              }
+          }
+          applyFilters();
       }
   }
 
-  function handleNavigation(href: string) {
-      const parts = href.split('?');
-      const urn = parts[0];
+  function getAvailableOptionsFor(comp: string): string[] {
+      if (!packageData) return [];
+      const compIdx = urnComponents.indexOf(comp);
       
-      let viewChanged = false;
-      if (parts.length > 1) {
-          const params = new URLSearchParams(parts[1]);
-          const view = params.get('view');
-          if (view && view !== activeView && availableViews.includes(view)) {
-              activeView = view;
-              viewChanged = true;
+      const options = new Set<string>();
+      packageData.structure.urns.forEach((u: any) => {
+          const parts = u.id.replace(/^urn:vyasa:/, '').split(':');
+          
+          let matches = true;
+          for (let i = 0; i < compIdx; i++) {
+              const higherComp = urnComponents[i];
+              const filterVal = filters[higherComp];
+              if (filterVal && !filterVal.includes('-')) {
+                  if (parts[schemeParts.indexOf('{' + higherComp + '}')] !== filterVal) {
+                      matches = false;
+                  }
+              }
+          }
+          if (matches) {
+              const val = parts[schemeParts.indexOf('{' + comp + '}')];
+              if (val) options.add(val);
+          }
+      });
+      return Array.from(options).sort((a, b) => Number(a) - Number(b));
+  }
+
+  function nextFilter(comp: string) {
+      const options = getAvailableOptionsFor(comp);
+      if (options.length === 0) return;
+      
+      const val = filters[comp];
+      if (!val) {
+          filters[comp] = options[0];
+      } else {
+          const current = val.split('-')[1] || val;
+          const idx = options.indexOf(current);
+          if (idx >= 0 && idx < options.length - 1) {
+              filters[comp] = options[idx + 1];
           }
       }
       
-      activeUrn = urn;
-      
-      if (!viewChanged && iframeElement && iframeElement.contentWindow) {
-          iframeElement.contentWindow.postMessage({ type: 'VYASA_SCROLL', id: urn }, '*');
+      const compIdx = urnComponents.indexOf(comp);
+      for (let i = compIdx + 1; i < urnComponents.length; i++) {
+          filters[urnComponents[i]] = '';
       }
+      applyFilters();
   }
 
-  // Inject the message bridge into the HTML
-  $: rawHtml = packageData ? packageData.projections[`${activeView}.html`] : '';
-  $: srcdocContent = rawHtml ? injectBridge(rawHtml) : '';
-
-  // When srcdoc changes (view changes), wait for the iframe to load to send the scroll message
-  function onIframeLoad() {
-      if (activeUrn && iframeElement && iframeElement.contentWindow) {
-          setTimeout(() => {
-              iframeElement.contentWindow?.postMessage({ type: 'VYASA_SCROLL', id: activeUrn }, '*');
-          }, 100);
+  function prevFilter(comp: string) {
+      const options = getAvailableOptionsFor(comp);
+      if (options.length === 0) return;
+      
+      const val = filters[comp];
+      if (!val) {
+          filters[comp] = options[options.length - 1];
+      } else {
+          const current = val.split('-')[0];
+          const idx = options.indexOf(current);
+          if (idx > 0) {
+              filters[comp] = options[idx - 1];
+          }
       }
+      
+      const compIdx = urnComponents.indexOf(comp);
+      for (let i = compIdx + 1; i < urnComponents.length; i++) {
+          filters[urnComponents[i]] = '';
+      }
+      applyFilters();
+  }
+
+  async function applyFilters() {
+      if (!packageData) return;
+      
+      activeUrns = packageData.structure.urns.filter((u: any) => {
+          const parts = u.id.replace(/^urn:vyasa:/, '').split(':');
+          for (let i = 0; i < schemeParts.length; i++) {
+              const s = schemeParts[i];
+              if (s.startsWith('{') && s.endsWith('}')) {
+                  const comp = s.substring(1, s.length - 1);
+                  const filterVal = filters[comp];
+                  if (filterVal) {
+                      if (filterVal.includes('-')) {
+                          const [start, end] = filterVal.split('-').map(Number);
+                          const val = Number(parts[i]);
+                          if (val < start || val > end) return false;
+                      } else {
+                          if (parts[i] !== filterVal) return false;
+                      }
+                  }
+              }
+          }
+          return true;
+      }).map((u: any) => u.id);
+      
+      await fetchBlocksAndRender();
+  }
+
+  async function fetchBlocksAndRender() {
+      if (!activeUrns.length || !packageData) {
+          srcdocContent = '<div style="padding: 2rem; text-align: center; color: #64748b;">No content matches the selected filters.</div>';
+          return;
+      }
+      
+      // Fetch blocks directly for all active URNs — no hardcoded chapter assumptions.
+      const urnsToFetch = activeUrns.filter(urn => !loadedBlocks[urn]);
+      const blocks: Record<string, Record<string, string>> = { ...loadedBlocks };
+      
+      if (urnsToFetch.length > 0) {
+          try {
+              // Batch fetch: use IN clause for all needed URNs
+              const placeholders = urnsToFetch.map((_, i) => `?${i + 1}`).join(', ');
+              const rows = await viewerDb.query(
+                  `SELECT id, stream, content FROM html_blocks WHERE id IN (${placeholders})`,
+                  urnsToFetch
+              );
+              for (const row of rows) {
+                   const id = row[0] as string;
+                   const stream = row[1] as string;
+                   const val = row[2] as string;
+                   if (!blocks[id]) blocks[id] = {};
+                   blocks[id][stream] = val;
+              }
+          } catch(e) {
+              console.error("Failed to fetch blocks", e);
+          }
+      }
+      loadedBlocks = blocks;
+      
+      // Resolve REFERs
+      for (const id in blocks) {
+          for (const stream in blocks[id]) {
+              const val = blocks[id][stream];
+              if (val && val.startsWith('`REFER')) {
+                  const targetUrn = val.substring(6);
+                  blocks[id][stream] = blocks[targetUrn]?.[stream] || '';
+              }
+          }
+      }
+      
+      const layoutTpl = packageData.projections[`${activeView}_layout`] || '{{ body }}';
+      const itemTpl = packageData.projections[`${activeView}_item`] || '';
+      
+      // Render: the template owns all structural presentation.
+      // The viewer simply concatenates rendered items inside the layout.
+      let itemsHtml = '';
+      for (const urn of activeUrns) {
+          let itemHtml = itemTpl;
+          itemHtml = itemHtml.replace(/<stream\s+ref="([^"]+)">.*?<\/stream>/g, (match, streamId) => {
+               return blocks[urn]?.[streamId] || `<span style="color:red; font-size:0.8rem;">[Missing stream: ${streamId}]</span>`;
+          });
+          itemsHtml += `<span id="${urn}">${itemHtml}</span>`;
+      }
+      
+      const finalHtml = layoutTpl.replace('{{ body }}', itemsHtml);
+      srcdocContent = injectBridge(finalHtml);
   }
 
   function injectBridge(html: string): string {
@@ -185,70 +476,140 @@
           return html + script;
       }
   }
+
+  function onIframeLoad() {
+      // If there are components and the last one is selected, we could try to scroll to it
+      if (urnComponents.length > 0) {
+          const lastComp = urnComponents[urnComponents.length - 1];
+          if (filters[lastComp]) {
+              const targetUrn = activeUrns.find(u => u.endsWith(':' + filters[lastComp]));
+              if (targetUrn && iframeElement?.contentWindow) {
+                  setTimeout(() => {
+                      iframeElement.contentWindow?.postMessage({ type: 'VYASA_SCROLL', id: targetUrn }, '*');
+                  }, 100);
+              }
+          }
+      }
+  }
 </script>
 
 <div class="vyasa-viewer">
-   <div class="sidebar">
-      {#if !packageData}
-          <h3>Vyasa Catalog</h3>
-          <ul class="catalog-list">
-          {#each catalogItems as item}
-              <li>
-                  <button on:click={() => loadWork(item)}>{item.name}</button>
-                  {#if !item.payloadUrl}
-                      <span class="error">(No Viewer Payload)</span>
-                  {/if}
-              </li>
-          {/each}
-          </ul>
-      {:else}
-          <button class="back-btn" on:click={goBackToCatalog}>&larr; Back to Catalog</button>
-          
-          <div class="view-selector">
-             <label><strong>Projection:</strong></label>
-             <select bind:value={activeView}>
-                 {#each availableViews as view}
-                     <option value={view}>{view}</option>
-                 {/each}
-             </select>
-          </div>
-
-          <h3>Table of Contents</h3>
-          <ul class="toc-list">
-             {#if packageData.structure?.urns && packageData.structure.urns.length > 0}
-                 {#each packageData.structure.urns as urn}
-                     <li>
-                        <a href="{urn.id}?view={activeView}" on:click={(e) => { e.preventDefault(); handleNavigation(urn.id + '?view=' + activeView); }}>
-                            {urn.title !== 'Untitled' ? urn.title : urn.id.replace(/^urn:[^:]+:[^:]+:/, '').replace(':', '.')}
-                        </a>
-                     </li>
-                 {/each}
-             {:else}
-                 <li>No chapters/verses found.</li>
-             {/if}
-          </ul>
-      {/if}
-   </div>
-   
-   <div class="content-pane">
-      {#if srcdocContent}
-         <iframe 
-            bind:this={iframeElement}
-            srcdoc={srcdocContent} 
-            title="Vyasa Content"
-            on:load={onIframeLoad}
-         ></iframe>
-      {:else if selectedWork}
-         <p>Loading vyview package...</p>
-      {:else}
-         <div class="placeholder">Select a work from the catalog to begin reading.</div>
-      {/if}
-   </div>
+   {#if !packageData && !isInspecting && !isInspectingCatalog}
+       <div class="catalog-landing">
+           <div class="catalog-header">
+               <h2>{catalogMeta?.publisher || 'Vyasa Catalog'}</h2>
+               {#if catalogMeta}
+                   <button class="info-btn" on:click={() => isInspectingCatalog = true} title="Catalog Info">ℹ️</button>
+               {/if}
+           </div>
+           {#if errorMessage}
+               <div class="error-alert">{errorMessage}</div>
+           {/if}
+           <div class="catalog-grid">
+           {#each catalogItems as item}
+               <!-- svelte-ignore a11y-click-events-have-key-events -->
+               <div class="catalog-card" on:click={() => loadWork(item)}>
+                   <div class="card-header">
+                       <h3>{item.name}</h3>
+                       <button class="info-btn" on:click={(e) => showInfo(item, e)} title="Diagnostic Info">ℹ️</button>
+                   </div>
+                   <p class="meta">{item.id}</p>
+               </div>
+           {/each}
+           </div>
+       </div>
+   {:else if isInspectingCatalog && catalogMeta}
+       <div class="inspect-view">
+           <button class="back-btn" on:click={closeInspect}>&larr; Back to Catalog</button>
+           <h2>Catalog Info</h2>
+           <div class="inspect-section">
+               <h3>Metadata</h3>
+               <pre>{JSON.stringify(catalogMeta, null, 2)}</pre>
+           </div>
+       </div>
+   {:else if isInspecting && inspectData}
+       <div class="inspect-view">
+           <button class="back-btn" on:click={closeInspect}>&larr; Back to Catalog</button>
+           <h2>Diagnostic Info: {inspectData.name}</h2>
+           
+           {#if inspectData.error}
+              <div class="error-alert">{inspectData.error}</div>
+           {:else}
+               <div class="inspect-section">
+                   <h3>Manifest</h3>
+                   <pre>{JSON.stringify(inspectData.manifest, null, 2)}</pre>
+               </div>
+               <div class="inspect-section">
+                   <h3>Meta (System)</h3>
+                   <pre>{JSON.stringify(inspectData.meta, null, 2)}</pre>
+               </div>
+               <div class="inspect-section">
+                   <h3>Structure</h3>
+                   <pre>{JSON.stringify(inspectData.structure, null, 2)}</pre>
+               </div>
+               {#if Object.keys(inspectData.streams || {}).length > 0}
+               <div class="inspect-section">
+                   <h3>Streams</h3>
+                   <pre>{JSON.stringify(inspectData.streams, null, 2)}</pre>
+               </div>
+               {/if}
+               <div class="inspect-section">
+                   <h3>Templates</h3>
+                   <ul>
+                   {#each inspectData.templates as tpl}
+                       <li>{tpl}</li>
+                   {/each}
+                   </ul>
+               </div>
+           {/if}
+       </div>
+   {:else}
+       <div class="viewer-header">
+           <div class="header-left">
+               <button class="back-btn" on:click={goBackToCatalog}>&larr; Catalog</button>
+               <strong>{activeWorkItem?.name || selectedWork}</strong>
+           </div>
+           
+           <div class="filter-bar">
+               {#each urnComponents as comp}
+                  <div class="filter-group">
+                     <label>{comp}</label>
+                     <div class="filter-controls">
+                         <button on:click={() => prevFilter(comp)}>&lt;</button>
+                         <input type="text" bind:value={filters[comp]} on:change={applyFilters} placeholder="All" />
+                         <button on:click={() => nextFilter(comp)}>&gt;</button>
+                     </div>
+                  </div>
+               {/each}
+               <div class="view-selector">
+                   <select bind:value={activeView} on:change={applyFilters}>
+                       {#each availableViews as view}
+                           <option value={view}>{view}</option>
+                       {/each}
+                   </select>
+               </div>
+           </div>
+       </div>
+       
+       <div class="content-pane">
+          {#if srcdocContent}
+             <iframe 
+                bind:this={iframeElement}
+                srcdoc={srcdocContent} 
+                title="Vyasa Content"
+                on:load={onIframeLoad}
+             ></iframe>
+          {:else}
+             <div class="placeholder">Loading content...</div>
+          {/if}
+       </div>
+   {/if}
 </div>
 
 <style>
   .vyasa-viewer {
       display: flex;
+      flex-direction: column;
       height: 100%;
       font-family: system-ui, -apple-system, sans-serif;
       border: 1px solid #e2e8f0;
@@ -258,14 +619,177 @@
       color: #334155;
       text-align: left;
   }
-  .sidebar {
-      width: 250px;
-      border-right: 1px solid #e2e8f0;
-      padding: 1.5rem;
-      background: #f8fafc;
-      overflow-y: auto;
-      flex-shrink: 0;
+  .catalog-landing {
+      padding: 3rem;
   }
+  .catalog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+  }
+  .catalog-header h2 {
+      margin: 0;
+  }
+  .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+  }
+  .catalog-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f8fafc;
+  }
+  .catalog-card:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+      transform: translateY(-2px);
+  }
+  .catalog-card h3 {
+      margin: 0 0 0.5rem 0;
+      color: #0f172a;
+  }
+  .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+  }
+  .info-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.2rem;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+  }
+  .info-btn:hover {
+      opacity: 1;
+  }
+  .error-alert {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      border: 1px solid #fca5a5;
+  }
+  .inspect-view {
+      padding: 2rem;
+      overflow-y: auto;
+      text-align: left;
+  }
+  .inspect-section {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+  }
+  .inspect-section h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 0.5rem;
+  }
+  .inspect-section pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin: 0;
+  }
+  .catalog-card .meta {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin: 0;
+  }
+  
+  .viewer-header {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      gap: 2rem;
+  }
+  .back-btn {
+      background: none;
+      border: none;
+      color: #3b82f6;
+      cursor: pointer;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      border: 1px solid transparent;
+  }
+  .back-btn:hover {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+  }
+  
+  .filter-bar {
+      display: flex;
+      flex: 1;
+      gap: 1.5rem;
+      align-items: flex-end;
+  }
+  .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+  }
+  .filter-group label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: #64748b;
+  }
+  .filter-controls {
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      overflow: hidden;
+  }
+  .filter-controls button {
+      background: #f1f5f9;
+      border: none;
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      color: #475569;
+      font-weight: bold;
+  }
+  .filter-controls button:hover {
+      background: #e2e8f0;
+  }
+  .filter-controls input {
+      border: none;
+      border-left: 1px solid #cbd5e1;
+      border-right: 1px solid #cbd5e1;
+      padding: 0.4rem;
+      width: 60px;
+      text-align: center;
+      outline: none;
+  }
+  .filter-controls input:focus {
+      background: #f8fafc;
+  }
+  
+  .view-selector {
+      margin-left: auto;
+  }
+  .view-selector select {
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      outline: none;
+  }
+  
   .content-pane {
       flex: 1;
       background: #f1f5f9;
@@ -277,78 +801,6 @@
       width: 100%;
       height: 100%;
       background: white;
-  }
-  h3 {
-      font-size: 1.1rem;
-      margin-top: 0;
-      margin-bottom: 1rem;
-      color: #0f172a;
-  }
-  .catalog-list {
-      list-style: none;
-      padding: 0;
-  }
-  .catalog-list li {
-      margin-bottom: 0.5rem;
-  }
-  .catalog-list button {
-      background: none;
-      border: 1px solid #cbd5e1;
-      padding: 0.5rem 1rem;
-      width: 100%;
-      text-align: left;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      color: #0f172a;
-  }
-  .catalog-list button:hover {
-      background: #e2e8f0;
-  }
-  .error {
-      font-size: 0.8rem;
-      color: #ef4444;
-      display: block;
-      margin-top: 0.2rem;
-  }
-  .back-btn {
-      background: none;
-      border: none;
-      color: #3b82f6;
-      cursor: pointer;
-      padding: 0;
-      margin-bottom: 1.5rem;
-      font-size: 0.9rem;
-  }
-  .back-btn:hover {
-      text-decoration: underline;
-  }
-  .view-selector {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid #e2e8f0;
-  }
-  .view-selector select {
-      display: block;
-      width: 100%;
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 4px;
-      border: 1px solid #cbd5e1;
-  }
-  .toc-list {
-      list-style: none;
-      padding: 0;
-  }
-  .toc-list li {
-      margin-bottom: 0.5rem;
-  }
-  .toc-list a {
-      color: #3b82f6;
-      text-decoration: none;
-  }
-  .toc-list a:hover {
-      text-decoration: underline;
   }
   .placeholder {
       display: flex;

@@ -1,9 +1,16 @@
 [workspace]
 name = "Minimal Sample"
 version = "0.1.0"
+path_schema = []
 
-[streams]
-primary = "content"
+[urn]
+publisher = "minimal.org"
+corpus = "min"
+hierarchy = ["chapter"]
 
-templates = "templates"
-target = "HtmlHandlebars"
+[build]
+publication = "vyasa:minimal:default"
+layout = "document"
+templates = ["html"]
+target = "view"
+output = "minimal.sqlite"

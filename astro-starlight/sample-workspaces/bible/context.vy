@@ -1,13 +1,19 @@
 // Domain Definitions for Bible
+// v is an inline verse-number marker (NOT a URN; bible chapters are the URN unit)
+`command-def { name="v" args="id" category="content" }
 `command-def { name="wj" category="content" }
-`alias-def { name="v" target="verse" }
+`command-def { name="chapter-title" category="structure" }
 
 // Native Templates
-`template `verse `for "html" {
-   `span { class="verse-num" } [
-      `strong [ $.argument ]
+
+// Verse number: superscript in muted color, inline with text
+`template `v `for "html" {
+   `span { class="verse" } [
+       `span { class="verse-num" } [
+          $.argument
+       ]
+       $.body
    ]
-   $.body
 }
 
 `template `wj `for "html" {
@@ -19,5 +25,6 @@
 }
 
 `template `chapter-title `for "html" {
-   `h1 { class="chapter-title" } [ $.body ]
+   `h2 { class="chapter-title" } [ $.body ]
 }
+

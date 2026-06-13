@@ -15,7 +15,7 @@ if (!fs.existsSync(PUBLIC_SAMPLES_DIR)) {
     fs.mkdirSync(PUBLIC_SAMPLES_DIR, { recursive: true });
 }
 
-const targetWorkspaces = ['vedabase-bg', 'bible', 'intimate-note'];
+const targetWorkspaces = ['vyasa-bg', 'vedabase-bg', 'bible', 'intimate-note'];
 const samples = [];
 
 console.log(`Processing selected samples from: ${SAMPLES_DIR}`);
@@ -71,7 +71,7 @@ for (const item of targetWorkspaces) {
             }
         }
 
-        const vyviewPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.vyview`);
+        const vyviewPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.sqlite`);
         if (fs.existsSync(vyviewPath)) fs.unlinkSync(vyviewPath);
         
         const zipPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.zip`);
@@ -94,7 +94,7 @@ for (const item of targetWorkspaces) {
                 id: item,
                 name: displayName,
                 file: `${item}.zip`,
-                payloadUrl: `${item}.vyview`,
+                payloadUrl: `${item}.sqlite`,
                 hash: hash
             });
             console.log(`  Package created (Hash: ${hash}).`);
@@ -110,9 +110,17 @@ for (const item of targetWorkspaces) {
 // Sort samples by name
 samples.sort((a, b) => a.name.localeCompare(b.name));
 
-// Write index.json
-const indexJsonPath = path.join(PUBLIC_SAMPLES_DIR, 'index.json');
-fs.writeFileSync(indexJsonPath, JSON.stringify(samples, null, 2));
+// Write catalog.json
+const catalogObj = {
+  catalog: {
+    urn: "urn:vyasa:catalog:examples",
+    publisher: "Project Vyasa Examples",
+    description: "Sample packages for the Vyasa project."
+  },
+  items: samples
+};
+const catalogJsonPath = path.join(PUBLIC_SAMPLES_DIR, 'catalog.json');
+fs.writeFileSync(catalogJsonPath, JSON.stringify(catalogObj, null, 2));
 
 console.log('\nPackaging complete.');
 console.log('Available samples:', samples);

@@ -1,6 +1,6 @@
 
 
-`command-def { name="knowledge-sheet" args="number,title,date,location" category="structure" }
+`command-def { name="knowledge-sheet" args="number,title,date,location" category="structure" urn="true" }
 `command-def { name="lines" whitespace="preserve" category="formatting" }
 `command-def { name="extras" category="structure" }
 `command-def { name="center" category="formatting" }
@@ -49,3 +49,7 @@
 `template `break `for "html" {
    `br
 }
+
+`stream [
+    `div { "data-vyasa-stream"=$.ref class="stream-slot" } []
+]

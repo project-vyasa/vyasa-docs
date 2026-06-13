@@ -1,0 +1,16 @@
+[workspace]
+name = "Bhagavad Gita (Vyasa)"
+description = "A simplified Bhagavad Gita workspace with Devanagari and IAST streams only."
+path_schema = ["chapter"]
+
+[urn]
+publisher = "vyasa.io"
+corpus = "bg"
+hierarchy = ["chapter", "verse"]
+
+[build]
+publication = "vyasa.org:bg:default"
+layout = "sequence"
+templates = ["html"]
+target = "view"
+output = "vyasa-bg.sqlite"

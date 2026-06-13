@@ -7,6 +7,8 @@ export class SQLiteService {
     private dbName: string = 'vyasa-v3';
     private SQLiteModule: any = null;
     private memoryVfs: any = null;
+    private wasmModule: any = null;
+    private SQLite: any = null;
 
     async init() {
         if (this.db) return;
@@ -18,6 +20,7 @@ export class SQLiteService {
         const { MemoryVFS } = await import('wa-sqlite/src/examples/MemoryVFS.js');
         const SQLite = await import('wa-sqlite');
         this.SQLiteModule = SQLite;
+        this.SQLite = SQLite;
 
         const baseUrl = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -28,6 +31,7 @@ export class SQLiteService {
             }
         });
 
+        this.wasmModule = module;
         this.sqlite3 = SQLite.Factory(module);
 
         // Register VFS

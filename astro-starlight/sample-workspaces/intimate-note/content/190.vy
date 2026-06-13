@@ -1,4 +1,4 @@
-`knowledge-sheet { number="190" title="Stretching The Emptiness" date="1999-02-03" location="Bangalore Ashram" }
+`knowledge-sheet { number="190" title="Stretching The Emptiness" date="1999-02-03" location="Bangalore Ashram" } [
 `lines[
 Stretching the Sound is Music.
 Stretching the Movement is Dance.
@@ -17,4 +17,5 @@ Clothes were distributed to about 500 villagers
 as part of the Sri Sri Seva project of the Ashram.
 
 `center[JAl GURU DEV]
+]
 ]

@@ -2,7 +2,16 @@
 name = "Intimate Note Sample"
 version = "0.1.0"
 source = "https://www.it.iitb.ac.in/~sri/ssrvm/knowledge.htm"
-[streams]
-primary = "content"
+path_schema = []
 
-templates = "templates"
+[urn]
+publisher = "intimate.org"
+corpus = "note"
+hierarchy = ["verse"]
+
+[build]
+publication = "ssrvm.org:intimate-note:default"
+layout = "document"
+templates = ["html"]
+target = "view"
+output = "intimate-note.sqlite"

@@ -1,4 +1,4 @@
-`knowledge-sheet { number="107" title="The Personal and Impersonal" date="1997-06-25" location="Montreal Ashram" }
+`knowledge-sheet { number="107" title="The Personal and Impersonal" date="1997-06-25" location="Montreal Ashram" } [
 
 
 `knowledge [
@@ -35,3 +35,4 @@ People are seeing a totally different Guruji which they have never experienced b
 If you want to send an email to Guruji or Bhanu, please send it to tejasvi@giasbga.vsnl.net.in
 ]
 
+]

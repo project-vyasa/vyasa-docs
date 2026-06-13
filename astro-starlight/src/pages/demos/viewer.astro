@@ -1,32 +1,45 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import VyasaViewer from '../../components/VyasaViewer.svelte';
 ---
 
-<StarlightPage frontmatter={{ title: 'Vyasa Viewer Demo', template: 'splash' }}>
-  <p>
-    This demonstrates the consumer-facing <strong>Vyasa Viewer</strong> component. 
-    It is a lightweight client that consumes pre-rendered projections (via a JSON payload simulating the future SQLite DB)
-    and natively handles structural navigation and <code>urn:vyasa:</code> semantic link interception.
-  </p>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vyasa Viewer Demo</title>
+    <style is:global>
+      :root {
+        --bg-surface: #ffffff;
+        --text-primary: #111111;
+        --font-sans: system-ui, -apple-system, sans-serif;
+      }
+      
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
 
-  <div class="viewer-wrapper">
-    <VyasaViewer client:only="svelte" catalogs={[`${import.meta.env.BASE_URL}samples/index.json`]} />
-  </div>
-</StarlightPage>
-
-<style is:global>
-  /* Override Starlight's narrow content container for this demo page */
-  main .sl-container {
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 1rem !important;
-  }
-  .sl-markdown-content {
-    max-width: 100% !important;
-  }
-  .viewer-wrapper {
-    margin-top: 1rem;
-    height: calc(100vh - 120px);
-  }
-</style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+        height: 100vh;
+        overflow: hidden;
+      }
+      
+      .viewer-wrapper {
+        height: 100vh;
+        width: 100vw;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="viewer-wrapper">
+      <VyasaViewer client:only="svelte" catalogs={[`${import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/'}samples/catalog.json`]} />
+    </div>
+  </body>
+</html>

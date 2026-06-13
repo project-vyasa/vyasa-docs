@@ -1,4 +1,4 @@
-`knowledge-sheet { number="1" title="This Begins A New Practice" date="1995-06-21" location="Big Sur, California" }
+`knowledge-sheet { number="1" title="This Begins A New Practice" date="1995-06-21" location="Big Sur, California" } [
 
 `knowledge [
 
@@ -26,4 +26,5 @@ The object behind the object is infinity. The person behind the person is love.
 
 Maya is getting caught up in the event, personality, object. Knowledge, love, Brahman is seeing beyond the event, personality, or object. See? Just a little shift.
 
+]
 ]

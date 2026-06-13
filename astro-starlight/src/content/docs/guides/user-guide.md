@@ -62,6 +62,7 @@ vyasac pack [PROJECT_ROOT] --output <OUTPUT_FILE> [--target zip|sqlite]
 -   **State**: Dynamic properties (like `Speaker`, `Scene`) that change as the stream flows.
 -   **Entities**: Semantic objects (people, places, concepts) referenced in the stream.
 -   **References**: Structural pointers (like `JHN.3.16`) used for alignment.
+-   **Paratext**: Content surrounding the main text. Divided into **Frontmatter** (prologues, prefaces) and **Backmatter** (epilogues, indices). Because Vyasa's URNs are string-based, these do not require special compiler logic or code changes to `vyasac`. A prologue seamlessly integrates into the tree as `urn:vyasa:{corpus}:frontmatter:prologue:1` simply by placing it in a folder like `content/frontmatter/prologue.vy` or setting context variables.
 
 ## Unified Command Syntax
 
