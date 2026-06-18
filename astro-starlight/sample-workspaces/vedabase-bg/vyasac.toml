@@ -15,6 +15,20 @@ templates = ["html"]
 target = "view"
 output = "vedabase-bg.sqlite"
 
+[build.view]
+package = true
+
+[build.view.reading]
+layout = "grid"
+streams = [
+    { name = "mula", source = "dependency.base_corpus.mula" },
+    { name = "iast", source = "dependency.base_corpus.iast" },
+    { name = "translation", source = "local.translation" }
+]
+
+[dependencies]
+base_corpus = { package = "vyasa-bg" }
+
 [streams]
 mula = "content/mula"
 iast = "content/iast"

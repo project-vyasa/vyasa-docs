@@ -32,8 +32,8 @@
                 color: #333;
             }
 
-            .mula { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 1.2rem; line-height: 1.8; }
-            .transliteration { font-style: italic; color: #555; }
+            .mula { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 1.2rem; line-height: 1.8; white-space: pre-wrap; }
+            .transliteration { font-style: italic; color: #555; white-space: pre-wrap; }
             .translation { line-height: 1.6; }
             
             .synonyms-grid {

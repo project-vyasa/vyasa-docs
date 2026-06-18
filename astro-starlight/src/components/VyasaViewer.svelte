@@ -26,6 +26,7 @@
   
   let iframeElement: HTMLIFrameElement;
   let viewerDb = new ViewerDb();
+  let dependencyDbs: Record<string, ViewerDb> = {};
   let graphRuntime: VyasaGraphRuntime | null = null;
   let loadedBlocks: Record<string, Record<string, string>> = {};
   let srcdocContent = '';
@@ -110,6 +111,51 @@
                   manifest[row[0] as string] = row[1] as string;
               }
               console.log("Loaded manifest:", manifest);
+
+              dependencyDbs = {};
+              if (manifest.dependencies) {
+                  try {
+                      const deps = JSON.parse(manifest.dependencies);
+                      const lastSlash = payloadFullUrl.lastIndexOf('/');
+                      const baseUrl = payloadFullUrl.substring(0, lastSlash + 1);
+                      for (const [depName, depConfig] of Object.entries(deps)) {
+                          const depPackage = (depConfig as any).package;
+                          const providedUrls = (depConfig as any).urls;
+                          
+                          let urlsToTry: string[] = [];
+                          if (Array.isArray(providedUrls)) {
+                              urlsToTry = providedUrls;
+                          } else if (typeof providedUrls === 'string') {
+                              urlsToTry = [providedUrls];
+                          }
+                          
+                          if (depPackage && urlsToTry.length === 0) {
+                              urlsToTry = [baseUrl + depPackage + ".sqlite"];
+                          }
+                          
+                          if (urlsToTry.length > 0) {
+                              let loaded = false;
+                              for (const url of urlsToTry) {
+                                  try {
+                                      const depDb = new ViewerDb();
+                                      await depDb.loadFromUrl(url + "?t=" + Date.now());
+                                      dependencyDbs[depName] = depDb;
+                                      console.log(`Loaded dependency database ${depName} from ${url}`);
+                                      loaded = true;
+                                      break; // Successfully loaded, stop trying
+                                  } catch (e) {
+                                      console.warn(`Failed to load dependency from ${url}, trying next...`, e);
+                                  }
+                              }
+                              if (!loaded) {
+                                  console.error(`Exhausted all URLs. Could not load dependency ${depName}.`);
+                              }
+                          }
+                      }
+                  } catch (e) {
+                      console.error("Failed to load dependencies", e);
+                  }
+              }
               
               const urnsRows = await viewerDb.query("SELECT id, title, streams FROM urns ORDER BY id");
               const structure = { urns: [] as any[] };
@@ -402,17 +448,77 @@
       const limit = activeUrns.length; // Only fetch exactly the items that match the filter
       
       let rowsJson = "[]";
+      let allRows = [];
+      let fetchedUrns = [];
       try {
           const query = graphRuntime.build_viewport_query(startUrn, limit);
           const rows = await viewerDb.query(query);
-          console.log("FETCHED ROWS:", rows.slice(0, 2));
-          const formattedRows = rows.map(r => ({
-              id: r[0],
-              stream: r[1],
-              content: r[2],
-              context: r[3] || "{}"
-          }));
-          rowsJson = JSON.stringify(formattedRows);
+          for (const r of rows) {
+              allRows.push({
+                  id: r[0],
+                  stream: `local.${r[1]}`, // Prefix local streams with 'local.'
+                  content: r[2],
+                  context: r[3] || "{}"
+              });
+              if (!fetchedUrns.includes(r[0])) {
+                  fetchedUrns.push(r[0]);
+              }
+          }
+          
+          if (fetchedUrns.length > 0) {
+              const urnList = fetchedUrns.map(u => `'${u}'`).join(',');
+              const depQuery = `
+                 SELECT h.id, h.stream, h.content, c.context 
+                 FROM html_blocks h 
+                 LEFT JOIN urn_context c ON h.id = c.id 
+                 WHERE h.id IN (${urnList})
+              `;
+              
+              for (const [depName, depDb] of Object.entries(dependencyDbs)) {
+                  try {
+                      const depRows = await depDb.query(depQuery);
+                      for (const r of depRows) {
+                          allRows.push({
+                              id: r[0],
+                              stream: `dependency.${depName}.${r[1]}`,
+                              content: r[2],
+                              context: r[3] || "{}"
+                          });
+                      }
+                  } catch (e) {
+                      console.error(`Failed to fetch blocks from dependency ${depName}`, e);
+                  }
+              }
+          }
+          
+          if (packageData.manifest.streams_config) {
+              try {
+                  const streamsConfig = JSON.parse(packageData.manifest.streams_config);
+                  const sourceToName: Record<string, string> = {};
+                  for (const s of streamsConfig) {
+                      sourceToName[s.source] = s.name;
+                  }
+                  
+                  const mappedRows = [];
+                  for (const row of allRows) {
+                      if (sourceToName[row.stream]) {
+                          row.stream = sourceToName[row.stream];
+                          mappedRows.push(row);
+                      } else {
+                          // Keep unmapped streams just in case? Or filter them out?
+                          // The `VyasaViewer` only renders what's in the template, so keeping is safe.
+                          row.stream = row.stream.replace(/^local\./, '');
+                          mappedRows.push(row);
+                      }
+                  }
+                  rowsJson = JSON.stringify(mappedRows);
+              } catch (e) {
+                  console.error("Failed to apply streams_config", e);
+                  rowsJson = JSON.stringify(allRows.map(r => ({ ...r, stream: r.stream.replace(/^local\./, '') })));
+              }
+          } else {
+              rowsJson = JSON.stringify(allRows.map(r => ({ ...r, stream: r.stream.replace(/^local\./, '') })));
+          }
       } catch(e) {
           console.error("Failed to fetch blocks", e);
       }
