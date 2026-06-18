@@ -8,6 +8,16 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-06-18: RFC-016 Implementation & Compiler Patterns
+*   **Feature**: Full implementation of the `break_after` setting (RFC-016).
+    *   Configurable via `` `set settings { break_after = "।॥" } ``.
+    *   Automatically inserts `SegmentBreak` nodes after specified punctuation characters.
+    *   **Smart Lookahead**: Suppresses breaks if the target character is immediately followed by an optional space and a numeral. This is script-agnostic (using Unicode `Number` category), ensuring verse numbers (like Devanagari `१`) remain on the same line.
+    *   **Newline Consumption**: When a `SegmentBreak` is inserted, any immediately following literal newline (`\n` or `\r`) is consumed by the compiler. This elegantly prevents "double breaks" in HTML viewers that use `white-space: pre-wrap`.
+*   **Compiler Enhancements**:
+    *   The `transformer.rs` pipeline now recursively processes nodes for alias expansion, ensuring deep nested commands are evaluated.
+    *   `interlinear-streams` pattern processing (e.g., `pattern="term, meaning"`) now properly splits generated text nodes and applies the `break_after` logic.
+
 ## 2026-02-14: Collection View Fixes & RFC-016
 *   **Bug Fix**: Entity labels (e.g., `dhritarashtra_label_dev`) were not substituting in Collection View.
     *   **Root Cause**: `builder.rs` searched `env.context` for flattened keys, but `config.rs` stored entity data in `env.entities` (a structured map).

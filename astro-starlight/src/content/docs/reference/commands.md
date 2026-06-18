@@ -64,6 +64,7 @@ Updates environment configuration (settings, context, aliases, entities).
 **Examples**:
 ```text
 `set settings { whitespace = "preserve" }  <- Opt-out of whitespace stripping
+`set settings { break_after = "।" }        <- Automatically inject SegmentBreak nodes
 `set context { work="Bible" urn_scheme="urn:bible:{book}:{chapter}:{id}" }
 `set { chapter=1 }
 ```

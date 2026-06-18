@@ -103,7 +103,7 @@ For a complete list of **Standard Library** commands and detailed usage, see the
 | **`marker`** | Defines URN/ID | `` `marker 1.1 `` |
 | **`state`** | Sets context state | `` `state { speaker="Sanjaya" } `` |
 | **`set`** | Updates config | `` `set context { ... } `` |
-| **`set settings`** | Workspace config | `` `set settings { whitespace="preserve" } `` |
+| **`set settings`** | Workspace config | `` `set settings { whitespace="preserve", break_after="।॥" } `` |
 | **`entity`** | Semantic tagging | `` `entity Krishna `` |
 
 ## Sample Document
