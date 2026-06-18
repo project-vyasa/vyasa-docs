@@ -64,6 +64,15 @@ vyasac pack [PROJECT_ROOT] --output <OUTPUT_FILE> [--target zip|sqlite]
 -   **References**: Structural pointers (like `JHN.3.16`) used for alignment.
 -   **Paratext**: Content surrounding the main text. Divided into **Frontmatter** (prologues, prefaces) and **Backmatter** (epilogues, indices). Because Vyasa's URNs are string-based, these do not require special compiler logic or code changes to `vyasac`. A prologue seamlessly integrates into the tree as `urn:vyasa:{corpus}:frontmatter:prologue:1` simply by placing it in a folder like `content/frontmatter/prologue.vy` or setting context variables.
 
+## Architectural Guarantees & Constraints
+
+To ensure Vyasa remains performant, robust, and mathematically sound, the system enforces the following guarantees and constraints on all publishers and workflows:
+
+1. **Publication Bloat Optimization:** The final SQLite/Zip publication size is a critical success factor to ensure lightweight viewer downloads. The compiler aggressively optimizes storage by shifting left error checking while minimizing duplication of content.
+2. **Forward and Backward Compatibility:** `VyasaViewer` guarantees backward compatibility with older publications, while also remaining robustly forward-compatible against future grammar changes.
+3. **Unified Runtime:** To prevent divergence between compiler logic and the UI, any semantic graph sorting or structural querying needed by the viewer is provided via a WASM runtime compiled from the exact same Rust source as `vyasac`.
+4. **Numeric Relative Paths:** The Unique Resource Name (URN) separates the `global-prefix` (Corpus/Publication identifier) from the `relative-path` (e.g., `chapter:verse`). For structural integrity, the components of a `relative-path` must use machine-friendly, strongly-typed numeric values (especially for `layout="sequence"`) to allow for mathematical reasoning and sorting. The AST strictly references only the relative path.
+
 ## Unified Command Syntax
 
 Vyasa uses a **Unified Command** structure. Every functional element is a command that can optionally take arguments, attributes, a custom delimiter, and a content body.

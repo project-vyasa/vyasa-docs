@@ -57,7 +57,10 @@
 
 `item [
 `div { class="verse-content" } [
-    `div { class="mula" } [ `stream { ref="mula" } ]
-    `div { class="iast" } [ `stream { ref="iast" } ]
+    `div { class="verse-block" } [
+        `div { class="verse-header" } [ {{ chapter }}:{{ verse }} ]
+        `div { class="mula" } [ `stream { ref="mula" } ]
+        `div { class="iast" } [ `stream { ref="iast" } ]
+    ]
 ]
 ]

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { ViewerDb } from '../lib/ViewerDb';
+  import initWasm, { VyasaGraphRuntime } from '../vyasac-wasm/vyasac.js';
 
   export let catalogs: string[] = ['/samples/catalog.json'];
 
@@ -25,6 +26,7 @@
   
   let iframeElement: HTMLIFrameElement;
   let viewerDb = new ViewerDb();
+  let graphRuntime: VyasaGraphRuntime | null = null;
   let loadedBlocks: Record<string, Record<string, string>> = {};
   let srcdocContent = '';
   
@@ -35,7 +37,12 @@
 
   onMount(async () => {
       window.addEventListener('message', handleMessage);
+      // TODO: Find a way to pass URL params for deep linking (work, URN components, layout view)
+      // This is necessary to share deep links with others.
       try {
+          await initWasm();
+          graphRuntime = new VyasaGraphRuntime();
+          
           const res = await fetch(`${catalogs[0]}?t=${Date.now()}`);
           if (res.ok) {
               const data = await res.json();
@@ -48,7 +55,7 @@
               }
           }
       } catch (e) {
-          console.error("Failed to load catalog", e);
+          console.error("Failed to load catalog or wasm", e);
       }
   });
 
@@ -158,23 +165,27 @@
               
               const urnScheme = packageData.manifest['urn_scheme'] || 'urn:vyasa:{id}';
               schemeParts = urnScheme.replace(/^urn:vyasa:/, '').split(':');
-              urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
+              
+              const hierarchyStr = packageData.manifest.urn_hierarchy;
+              if (hierarchyStr) {
+                  try {
+                      urnComponents = JSON.parse(hierarchyStr);
+                  } catch (e) {
+                      urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
+                  }
+              } else {
+                  urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
+              }
               
               // Determine grouping levels: all URN components except the last (leaf) one.
               // The leaf level is not used as a filter — it's what we display per item.
               // Set initial filter to first value of each grouping level.
               if (structure.urns.length > 0) {
-                  const firstUrnParts = structure.urns[0].id.replace(/^urn:vyasa:/, '').split(':');
+                  const firstUrnParts = structure.urns[0].id.split(':');
                   const leafIndex = urnComponents.length - 1; // last component is the leaf
-                  for (let i = 0; i < schemeParts.length; i++) {
-                      const s = schemeParts[i];
-                      if (s.startsWith('{') && s.endsWith('}')) {
-                          const comp = s.substring(1, s.length - 1);
-                          const compIdx = urnComponents.indexOf(comp);
-                          // Only pre-filter non-leaf components (grouping levels)
-                          if (compIdx < leafIndex) {
-                              filters[comp] = firstUrnParts[i];
-                          }
+                  for (let i = 0; i < urnComponents.length; i++) {
+                      if (i < leafIndex) {
+                          filters[urnComponents[i]] = firstUrnParts[i];
                       }
                   }
               }
@@ -293,20 +304,20 @@
       
       const options = new Set<string>();
       packageData.structure.urns.forEach((u: any) => {
-          const parts = u.id.replace(/^urn:vyasa:/, '').split(':');
+          const parts = u.id.split(':');
           
           let matches = true;
           for (let i = 0; i < compIdx; i++) {
               const higherComp = urnComponents[i];
               const filterVal = filters[higherComp];
               if (filterVal && !filterVal.includes('-')) {
-                  if (parts[schemeParts.indexOf('{' + higherComp + '}')] !== filterVal) {
+                  if (parts[i] !== filterVal) {
                       matches = false;
                   }
               }
           }
           if (matches) {
-              const val = parts[schemeParts.indexOf('{' + comp + '}')];
+              const val = parts[compIdx];
               if (val) options.add(val);
           }
       });
@@ -361,20 +372,17 @@
       if (!packageData) return;
       
       activeUrns = packageData.structure.urns.filter((u: any) => {
-          const parts = u.id.replace(/^urn:vyasa:/, '').split(':');
-          for (let i = 0; i < schemeParts.length; i++) {
-              const s = schemeParts[i];
-              if (s.startsWith('{') && s.endsWith('}')) {
-                  const comp = s.substring(1, s.length - 1);
-                  const filterVal = filters[comp];
-                  if (filterVal) {
-                      if (filterVal.includes('-')) {
-                          const [start, end] = filterVal.split('-').map(Number);
-                          const val = Number(parts[i]);
-                          if (val < start || val > end) return false;
-                      } else {
-                          if (parts[i] !== filterVal) return false;
-                      }
+          const parts = u.id.split(':');
+          for (let i = 0; i < urnComponents.length; i++) {
+              const comp = urnComponents[i];
+              const filterVal = filters[comp];
+              if (filterVal) {
+                  if (filterVal.includes('-')) {
+                      const [start, end] = filterVal.split('-').map(Number);
+                      const val = Number(parts[i]);
+                      if (val < start || val > end) return false;
+                  } else {
+                      if (parts[i] !== filterVal) return false;
                   }
               }
           }
@@ -385,63 +393,54 @@
   }
 
   async function fetchBlocksAndRender() {
-      if (!activeUrns.length || !packageData) {
+      if (!activeUrns.length || !packageData || !graphRuntime) {
           srcdocContent = '<div style="padding: 2rem; text-align: center; color: #64748b;">No content matches the selected filters.</div>';
           return;
       }
       
-      // Fetch blocks directly for all active URNs — no hardcoded chapter assumptions.
-      const urnsToFetch = activeUrns.filter(urn => !loadedBlocks[urn]);
-      const blocks: Record<string, Record<string, string>> = { ...loadedBlocks };
+      const startUrn = activeUrns[0];
+      const limit = activeUrns.length; // Only fetch exactly the items that match the filter
       
-      if (urnsToFetch.length > 0) {
-          try {
-              // Batch fetch: use IN clause for all needed URNs
-              const placeholders = urnsToFetch.map((_, i) => `?${i + 1}`).join(', ');
-              const rows = await viewerDb.query(
-                  `SELECT id, stream, content FROM html_blocks WHERE id IN (${placeholders})`,
-                  urnsToFetch
-              );
-              for (const row of rows) {
-                   const id = row[0] as string;
-                   const stream = row[1] as string;
-                   const val = row[2] as string;
-                   if (!blocks[id]) blocks[id] = {};
-                   blocks[id][stream] = val;
-              }
-          } catch(e) {
-              console.error("Failed to fetch blocks", e);
+      let rowsJson = "[]";
+      try {
+          const query = graphRuntime.build_viewport_query(startUrn, limit);
+          const rows = await viewerDb.query(query);
+          console.log("FETCHED ROWS:", rows.slice(0, 2));
+          const formattedRows = rows.map(r => ({
+              id: r[0],
+              stream: r[1],
+              content: r[2],
+              context: r[3] || "{}"
+          }));
+          rowsJson = JSON.stringify(formattedRows);
+      } catch(e) {
+          console.error("Failed to fetch blocks", e);
+      }
+      
+      const tplRows = await viewerDb.query("SELECT view_name, block_type, content FROM html_templates");
+      const templates = tplRows.map(r => ({
+          view_name: r[0],
+          block_type: r[1],
+          content: r[2]
+      }));
+      const templatesJson = JSON.stringify(templates);
+      
+      try {
+          const viewNodes = graphRuntime.weave_view(rowsJson, templatesJson, activeView);
+          
+          let itemsHtml = '';
+          const layoutTpl = packageData.projections[`${activeView}_layout`] || '{{ body }}';
+          
+          for (const node of viewNodes) {
+              itemsHtml += `<span id="${node.urn}" class="vyasa-node ${node.type}">${node.content}</span>`;
           }
+          
+          const finalHtml = layoutTpl.replace('{{ body }}', itemsHtml);
+          srcdocContent = injectBridge(finalHtml);
+      } catch(e) {
+          console.error("Weave view failed:", e);
+          srcdocContent = `<div style="padding: 2rem; color: red;">Failed to weave view: ${e}</div>`;
       }
-      loadedBlocks = blocks;
-      
-      // Resolve REFERs
-      for (const id in blocks) {
-          for (const stream in blocks[id]) {
-              const val = blocks[id][stream];
-              if (val && val.startsWith('`REFER')) {
-                  const targetUrn = val.substring(6);
-                  blocks[id][stream] = blocks[targetUrn]?.[stream] || '';
-              }
-          }
-      }
-      
-      const layoutTpl = packageData.projections[`${activeView}_layout`] || '{{ body }}';
-      const itemTpl = packageData.projections[`${activeView}_item`] || '';
-      
-      // Render: the template owns all structural presentation.
-      // The viewer simply concatenates rendered items inside the layout.
-      let itemsHtml = '';
-      for (const urn of activeUrns) {
-          let itemHtml = itemTpl;
-          itemHtml = itemHtml.replace(/<stream\s+ref="([^"]+)">.*?<\/stream>/g, (match, streamId) => {
-               return blocks[urn]?.[streamId] || `<span style="color:red; font-size:0.8rem;">[Missing stream: ${streamId}]</span>`;
-          });
-          itemsHtml += `<span id="${urn}">${itemHtml}</span>`;
-      }
-      
-      const finalHtml = layoutTpl.replace('{{ body }}', itemsHtml);
-      srcdocContent = injectBridge(finalHtml);
   }
 
   function injectBridge(html: string): string {
@@ -576,7 +575,12 @@
                      <label>{comp}</label>
                      <div class="filter-controls">
                          <button on:click={() => prevFilter(comp)}>&lt;</button>
-                         <input type="text" bind:value={filters[comp]} on:change={applyFilters} placeholder="All" />
+                         <input type="text" list="{comp}-options" bind:value={filters[comp]} on:change={applyFilters} placeholder="All" />
+                         <datalist id="{comp}-options">
+                             {#each getAvailableOptionsFor(comp) as opt}
+                                 <option value={opt}></option>
+                             {/each}
+                         </datalist>
                          <button on:click={() => nextFilter(comp)}>&gt;</button>
                      </div>
                   </div>
