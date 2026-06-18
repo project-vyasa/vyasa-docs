@@ -1,0 +1,21 @@
+[workspace]
+name = "Bhagavad Gita"
+path_schema = ["chapter"]
+
+[urn]
+publisher = "vyasa.io"
+corpus = "bg"
+hierarchy = ["chapter", "verse"]
+
+[build]
+enable_markdown = true
+publication = "vyasa.org:bg:default"
+layout = "sequence"
+templates = ["html"]
+target = "view"
+output = "vedabase-bg.sqlite"
+
+[streams]
+mula = "content/mula"
+iast = "content/iast"
+translation = "content/translation"
