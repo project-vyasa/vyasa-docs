@@ -6,7 +6,7 @@ path_schema = []
 [urn]
 publisher = "bible.com"
 corpus = "john"
-hierarchy = ["chapter", "verse"]
+hierarchy = ["chapter"]
 
 [build]
 publication = "bible.com:JHN.14:default"

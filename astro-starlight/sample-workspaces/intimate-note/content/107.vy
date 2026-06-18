@@ -1,3 +1,5 @@
+`set context { number="107" }
+
 `knowledge-sheet { number="107" title="The Personal and Impersonal" date="1997-06-25" location="Montreal Ashram" } [
 
 

@@ -1,3 +1,5 @@
+`set context { number="190" }
+
 `knowledge-sheet { number="190" title="Stretching The Emptiness" date="1999-02-03" location="Bangalore Ashram" } [
 `lines[
 Stretching the Sound is Music.

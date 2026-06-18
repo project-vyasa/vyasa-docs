@@ -7,7 +7,7 @@ path_schema = []
 [urn]
 publisher = "intimate.org"
 corpus = "note"
-hierarchy = ["verse"]
+hierarchy = ["number"]
 
 [build]
 publication = "ssrvm.org:intimate-note:default"

@@ -15,6 +15,7 @@
        `div { class="sheet-date" } [ $.date ]
        `div { class="sheet-location" } [ $.location ]
        `h1 { class="sheet-title" } [ $.number.   $.title ]
+       $.body
    ]
 }
 

@@ -1,3 +1,5 @@
+`set context { number="1" }
+
 `knowledge-sheet { number="1" title="This Begins A New Practice" date="1995-06-21" location="Big Sur, California" } [
 
 `knowledge [
