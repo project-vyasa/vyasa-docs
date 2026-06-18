@@ -1,6 +1,11 @@
 
 `title [Bhagavad Gita]
 
+`set settings {
+    default_whitespace = "single"
+    break_after = "।॥"
+}
+
 // Common Semantic Definitions
 // TODO: We must support a reference to another publication in the corpus text which manifests as a HTML link. In this case, a full URN path is required.`command-def { name="ref" category="content" args="urn" }`command-def { name="devanagari" category="content" }
 `command-def { name="iast" category="content" }

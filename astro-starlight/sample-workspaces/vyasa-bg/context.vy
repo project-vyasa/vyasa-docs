@@ -1,5 +1,9 @@
-
 `title [Bhagavad Gita]
+
+`set settings {
+    default_whitespace = "single"
+    break_after = "।॥"
+}
 
 // Common Semantic Definitions
 `command-def { name="devanagari" category="content" }
