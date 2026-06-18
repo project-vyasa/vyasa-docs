@@ -95,6 +95,11 @@
                       errorMessage = `Unsupported package type. Expected 'view', got '${manifest['package_type'] || 'unknown'}'. Please recompile with --target view.`;
                       return;
                   }
+                  if (manifest['schema_version'] !== '1') {
+                      const ver = manifest['schema_version'] || 'unknown';
+                      errorMessage = `Unsupported schema version. Expected '1', got '${ver}'. Please recompile with the latest compiler.`;
+                      return;
+                  }
               } catch (e) {
                   // Fallback for older packages
                   try {
