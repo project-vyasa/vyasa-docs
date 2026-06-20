@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import { ViewerDb } from '../lib/ViewerDb';
-  import initWasm, { VyasaGraphRuntime } from '../vyasac-wasm/vyasac.js';
+  import initWasm, { VyasaViewerRuntime } from '../vyasac-wasm/vyasac.js';
 
   export let catalogs: string[] = ['/samples/catalog.json'];
 
@@ -26,8 +26,7 @@
   
   let iframeElement: HTMLIFrameElement;
   let viewerDb = new ViewerDb();
-  let dependencyDbs: Record<string, ViewerDb> = {};
-  let graphRuntime: VyasaGraphRuntime | null = null;
+  let graphRuntime: VyasaViewerRuntime | null = null;
   let loadedBlocks: Record<string, Record<string, string>> = {};
   let srcdocContent = '';
   
@@ -42,7 +41,7 @@
       // This is necessary to share deep links with others.
       try {
           await initWasm();
-          graphRuntime = new VyasaGraphRuntime();
+          graphRuntime = new VyasaViewerRuntime();
           
           const res = await fetch(`${catalogs[0]}?t=${Date.now()}`);
           if (res.ok) {
@@ -116,52 +115,6 @@
                   manifest[row[0] as string] = row[1] as string;
               }
               console.log("Loaded manifest:", manifest);
-
-              dependencyDbs = {};
-              if (manifest.dependencies) {
-                  try {
-                      const deps = JSON.parse(manifest.dependencies);
-                      const lastSlash = payloadFullUrl.lastIndexOf('/');
-                      const baseUrl = payloadFullUrl.substring(0, lastSlash + 1);
-                      for (const [depName, depConfig] of Object.entries(deps)) {
-                          const depPackage = (depConfig as any).package;
-                          const providedUrls = (depConfig as any).urls;
-                          
-                          let urlsToTry: string[] = [];
-                          if (Array.isArray(providedUrls)) {
-                              urlsToTry = providedUrls;
-                          } else if (typeof providedUrls === 'string') {
-                              urlsToTry = [providedUrls];
-                          }
-                          
-                          if (depPackage && urlsToTry.length === 0) {
-                              urlsToTry = [baseUrl + depPackage + ".sqlite"];
-                          }
-                          
-                          if (urlsToTry.length > 0) {
-                              let loaded = false;
-                              for (const url of urlsToTry) {
-                                  try {
-                                      const depDb = new ViewerDb();
-                                      await depDb.loadFromUrl(url + "?t=" + Date.now());
-                                      dependencyDbs[depName] = depDb;
-                                      console.log(`Loaded dependency database ${depName} from ${url}`);
-                                      loaded = true;
-                                      break; // Successfully loaded, stop trying
-                                  } catch (e) {
-                                      console.warn(`Failed to load dependency from ${url}, trying next...`, e);
-                                  }
-                              }
-                              if (!loaded) {
-                                  console.error(`Exhausted all URLs. Could not load dependency ${depName}.`);
-                              }
-                          }
-                      }
-                  } catch (e) {
-                      console.error("Failed to load dependencies", e);
-                  }
-              }
-              
               const urnsRows = await viewerDb.query("SELECT id, title, streams FROM urns ORDER BY id");
               const structure = { urns: [] as any[] };
               for (const row of urnsRows) {
@@ -461,7 +414,7 @@
           for (const r of rows) {
               allRows.push({
                   id: r[0],
-                  stream: `local.${r[1]}`, // Prefix local streams with 'local.'
+                  stream: r[1].startsWith('dependency.') ? r[1] : `local.${r[1]}`,
                   content: r[2],
                   context: r[3] || "{}"
               });
@@ -470,31 +423,67 @@
               }
           }
           
-          if (fetchedUrns.length > 0) {
-              const urnList = fetchedUrns.map(u => `'${u}'`).join(',');
-              const depQuery = `
-                 SELECT h.id, h.stream, h.content, c.context 
-                 FROM html_blocks h 
-                 LEFT JOIN urn_context c ON h.id = c.id 
-                 WHERE h.id IN (${urnList})
-              `;
+          for (const urn of fetchedUrns) {
+              const rowsForUrn = allRows.filter(r => r.id === urn);
+              let referTarget = null;
               
-              for (const [depName, depDb] of Object.entries(dependencyDbs)) {
-                  try {
-                      const depRows = await depDb.query(depQuery);
-                      for (const r of depRows) {
+              for (const row of rowsForUrn) {
+                  const match = row.content.match(/<span class="vyasa-refer" data-target="([^"]+)"/);
+                  if (match && match[1]) {
+                      referTarget = match[1];
+                      break;
+                  }
+              }
+              
+              if (referTarget) {
+                  let prefix = "";
+                  let start = 0;
+                  let end = 0;
+                  
+                  if (referTarget.includes(':') && referTarget.includes('-')) {
+                      const parts = referTarget.split(':');
+                      prefix = parts.slice(0, -1).join(':');
+                      const range = parts[parts.length - 1].split('-');
+                      start = parseInt(range[0]);
+                      end = parseInt(range[1]);
+                  } else if (referTarget.includes('-')) {
+                      const range = referTarget.split('-');
+                      start = parseInt(range[0]);
+                      end = parseInt(range[1]);
+                  }
+                  
+                  if (end >= start) {
+                      let targetUrns = [];
+                      for (let i = start; i <= end; i++) {
+                          targetUrns.push(prefix ? `${prefix}:${i}` : `${i}`);
+                      }
+                      
+                      const placeholders = targetUrns.map(() => '?').join(',');
+                      const referRows = await viewerDb.query(`SELECT id, stream, content, context FROM streams WHERE id IN (${placeholders}) ORDER BY sequence_id ASC`, targetUrns);
+                      
+                      const streamContents = {};
+                      for (const r of referRows) {
+                          const streamName = r[1].startsWith('dependency.') ? r[1] : `local.${r[1]}`;
+                          if (!streamContents[streamName]) {
+                              streamContents[streamName] = [];
+                          }
+                          streamContents[streamName].push(r[2]);
+                      }
+                      
+                      for (const [streamName, contents] of Object.entries(streamContents)) {
                           allRows.push({
-                              id: r[0],
-                              stream: `dependency.${depName}.${r[1]}`,
-                              content: r[2],
-                              context: r[3] || "{}"
+                              id: urn,
+                              stream: streamName,
+                              content: contents.join('\n'),
+                              context: "{}"
                           });
                       }
-                  } catch (e) {
-                      console.error(`Failed to fetch blocks from dependency ${depName}`, e);
                   }
               }
           }
+          
+          // Dependencies are now merged directly into the main database by the packer at build time.
+          // We don't need to separately query dependency databases.
           
           if (packageData.manifest.streams_config) {
               try {
