@@ -1,5 +1,4 @@
 `set meta { urn = "urn:vedabase:bg:7.1" }
-`krishna `uvacha
     `v 1 [
         `interlinear-streams { id="synonyms" pattern="term, meaning" }
         `synonyms [

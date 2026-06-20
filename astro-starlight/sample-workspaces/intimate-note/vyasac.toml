@@ -11,7 +11,7 @@ hierarchy = ["number"]
 
 [build]
 publication = "ssrvm.org:intimate-note:default"
-layout = "document"
+layout = "sequence"
 templates = ["html"]
 target = "view"
 output = "intimate-note.sqlite"

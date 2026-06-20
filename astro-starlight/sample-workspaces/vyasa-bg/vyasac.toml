@@ -1,6 +1,6 @@
 [workspace]
-name = "Bhagavad Gita (Vyasa)"
-description = "A simplified Bhagavad Gita workspace with Devanagari and IAST streams only."
+name = "Bhagavad Gita"
+description = "Bhagavad Gita with Devanagari and IAST streams."
 path_schema = ["chapter"]
 
 [urn]

@@ -47,7 +47,7 @@ When `vyasac pack` runs for `vedabase-bg`:
 *Cons*: The final `.sqlite` file for the derived work duplicates the base bytes.
 
 **B. Runtime WASM Merging (Recommended for Bloat Optimization)**
-1. The Svelte Viewer initializes the `VyasaGraphRuntime` and loads *multiple* SQLite databases via `viewerDb.loadFromUrl()`.
+1. The Svelte Viewer initializes the `VyasaViewerRuntime` and loads *multiple* SQLite databases via `viewerDb.loadFromUrl()`.
 2. When the user requests a View for `urn:vyasa:bg:1:1`, the `weave_view` WASM function accepts an array of rows drawn from a SQL `UNION` or `ATTACH DATABASE` query across both DBs.
 3. The WASM function groups streams based on the `[dependencies]` mapping embedded in the manifest JSON.
 *Pros*: Zero data duplication. True decentralized architecture.

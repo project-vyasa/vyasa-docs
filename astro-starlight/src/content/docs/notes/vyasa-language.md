@@ -8,6 +8,12 @@ description: History of design decisions for the Vyasa language.
 <!-- IMMUTABLE LOG: Do not edit past entries. Add new entries at the top. -->
 *In reverse chronological order*
 
+## 2026-06-19: Primary Stream Metadata Inheritance & Invisible Semantic Markers
+*   **Concept**: Vyasa guarantees that structural metadata context (e.g., speakers like `dhritarashtra`, actions like `uvaca`, or poetic metrics) defined in a primary "base" stream is unconditionally inherited by all downstream derivative streams (e.g., translations).
+*   **Mechanism**: During the packaging phase, the compiler merges `urn_context` state from upstream dependency databases into the current target.
+*   **Linguist Benefit**: This allows primary structural definitions to use **"Invisible Semantic Markers"** (commands defining entities/actions without rendering text). Translators can focus exclusively on textual content without re-declaring `speaker` or `action` metadata; the URN association automatically attaches the base context to the translation.
+*   **Debugging**: To assist linguists in debugging inherited metadata, invisible markers can be temporarily materialized by assigning them a visible template (e.g., `` `template `dhritarashtra `for "html" { <span class="debug-marker">Speaker: Dhritarashtra</span> } ``) during development.
+
 ## 2026-06-18: RFC-016 Implementation & Compiler Patterns
 *   **Feature**: Full implementation of the `break_after` setting (RFC-016).
     *   Configurable via `` `set settings { break_after = "।॥" } ``.

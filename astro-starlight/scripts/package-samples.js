@@ -15,14 +15,14 @@ if (!fs.existsSync(PUBLIC_SAMPLES_DIR)) {
     fs.mkdirSync(PUBLIC_SAMPLES_DIR, { recursive: true });
 }
 
-const targetWorkspaces = ['vyasa-bg', 'vedabase-bg', 'bible', 'intimate-note'];
+const targetWorkspaces = ['vyasa-bg', 'bible', 'intimate-note', 'vedabase-bg'];
 const samples = [];
 
 console.log(`Processing selected samples from: ${SAMPLES_DIR}`);
 
 for (const item of targetWorkspaces) {
     const itemPath = path.join(SAMPLES_DIR, item);
-    
+
     if (fs.existsSync(itemPath) && fs.statSync(itemPath).isDirectory()) {
         console.log(`\nPackaging sample: ${item}`);
 
@@ -73,19 +73,19 @@ for (const item of targetWorkspaces) {
 
         const vyviewPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.sqlite`);
         if (fs.existsSync(vyviewPath)) fs.unlinkSync(vyviewPath);
-        
+
         const zipPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.zip`);
         if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
         try {
             console.log(`  Zipping source to ${zipPath}...`);
             execSync(`zip -r "${zipPath}" . -x "*.DS_Store" "dist/*" "output/*" "target/*"`, { cwd: itemPath, stdio: 'inherit' });
-            
+
             console.log(`  Building view target for ${item}...`);
             // We use cargo run --manifest-path from the root to ensure it always builds
             const cargoToml = path.resolve(__dirname, '../../../vyasa/vyasac/Cargo.toml');
             execSync(`cargo run --manifest-path "${cargoToml}" -- pack "${itemPath}" --target view -o "${vyviewPath}"`, { stdio: 'inherit' });
-            
+
             // Calculate hash for cache busting based on zip
             const fileBuffer = fs.readFileSync(zipPath);
             const hash = crypto.createHash('md5').update(fileBuffer).digest('hex').substring(0, 8);
@@ -112,12 +112,12 @@ samples.sort((a, b) => a.name.localeCompare(b.name));
 
 // Write catalog.json
 const catalogObj = {
-  catalog: {
-    urn: "urn:vyasa:catalog:examples",
-    publisher: "Project Vyasa Examples",
-    description: "Sample packages for the Vyasa project."
-  },
-  items: samples
+    catalog: {
+        urn: "urn:vyasa:catalog:examples",
+        publisher: "Project Vyasa Examples",
+        description: "Sample packages for the Vyasa project."
+    },
+    items: samples
 };
 const catalogJsonPath = path.join(PUBLIC_SAMPLES_DIR, 'catalog.json');
 fs.writeFileSync(catalogJsonPath, JSON.stringify(catalogObj, null, 2));

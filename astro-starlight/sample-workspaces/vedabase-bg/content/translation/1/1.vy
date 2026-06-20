@@ -1,5 +1,4 @@
 `set meta { urn = "urn:vedabase:bg:1.1" }
-`dhritarashtra `uvacha
     `v 1 [
         `interlinear-streams { id="synonyms" pattern="term, meaning" }
         `synonyms [
