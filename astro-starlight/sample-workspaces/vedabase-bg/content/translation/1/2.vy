@@ -1,4 +1,3 @@
-`set meta { urn = "urn:vedabase:bg:1.2" }
     `v 2 [
         `interlinear-streams { id="synonyms" pattern="term, meaning" }
         `synonyms [
