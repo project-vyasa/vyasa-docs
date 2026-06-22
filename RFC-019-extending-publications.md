@@ -67,23 +67,22 @@ This multi-block scoping keeps the grammar exceptionally clean while preventing 
 We need a way to address narrator text or interstitial paragraphs that sit *outside* numbered verses.
 
 **Proposed Resolution:**
-We allow the syntactic sugar `pre` and `post` in the Vyasa source files (e.g., `1:5:pre`). Internally, the compiler translates `pre` into segment `99` of the *prior* block. For example, `1:5:pre` becomes a shorthand for `1:4.99`. This unifies interstitial text and segment addressing seamlessly.
+We allow the syntactic sugar `pre` and `post` in the Vyasa source files (e.g., `1:5:pre`). Internally, the compiler translates `pre` into segment `15` of the *prior* block. For example, `1:5:pre` becomes a shorthand for `1:4.15`. This unifies interstitial text and segment addressing seamlessly.
 
 ### 2.1 Intra-Block Segment Addressing (New)
-To support intra-block targeting (e.g. half-verses or specific lines), we will enforce a strict limit of **100 segments per content-block**. 
+To support intra-block targeting (e.g. half-verses or specific lines), we will enforce a strict limit of **15 segments per content-block**. 
 
 ### 2.2 High-Performance URN Integer Sorting (Bitwise Encoding)
-Graph CTEs execute millions of joins. Using floating point numbers (e.g., `1:4.99`) for URN sorting introduces precision risks and is materially slower to index/sort than raw integers. Base-10 multiplier formulas (e.g., `Verse * 100`) waste space and create gaps.
+Graph CTEs execute millions of joins. Using floating point numbers (e.g., `1:4.15`) for URN sorting introduces precision risks and is materially slower to index/sort than raw integers. Base-10 multiplier formulas (e.g., `Verse * 16`) waste space and create gaps.
 
-Instead, the internal URN sorting index will map segments using **Bitwise Allocation** packed into a standard 64-bit integer (`u64`). 
-A sensible default allocation for large corpora:
-- **Segments (Leaf):** 8 bits (up to 256 segments/block)
-- **Blocks (Verses):** 16 bits (up to 65,536 verses/chapter)
-- **Chapters:** 16 bits (up to 65,536 chapters/book)
-- **Books:** 12 bits (up to 4,096 books/volume)
-- **Volume/Corpus:** 12 bits
+Instead, the internal URN sorting index uses **Bitwise Allocation** packed into a highly compact 32-bit integer (`u32`). 
+The implementation allocates the 32 bits as follows:
+- **Segments (Leaf):** 4 bits (up to 15 segments/block, with `15` reserved for `pre`/`post`)
+- **Blocks (Verses):** 12 bits (up to 4,095 verses/chapter)
+- **Chapters:** 8 bits (up to 255 chapters/book)
+- **Books:** 8 bits (up to 255 books/volume)
 
-By packing the URN via bit-shifting (`(Book << 40) | (Chapter << 24) | (Verse << 8) | Segment`), we guarantee mathematically pristine, lightning-fast CTE graph queries and range scans, while keeping the database index as compact as possible.
+By packing the URN via bit-shifting (`(Book << 24) | (Chapter << 16) | (Verse << 4) | Segment`), we guarantee mathematically pristine, lightning-fast CTE graph queries and range scans, while keeping the database index as compact as possible.
 
 ---
 
