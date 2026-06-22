@@ -15,13 +15,26 @@ if (!fs.existsSync(PUBLIC_SAMPLES_DIR)) {
     fs.mkdirSync(PUBLIC_SAMPLES_DIR, { recursive: true });
 }
 
-const targetWorkspaces = ['vyasa-bg', 'bible', 'intimate-note', 'vedabase-bg'];
+const targetWorkspaces = ['vyasa-bg', 'bible', 'intimate-note', 'vedabase-bg', 'yogavasistha'];
 const samples = [];
 
 console.log(`Processing selected samples from: ${SAMPLES_DIR}`);
 
 for (const item of targetWorkspaces) {
     const itemPath = path.join(SAMPLES_DIR, item);
+
+    if (item === 'yogavasistha') {
+        const yvContentDir = path.join(itemPath, 'content');
+        const muktabodhaContent = path.resolve(__dirname, '../../../muktabodha.org/data/processed/yogavasistha/content');
+        if (!fs.existsSync(yvContentDir)) {
+            console.log(`  Creating symlink for Yogavasistha content -> ${muktabodhaContent}`);
+            try {
+                fs.symlinkSync(muktabodhaContent, yvContentDir, 'dir');
+            } catch (e) {
+                console.warn(`  Failed to create symlink: ${e.message}`);
+            }
+        }
+    }
 
     if (fs.existsSync(itemPath) && fs.statSync(itemPath).isDirectory()) {
         console.log(`\nPackaging sample: ${item}`);
@@ -84,7 +97,24 @@ for (const item of targetWorkspaces) {
             console.log(`  Building view target for ${item}...`);
             // We use cargo run --manifest-path from the root to ensure it always builds
             const cargoToml = path.resolve(__dirname, '../../../vyasa/vyasac/Cargo.toml');
-            execSync(`cargo run --manifest-path "${cargoToml}" -- pack "${itemPath}" --target view -o "${vyviewPath}"`, { stdio: 'inherit' });
+            execSync(`cargo run --manifest-path "${cargoToml}" -- pack "${itemPath}" --target view`, { stdio: 'inherit' });
+
+            // Determine output path from vyasac.toml or fallback
+            let outName = `${item}.sqlite`;
+            try {
+                const configStr = fs.readFileSync(configPath, 'utf8');
+                const match = configStr.match(/output\s*=\s*["']([^"']+)["']/);
+                if (match && match[1]) {
+                    outName = match[1];
+                }
+            } catch(e) {}
+            
+            const localOutputPath = path.join(itemPath, 'output', outName);
+            if (fs.existsSync(localOutputPath)) {
+                fs.copyFileSync(localOutputPath, vyviewPath);
+            } else {
+                throw new Error(`Expected output file not found at ${localOutputPath}`);
+            }
 
             // Calculate hash for cache busting based on zip
             const fileBuffer = fs.readFileSync(zipPath);

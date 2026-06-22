@@ -343,11 +343,7 @@
           }
       }
       
-      const compIdx = urnComponents.indexOf(comp);
-      for (let i = compIdx + 1; i < urnComponents.length; i++) {
-          filters[urnComponents[i]] = '';
-      }
-      applyFilters();
+      onFilterChange(comp);
   }
 
   function prevFilter(comp: string) {
@@ -365,9 +361,19 @@
           }
       }
       
-      const compIdx = urnComponents.indexOf(comp);
-      for (let i = compIdx + 1; i < urnComponents.length; i++) {
-          filters[urnComponents[i]] = '';
+      onFilterChange(comp);
+  }
+
+  function onFilterChange(changedComp: string) {
+      const compIdx = urnComponents.indexOf(changedComp);
+      const leafIndex = urnComponents.length - 1;
+      // Cascade defaults to lower-level filters (except leaf)
+      for (let i = compIdx + 1; i < leafIndex; i++) {
+          const comp = urnComponents[i];
+          const options = getAvailableOptionsFor(comp);
+          if (options.length > 0) {
+              filters[comp] = options[0];
+          }
       }
       applyFilters();
   }
@@ -675,7 +681,7 @@
                      <label>{comp}</label>
                      <div class="filter-controls">
                          <button on:click={() => prevFilter(comp)}>&lt;</button>
-                         <input type="text" list="{comp}-options" bind:value={filters[comp]} on:change={applyFilters} placeholder="All" />
+                         <input type="text" list="{comp}-options" bind:value={filters[comp]} on:change={() => onFilterChange(comp)} placeholder="All" />
                          <datalist id="{comp}-options">
                              {#each getAvailableOptionsFor(comp) as opt}
                                  <option value={opt}></option>
@@ -685,6 +691,7 @@
                      </div>
                   </div>
                {/each}
+               {#if availableViews.length > 1}
                <div class="view-selector">
                    <select bind:value={activeView} on:change={applyFilters}>
                        {#each availableViews as view}
@@ -692,6 +699,7 @@
                        {/each}
                    </select>
                </div>
+               {/if}
            </div>
        </div>
        
