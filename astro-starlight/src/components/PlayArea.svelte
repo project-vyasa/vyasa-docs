@@ -193,17 +193,8 @@
 
             // Auto-select
             const keys = Object.keys(files);
-            // Expand all folders by default for now
-            const allFolders = new Set<string>();
-            keys.forEach((k) => {
-                const parts = k.split("/");
-                let p = "";
-                for (let i = 0; i < parts.length - 1; i++) {
-                    p = p ? `${p}/${parts[i]}` : parts[i];
-                    allFolders.add(p);
-                }
-            });
-            expandedIds = allFolders;
+            // Collapse by default
+            expandedIds = new Set<string>();
 
             if (keys.includes("content/1.vy")) selectedFile = "content/1.vy";
             else if (keys.includes("context.vy")) selectedFile = "context.vy";
@@ -240,7 +231,7 @@
         }
 
         const temps = new Set<string>();
-        temps.add("AST.json");
+        temps.add("AST");
         temps.add("Built-in HTML");
 
         const dirPrefix = templateDir + "/";
@@ -261,7 +252,7 @@
             } else if (availableTemplates.includes("Built-in HTML")) {
                 selectedTemplate = "Built-in HTML";
             } else {
-                selectedTemplate = "AST.json";
+                selectedTemplate = "AST";
             }
         }
     }
@@ -320,11 +311,13 @@
             const input = await sqliteService.getAllFiles();
             // log("Compiler Input Files:", Object.keys(input));
 
-            let tmplArg: string | undefined = selectedTemplate;
-            if (selectedTemplate === "Built-in HTML") {
+            let tmplArg = selectedTemplate;
+            if (!tmplArg) {
+                tmplArg = "";
+            } else if (selectedTemplate === "Built-in HTML") {
                 tmplArg = "__BUILTIN__";
-            } else if (selectedTemplate === "AST.json") {
-                tmplArg = "AST.json";
+            } else if (selectedTemplate === "AST") {
+                tmplArg = "__JSON__";
             } else if (selectedTemplate.endsWith(".html")) {
                 // Strip extension so compiler looks for .vy first (to enable collection logic)
                 tmplArg = selectedTemplate.slice(0, -5);
@@ -354,19 +347,7 @@
             console.log("Output Files:", outputFiles);
             console.log("Output Tree Data:", outputTreeData);
 
-            // Auto-expand 'output' folder fully
-            if (outputFiles.length > 0) {
-                const newExpanded = new Set(expandedIds);
-                outputFiles.forEach((f) => {
-                    const parts = f.split("/");
-                    let p = "";
-                    for (let i = 0; i < parts.length - 1; i++) {
-                        p = p ? `${p}/${parts[i]}` : parts[i];
-                        newExpanded.add(p);
-                    }
-                });
-                expandedIds = newExpanded;
-            }
+            // Output tree will remain collapsed by default like the source tree.
 
             // Handle AST view special case
             if (selectedTemplate === "AST.json" || selectedTemplate === "") {
@@ -662,9 +643,9 @@ ${formatted}
                     <div class="w-40">
                         <Select
                             options={[
-                                { label: "AST (JSON)", value: "AST.json" },
+                                { label: "AST", value: "AST" },
                                 ...availableTemplates
-                                    .filter((t) => t !== "AST.json")
+                                    .filter((t) => t !== "AST")
                                     .map((t) => ({ label: t, value: t })),
                             ]}
                             bind:value={selectedTemplate}
@@ -692,43 +673,45 @@ ${formatted}
                 </div>
 
                 <!-- Source Explorer (Middle) -->
-                <Panel
-                    title="Source"
-                    icon={Folder}
-                    class="flex-1 min-h-0 border-b-0"
-                >
-                    {#snippet actions()}
-                        <Button variant="ghost" size="icon" />
-                    {/snippet}
-                    <div class="h-full py-2 min-h-0">
-                        {#key treeData}
-                            <Tree
-                                data={treeData}
-                                bind:expandedIds
-                                bind:selectedId={selectedFile}
-                                onSelect={(node) => {
-                                    console.log("Selected node:", node);
-                                    if (!node.children) {
-                                        selectedFile = node.id;
-                                        console.log(
-                                            "New selectedFile:",
-                                            selectedFile,
-                                        );
-                                    }
-                                }}
-                            />
-                        {/key}
-                    </div>
-                </Panel>
+                <div class="flex-1 min-h-0 flex flex-col border-b-0">
+                    <Panel
+                        title="Source"
+                        icon={Folder}
+                        class="flex-1 min-h-0 border-0"
+                    >
+                        {#snippet actions()}
+                            <Button variant="ghost" size="icon" />
+                        {/snippet}
+                        <div class="h-full overflow-auto py-2 min-h-0">
+                            {#key treeData}
+                                <Tree
+                                    data={treeData}
+                                    bind:expandedIds
+                                    bind:selectedId={selectedFile}
+                                    onSelect={(node) => {
+                                        console.log("Selected node:", node);
+                                        if (!node.children) {
+                                            selectedFile = node.id;
+                                            console.log(
+                                                "New selectedFile:",
+                                                selectedFile,
+                                            );
+                                        }
+                                    }}
+                                />
+                            {/key}
+                        </div>
+                    </Panel>
+                </div>
 
                 <!-- Output Explorer (Bottom) -->
-                <div class="flex-1 border-t min-h-0 flex flex-col">
+                <div class="flex-1 min-h-0 flex flex-col border-t">
                     <Panel
                         title="Output"
                         icon={CheckCircle}
-                        class="h-full border-0"
+                        class="flex-1 min-h-0 border-0"
                     >
-                        <div class="h-full py-2 min-h-0">
+                        <div class="h-full overflow-auto py-2 min-h-0">
                             {#key outputTreeData}
                                 <Tree
                                     data={outputTreeData}
@@ -970,5 +953,11 @@ ${formatted}
     }
     .break-all {
         word-break: break-all;
+    }
+    .h-1\/3 {
+        height: 33.333333%;
+    }
+    .h-1\/2 {
+        height: 50%;
     }
 </style>
