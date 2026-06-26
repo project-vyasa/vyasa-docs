@@ -3,8 +3,6 @@
 ]
 
 `v [
-    `div { class="verse" style="white-space: pre-line; margin-bottom: 1.5rem;" } [
-      `strong { style="display: block; color: #64748b; font-size: 0.9em; margin-bottom: 0.25rem;" } [Verse $.argument]
-      $.body
-    ]
+    `span { class="verse-num" style="vertical-align: super; font-size: 0.75em; color: #64748b; margin-right: 0.4em;" } [$.argument]
+    $.body
 ]
