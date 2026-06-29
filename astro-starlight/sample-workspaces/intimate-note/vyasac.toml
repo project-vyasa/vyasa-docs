@@ -14,4 +14,4 @@ publication = "ssrvm.org:intimate-note:default"
 layout = "sequence"
 templates = ["html"]
 target = "view"
-output = "intimate-note.sqlite"
+output = "intimate-note.vyview"

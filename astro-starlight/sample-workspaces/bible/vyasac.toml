@@ -13,4 +13,4 @@ publication = "bible.com:JHN.14:default"
 layout = "document"
 templates = ["html"]
 target = "view"
-output = "bible.sqlite"
+output = "bible.vyview"

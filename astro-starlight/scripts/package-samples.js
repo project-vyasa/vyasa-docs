@@ -15,7 +15,7 @@ if (!fs.existsSync(PUBLIC_SAMPLES_DIR)) {
     fs.mkdirSync(PUBLIC_SAMPLES_DIR, { recursive: true });
 }
 
-const targetWorkspaces = ['vyasa-bg', 'bible', 'intimate-note', 'vedabase-bg', 'yogavasistha'];
+const targetWorkspaces = ['vyasa-bg', 'bible', 'intimate-note', 'vedabase-bg'];
 const samples = [];
 
 console.log(`Processing selected samples from: ${SAMPLES_DIR}`);
@@ -84,7 +84,7 @@ for (const item of targetWorkspaces) {
             }
         }
 
-        const vyviewPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.sqlite`);
+        const vyviewPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.vyview`);
         if (fs.existsSync(vyviewPath)) fs.unlinkSync(vyviewPath);
 
         const zipPath = path.join(PUBLIC_SAMPLES_DIR, `${item}.zip`);
@@ -100,7 +100,7 @@ for (const item of targetWorkspaces) {
             execSync(`cargo run --manifest-path "${cargoToml}" -- pack "${itemPath}" --target view`, { stdio: 'inherit' });
 
             // Determine output path from vyasac.toml or fallback
-            let outName = `${item}.sqlite`;
+            let outName = `${item}.vyview`;
             try {
                 const configStr = fs.readFileSync(configPath, 'utf8');
                 const match = configStr.match(/output\s*=\s*["']([^"']+)["']/);
@@ -124,7 +124,7 @@ for (const item of targetWorkspaces) {
                 id: item,
                 name: displayName,
                 file: `${item}.zip`,
-                payloadUrl: `${item}.sqlite`,
+                payloadUrl: `${item}.vyview`,
                 hash: hash
             });
             console.log(`  Package created (Hash: ${hash}).`);

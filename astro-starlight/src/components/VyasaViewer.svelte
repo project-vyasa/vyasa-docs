@@ -41,8 +41,6 @@
       // This is necessary to share deep links with others.
       try {
           await initWasm();
-          graphRuntime = new VyasaViewerRuntime();
-          
           const res = await fetch(`${catalogs[0]}?t=${Date.now()}`);
           if (res.ok) {
               const data = await res.json();
@@ -170,16 +168,35 @@
               const urnScheme = packageData.manifest['urn_scheme'] || 'urn:vyasa:{id}';
               schemeParts = urnScheme.replace(/^urn:vyasa:/, '').split(':');
               
-              const hierarchyStr = packageData.manifest.urn_hierarchy;
-              if (hierarchyStr) {
-                  try {
-                      urnComponents = JSON.parse(hierarchyStr);
-                  } catch (e) {
-                      urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
-                  }
-              } else {
-                  urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
+              let globalPrefix = schemeParts[0] || 'urn:vyasa:';
+              if (!globalPrefix.startsWith('urn:vyasa:')) {
+                  globalPrefix = 'urn:vyasa:' + globalPrefix;
               }
+
+              let hierarchyJson = "[]";
+              let bitLayoutJson = "null";
+              try {
+                  const metaRows = await viewerDb.query("SELECT key, value FROM _meta WHERE category = 'config'");
+                  for (const row of metaRows) {
+                      if (row[0] === 'urn_hierarchy') hierarchyJson = row[1] as string;
+                      if (row[0] === 'urn_bit_layout') bitLayoutJson = row[1] as string;
+                  }
+              } catch(e) {
+                  console.warn("Could not load _meta", e);
+              }
+
+              if (hierarchyJson === "[]" && packageData.manifest.urn_hierarchy) {
+                  hierarchyJson = packageData.manifest.urn_hierarchy;
+              }
+
+              try {
+                  urnComponents = JSON.parse(hierarchyJson);
+              } catch (e) {
+                  urnComponents = schemeParts.filter((s: string) => s.startsWith('{') && s.endsWith('}')).map((s: string) => s.substring(1, s.length - 1));
+                  hierarchyJson = JSON.stringify(urnComponents);
+              }
+              
+              graphRuntime = new VyasaViewerRuntime(hierarchyJson, bitLayoutJson, globalPrefix);
               
               // Determine grouping levels: all URN components except the last (leaf) one.
               // The leaf level is not used as a filter — it's what we display per item.
@@ -246,16 +263,16 @@
           try {
               const urnsRows = await viewerDb.query("SELECT COUNT(*) FROM urns");
               inspectData.structure.totalUrns = urnsRows[0][0];
-              const blocksRows = await viewerDb.query("SELECT COUNT(*) FROM html_blocks");
+              const blocksRows = await viewerDb.query("SELECT COUNT(*) FROM ir_blocks");
               inspectData.structure.totalBlocks = blocksRows[0][0];
               try {
-                  const itemsRows = await viewerDb.query("SELECT COUNT(DISTINCT id) FROM html_blocks");
+                  const itemsRows = await viewerDb.query("SELECT COUNT(DISTINCT id) FROM ir_blocks");
                   inspectData.structure.totalItems = itemsRows[0][0];
               } catch (e) {
                   inspectData.structure.totalItems = "Unknown";
               }
           } catch(e) {
-              inspectData.structure.error = "Missing structure tables (urns, html_blocks)";
+              inspectData.structure.error = "Missing structure tables (urns, ir_blocks)";
           }
           
           try {
@@ -411,7 +428,7 @@
       const startUrn = activeUrns[0];
       const limit = activeUrns.length; // Only fetch exactly the items that match the filter
       
-      let rowsJson = "[]";
+      let rowsJson: any[] = [];
       let allRows = [];
       let fetchedUrns = [];
       try {
@@ -419,72 +436,12 @@
           const rows = await viewerDb.query(query);
           for (const r of rows) {
               allRows.push({
-                  id: r[0],
-                  stream: r[1].startsWith('dependency.') ? r[1] : `local.${r[1]}`,
-                  content: r[2],
-                  context: r[3] || "{}"
+                  id: r[0], // sequence_id (i64)
+                  stream: (r[1] as string).startsWith('dependency.') ? r[1] : `local.${r[1]}`,
+                  content: r[2]
               });
               if (!fetchedUrns.includes(r[0])) {
                   fetchedUrns.push(r[0]);
-              }
-          }
-          
-          for (const urn of fetchedUrns) {
-              const rowsForUrn = allRows.filter(r => r.id === urn);
-              let referTarget = null;
-              
-              for (const row of rowsForUrn) {
-                  const match = row.content.match(/<span class="vyasa-refer" data-target="([^"]+)"/);
-                  if (match && match[1]) {
-                      referTarget = match[1];
-                      break;
-                  }
-              }
-              
-              if (referTarget) {
-                  let prefix = "";
-                  let start = 0;
-                  let end = 0;
-                  
-                  if (referTarget.includes(':') && referTarget.includes('-')) {
-                      const parts = referTarget.split(':');
-                      prefix = parts.slice(0, -1).join(':');
-                      const range = parts[parts.length - 1].split('-');
-                      start = parseInt(range[0]);
-                      end = parseInt(range[1]);
-                  } else if (referTarget.includes('-')) {
-                      const range = referTarget.split('-');
-                      start = parseInt(range[0]);
-                      end = parseInt(range[1]);
-                  }
-                  
-                  if (end >= start) {
-                      let targetUrns = [];
-                      for (let i = start; i <= end; i++) {
-                          targetUrns.push(prefix ? `${prefix}:${i}` : `${i}`);
-                      }
-                      
-                      const placeholders = targetUrns.map(() => '?').join(',');
-                      const referRows = await viewerDb.query(`SELECT id, stream, content, context FROM streams WHERE id IN (${placeholders}) ORDER BY sequence_id ASC`, targetUrns);
-                      
-                      const streamContents = {};
-                      for (const r of referRows) {
-                          const streamName = r[1].startsWith('dependency.') ? r[1] : `local.${r[1]}`;
-                          if (!streamContents[streamName]) {
-                              streamContents[streamName] = [];
-                          }
-                          streamContents[streamName].push(r[2]);
-                      }
-                      
-                      for (const [streamName, contents] of Object.entries(streamContents)) {
-                          allRows.push({
-                              id: urn,
-                              stream: streamName,
-                              content: contents.join('\n'),
-                              context: "{}"
-                          });
-                      }
-                  }
               }
           }
           
@@ -505,19 +462,17 @@
                           row.stream = sourceToName[row.stream];
                           mappedRows.push(row);
                       } else {
-                          // Keep unmapped streams just in case? Or filter them out?
-                          // The `VyasaViewer` only renders what's in the template, so keeping is safe.
                           row.stream = row.stream.replace(/^local\./, '');
                           mappedRows.push(row);
                       }
                   }
-                  rowsJson = JSON.stringify(mappedRows);
+                  rowsJson = mappedRows;
               } catch (e) {
                   console.error("Failed to apply streams_config", e);
-                  rowsJson = JSON.stringify(allRows.map(r => ({ ...r, stream: r.stream.replace(/^local\./, '') })));
+                  rowsJson = allRows.map(r => ({ ...r, stream: r.stream.replace(/^local\./, '') }));
               }
           } else {
-              rowsJson = JSON.stringify(allRows.map(r => ({ ...r, stream: r.stream.replace(/^local\./, '') })));
+              rowsJson = allRows.map(r => ({ ...r, stream: r.stream.replace(/^local\./, '') }));
           }
       } catch(e) {
           console.error("Failed to fetch blocks", e);

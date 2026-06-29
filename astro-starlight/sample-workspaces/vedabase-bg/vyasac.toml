@@ -10,10 +10,10 @@ hierarchy = ["chapter", "verse"]
 [build]
 enable_markdown = true
 publication = "vedabase.sample:bg"
-layout = "sequence"
+layout = "document"
 templates = ["html"]
 target = "view"
-output = "vedabase-bg.sqlite"
+output = "vedabase-bg.vyview"
 
 [build.view]
 package = true

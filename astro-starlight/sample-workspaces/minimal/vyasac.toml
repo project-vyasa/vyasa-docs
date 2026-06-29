@@ -13,4 +13,4 @@ publication = "vyasa:minimal:default"
 layout = "document"
 templates = ["html"]
 target = "view"
-output = "minimal.sqlite"
+output = "minimal.vyview"

@@ -13,4 +13,4 @@ publication = "vyasa.org:bg:default"
 layout = "sequence"
 templates = ["html"]
 target = "view"
-output = "vyasa-bg.sqlite"
+output = "vyasa-bg.vyview"
