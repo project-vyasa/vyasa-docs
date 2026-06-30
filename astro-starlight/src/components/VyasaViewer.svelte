@@ -100,7 +100,7 @@
               } catch (e) {
                   // Fallback for older packages
                   try {
-                      await viewerDb.query("SELECT 1 FROM urns LIMIT 1");
+                      await viewerDb.query("SELECT 1 FROM html_blocks LIMIT 1");
                   } catch (err) {
                       errorMessage = "Invalid package format. Missing necessary viewer tables. Please recompile with --target view.";
                       return;
@@ -113,34 +113,8 @@
                   manifest[row[0] as string] = row[1] as string;
               }
               console.log("Loaded manifest:", manifest);
-              const urnsRows = await viewerDb.query("SELECT id, title, streams FROM urns ORDER BY id");
-              const structure = { urns: [] as any[] };
-              for (const row of urnsRows) {
-                  structure.urns.push({
-                      id: row[0],
-                      title: row[1],
-                      streams: JSON.parse(row[2] as string)
-                  });
-              }
-              // Sort urns numerically rather than lexicographically
-              try {
-                  structure.urns.sort((a, b) => {
-                      const aParts = String(a.id || '').split(':');
-                      const bParts = String(b.id || '').split(':');
-                      for (let i = 0; i < Math.min(aParts.length, bParts.length); i++) {
-                          const aNum = parseInt(aParts[i], 10);
-                          const bNum = parseInt(bParts[i], 10);
-                          if (!isNaN(aNum) && !isNaN(bNum)) {
-                              if (aNum !== bNum) return aNum - bNum;
-                          } else {
-                              if (aParts[i] !== bParts[i]) return aParts[i].localeCompare(bParts[i]);
-                          }
-                      }
-                      return aParts.length - bParts.length;
-                  });
-              } catch (err) {
-                  console.error("Sorting error:", err);
-              }
+              // We'll parse catalog_tree from manifest
+              const structure: any = { catalogTree: {} };
               
               const tplRows = await viewerDb.query("SELECT view_name, block_type, content FROM html_templates");
               const projections: Record<string, string> = {};
@@ -175,18 +149,12 @@
 
               let hierarchyJson = "[]";
               let bitLayoutJson = "null";
-              try {
-                  const metaRows = await viewerDb.query("SELECT key, value FROM _meta WHERE category = 'config'");
-                  for (const row of metaRows) {
-                      if (row[0] === 'urn_hierarchy') hierarchyJson = row[1] as string;
-                      if (row[0] === 'urn_bit_layout') bitLayoutJson = row[1] as string;
-                  }
-              } catch(e) {
-                  console.warn("Could not load _meta", e);
-              }
 
-              if (hierarchyJson === "[]" && packageData.manifest.urn_hierarchy) {
+              if (packageData.manifest.urn_hierarchy) {
                   hierarchyJson = packageData.manifest.urn_hierarchy;
+              }
+              if (packageData.manifest.urn_bit_layout) {
+                  bitLayoutJson = packageData.manifest.urn_bit_layout;
               }
 
               try {
@@ -198,16 +166,27 @@
               
               graphRuntime = new VyasaViewerRuntime(hierarchyJson, bitLayoutJson, globalPrefix);
               
+              const catalogTree = JSON.parse(packageData.manifest.catalog_tree || "[]");
+              structure.catalogTree = catalogTree;
+              
               // Determine grouping levels: all URN components except the last (leaf) one.
               // The leaf level is not used as a filter — it's what we display per item.
-              // Set initial filter to first value of each grouping level.
-              if (structure.urns.length > 0) {
-                  const firstUrnParts = structure.urns[0].id.split(':');
-                  const leafIndex = urnComponents.length - 1; // last component is the leaf
-                  for (let i = 0; i < urnComponents.length; i++) {
-                      if (i < leafIndex) {
-                          filters[urnComponents[i]] = firstUrnParts[i];
+              const leafIndex = urnComponents.length - 1; // last component is the leaf
+              
+              // Set initial filter to first value of each grouping level by traversing the tree.
+              let currentLevel = catalogTree;
+              for (let i = 0; i < leafIndex; i++) {
+                  if (currentLevel && typeof currentLevel === 'object') {
+                      const keys = Object.keys(currentLevel).sort((a, b) => Number(a) - Number(b));
+                      if (keys.length > 0) {
+                          const firstKey = keys[0];
+                          filters[urnComponents[i]] = firstKey;
+                          currentLevel = currentLevel[firstKey];
+                      } else {
+                          break;
                       }
+                  } else {
+                      break;
                   }
               }
               
@@ -249,30 +228,20 @@
               }
           }
           
-          try {
-              const metaRows = await viewerDb.query("SELECT category, key, value FROM _meta");
-              inspectData.meta = {};
-              for (const row of metaRows) {
-                  if (!inspectData.meta[row[0]]) inspectData.meta[row[0]] = {};
-                  inspectData.meta[row[0]][row[1]] = row[2];
-              }
-          } catch (e) {
-              inspectData.meta = { error: "No _meta table found" };
-          }
+
           
           try {
-              const urnsRows = await viewerDb.query("SELECT COUNT(*) FROM urns");
-              inspectData.structure.totalUrns = urnsRows[0][0];
-              const blocksRows = await viewerDb.query("SELECT COUNT(*) FROM ir_blocks");
+              const blocksRows = await viewerDb.query("SELECT COUNT(*) FROM html_blocks");
               inspectData.structure.totalBlocks = blocksRows[0][0];
               try {
-                  const itemsRows = await viewerDb.query("SELECT COUNT(DISTINCT id) FROM ir_blocks");
+                  const itemsRows = await viewerDb.query("SELECT COUNT(DISTINCT sequence_id) FROM html_blocks");
                   inspectData.structure.totalItems = itemsRows[0][0];
+                  inspectData.structure.totalUrns = itemsRows[0][0];
               } catch (e) {
                   inspectData.structure.totalItems = "Unknown";
               }
           } catch(e) {
-              inspectData.structure.error = "Missing structure tables (urns, ir_blocks)";
+              inspectData.structure.error = "Missing structure tables (html_blocks)";
           }
           
           try {
@@ -318,31 +287,32 @@
           applyFilters();
       }
   }
-
-  function getAvailableOptionsFor(comp: string): string[] {
+  function getAvailableOptionsFor(comp: string) {
       if (!packageData) return [];
       const compIdx = urnComponents.indexOf(comp);
-      
-      const options = new Set<string>();
-      packageData.structure.urns.forEach((u: any) => {
-          const parts = u.id.split(':');
+      if (compIdx < 0) return [];
+
+      let currentLevel = packageData.structure.catalogTree;
+      for (let i = 0; i < compIdx; i++) {
+          const higherComp = urnComponents[i];
+          let filterVal = filters[higherComp];
+          if (!filterVal) return [];
+          // Ignore range filters for navigation components, just take the first part
+          if (filterVal.includes('-')) filterVal = filterVal.split('-')[0];
           
-          let matches = true;
-          for (let i = 0; i < compIdx; i++) {
-              const higherComp = urnComponents[i];
-              const filterVal = filters[higherComp];
-              if (filterVal && !filterVal.includes('-')) {
-                  if (parts[i] !== filterVal) {
-                      matches = false;
-                  }
-              }
+          if (currentLevel && typeof currentLevel === 'object' && currentLevel[filterVal]) {
+              currentLevel = currentLevel[filterVal];
+          } else {
+              return [];
           }
-          if (matches) {
-              const val = parts[compIdx];
-              if (val) options.add(val);
-          }
-      });
-      return Array.from(options).sort((a, b) => Number(a) - Number(b));
+      }
+
+      if (Array.isArray(currentLevel)) {
+          return currentLevel.map(String).sort((a, b) => Number(a) - Number(b));
+      } else if (currentLevel && typeof currentLevel === 'object') {
+          return Object.keys(currentLevel).sort((a, b) => Number(a) - Number(b));
+      }
+      return [];
   }
 
   function nextFilter(comp: string) {
@@ -393,28 +363,52 @@
           }
       }
       applyFilters();
-  }
+  } 
 
   async function applyFilters() {
       if (!packageData) return;
       
-      activeUrns = packageData.structure.urns.filter((u: any) => {
-          const parts = u.id.split(':');
-          for (let i = 0; i < urnComponents.length; i++) {
-              const comp = urnComponents[i];
-              const filterVal = filters[comp];
-              if (filterVal) {
-                  if (filterVal.includes('-')) {
-                      const [start, end] = filterVal.split('-').map(Number);
-                      const val = Number(parts[i]);
-                      if (val < start || val > end) return false;
-                  } else {
-                      if (parts[i] !== filterVal) return false;
-                  }
+      const leafIndex = urnComponents.length - 1;
+      let currentLevel = packageData.structure.catalogTree;
+      let prefix = "";
+      
+      for (let i = 0; i < leafIndex; i++) {
+          const comp = urnComponents[i];
+          let filterVal = filters[comp];
+          if (!filterVal) {
+              activeUrns = [];
+              return;
+          }
+          // Defaulting to start of range for parent filters
+          if (filterVal.includes('-')) filterVal = filterVal.split('-')[0];
+          
+          if (currentLevel && typeof currentLevel === 'object' && currentLevel[filterVal]) {
+              currentLevel = currentLevel[filterVal];
+              prefix += (prefix ? ":" : "") + filterVal;
+          } else {
+              activeUrns = [];
+              return;
+          }
+      }
+
+      if (Array.isArray(currentLevel)) {
+          let leafFilter = filters[urnComponents[leafIndex]];
+          let leafValues = currentLevel;
+          
+          if (leafFilter) {
+              if (leafFilter.includes('-')) {
+                  const [start, end] = leafFilter.split('-').map(Number);
+                  leafValues = currentLevel.filter((v: number) => v >= start && v <= end);
+              } else {
+                  const num = Number(leafFilter);
+                  leafValues = currentLevel.filter((v: number) => v === num);
               }
           }
-          return true;
-      }).map((u: any) => u.id);
+          
+          activeUrns = leafValues.map((v: number) => prefix ? `${prefix}:${v}` : `${v}`);
+      } else {
+          activeUrns = [];
+      }
       
       await fetchBlocksAndRender();
   }
@@ -598,10 +592,6 @@
                <div class="inspect-section">
                    <h3>Manifest</h3>
                    <pre>{JSON.stringify(inspectData.manifest, null, 2)}</pre>
-               </div>
-               <div class="inspect-section">
-                   <h3>Meta (System)</h3>
-                   <pre>{JSON.stringify(inspectData.meta, null, 2)}</pre>
                </div>
                <div class="inspect-section">
                    <h3>Structure</h3>
