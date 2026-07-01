@@ -1,0 +1,5 @@
+{
+  "id": "output",
+  "name": "Bible Sample",
+  "payloadUrl": "bible.sqlite"
+}

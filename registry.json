@@ -1,0 +1,10 @@
+{
+  "name": "Vyasa Global Publisher Registry",
+  "publishers": [
+    {
+      "identifier": "vysamples",
+      "title": "Project Vyasa Samples",
+      "catalog_url": "https://project-vyasa.github.io/vyasa-samples/catalog.json"
+    }
+  ]
+}
