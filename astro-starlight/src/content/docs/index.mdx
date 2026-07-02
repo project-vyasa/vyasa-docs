@@ -7,9 +7,13 @@ hero:
   image:
     file: ../../assets/vyasa-logo.png
   actions:
-    - text: Explore Vyasa
+    - text: Try the Playground
       link: /vyasa-docs/playarea/
       icon: right-arrow
+      variant: primary
+    - text: Open the Viewer
+      link: https://project-vyasa.github.io/vyasa-apps/
+      icon: external
       variant: minimal
 ---
 
@@ -18,12 +22,21 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 
 <CardGrid>
 	<Card title="Explore Vyasa language" icon="codePen">
-		[Play Area](/vyasa-docs/playarea/).
+		Experiment with Vyasa directly in the browser using the [Play Area](/vyasa-docs/playarea/).
 	</Card>
-	<Card title="Review documentation" icon="open-book">
-		[Vyasa Docs](/vyasa-docs/guides/user-guide/).
+	<Card title="Vyasa Viewer" icon="laptop">
+		Read and interact with semantic publications using the [Viewer Application](https://project-vyasa.github.io/vyasa-apps/).
+	</Card>
+	<Card title="Sample Workspaces" icon="document">
+		Download reference content and templates from the [vyasa-samples](https://github.com/project-vyasa/vyasa-samples) repository.
+	</Card>
+	<Card title="UI Design System" icon="puzzle">
+		Reusable Svelte components used across Vyasa apps in the [vyasa-ui](https://github.com/project-vyasa/vyasa-ui) repository.
 	</Card>
 	<Card title="Reference Implementation" icon="forward-slash">
-		Compiler repository: [vyasac](https://github.com/project-vyasa/vyasa).
+		The core Rust compiler and WASM runtime in the [vyasa](https://github.com/project-vyasa/vyasa) repository.
+	</Card>
+	<Card title="Review documentation" icon="open-book">
+		Learn how to author and publish with [Vyasa Docs](/vyasa-docs/guides/user-guide/).
 	</Card>
 </CardGrid>
