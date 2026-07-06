@@ -5,6 +5,11 @@
       "identifier": "vysamples",
       "title": "Project Vyasa Samples",
       "catalog_url": "https://project-vyasa.github.io/vyasa-samples/catalog.json"
+    },
+    {
+      "identifier": "muktabodha",
+      "title": "Muktabodha Indological Research Institute",
+      "catalog_url": "https://project-vyasa.github.io/muktabodha.org/catalog.json"
     }
   ]
 }
