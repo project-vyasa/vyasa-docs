@@ -39,19 +39,18 @@ my_project/
 ## CLI Usage
 
 ### Build Project
-To compile the project into JSON:
+To compile the project into JSON ASTs and HTML views:
 ```bash
-vyasa build [PROJECT_ROOT] --output <OUTPUT_DIR>
+vyasac build [PROJECT_ROOT] --view <VIEW_NAME>
 ```
-If `PROJECT_ROOT` is omitted, it defaults to the current directory. The command will fail if `vyasa.toml` or `content/` is missing.
+If `PROJECT_ROOT` is omitted, it defaults to the current directory. The command will output JSON ASTs and fully rendered HTML views to the `build/` directory in the project root.
 
 ### Pack Workspace
-To create a distributable package (Zip or SQLite):
+To create a distributable SQLite package:
 ```bash
-vyasac pack [PROJECT_ROOT] --output <OUTPUT_FILE> [--target zip|sqlite]
+vyasac pack [PROJECT_ROOT]
 ```
--   **Zip** (Default): Source exchange format. Contains JSON ASTs.
--   **SQLite**: Application database format. Single file.
+The packer outputs a `.sqlite` database containing the normalized graphs, streams, and views to the `dist/` directory.
 
 ---
 
@@ -72,6 +71,24 @@ To ensure Vyasa remains performant, robust, and mathematically sound, the system
 2. **Forward and Backward Compatibility:** `VyasaViewer` guarantees backward compatibility with older publications, while also remaining robustly forward-compatible against future grammar changes.
 3. **Unified Runtime:** To prevent divergence between compiler logic and the UI, any semantic graph sorting or structural querying needed by the viewer is provided via a WASM runtime compiled from the exact same Rust source as `vyasac`.
 4. **Numeric Relative Paths:** The Unique Resource Name (URN) separates the `global-prefix` (Corpus/Publication identifier) from the `relative-path` (e.g., `chapter:verse`). For structural integrity, the components of a `relative-path` must use machine-friendly, strongly-typed numeric values (especially for `layout="sequence"`) to allow for mathematical reasoning and sorting. The AST strictly references only the relative path.
+
+## Segments and Interstitial Blocks
+
+Vyasa supports "segments" inside markers (e.g., verses). The compiler reserves the lower 4 bits (16 possible values) of the Sequence ID for sub-segment addressing.
+
+By default, a structural node gets segment `0`. Sub-segments increment from `1`.
+
+### Pre and Post Segments (Interstitial Blocks)
+Vyasa reserves segment values for interstitial blocks (content that appears *between* numbered markers, such as chapter introductions or verse summaries).
+
+- **`pre` (Segment 15)**: Assigned to blocks appearing *before* the first numbered marker.
+- **`post` (Segment 14)**: Assigned to blocks appearing *after* the main marker content, before the next marker.
+
+You can configure these labels in `vyasac.toml`:
+```toml
+pre_segment_label = "uvacha"
+post_segment_label = "purport"
+```
 
 ## Unified Command Syntax
 

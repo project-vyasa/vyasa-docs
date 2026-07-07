@@ -78,7 +78,7 @@ description: History of design decisions for the Vyasa workspace model.
 *   **Config**:
     ```toml
     [streams]
-    primary = "hebrew"
+    primary = ["hebrew"]
     secondary = ["spanish", "audio"]
     ```
 
