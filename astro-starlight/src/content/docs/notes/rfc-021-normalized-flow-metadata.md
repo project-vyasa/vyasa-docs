@@ -97,11 +97,21 @@ Containers (like `chapter` or `book`) generate their own renderable blocks in th
 
 #### Sibling Sequence Example:
 Verses are **not** nested inside the chapter block in the database. Instead, they are stored as independent sibling rows in a flat sequence. We utilize sequence ID boundary markers (lowest index for header/frontmatter, highest index for footer/backmatter):
+- `Sequence 1:0` -> Chapter 1 Header Block (`html_blocks`)
+- `Sequence 1:1` -> Verse 1 Block
+- `Sequence 1:2` -> Verse 2 Block
+- `Sequence 1:73` -> Verse 73 Block
 
-* `sequence_id = 1:0:0` (Chapter 1 **Header/Frontmatter** block) -> content: `<h2>Chapter 1: The Yoga of Dejection</h2>`
-* `sequence_id = 1:1:0` (Verse 1.1 block) -> content: `<div class="verse">...</div>`
-* `sequence_id = 1:2:0` (Verse 1.2 block) -> content: `<div class="verse">...</div>`
-* `sequence_id = 1:63:15` (Chapter 1 **Footer/Backmatter** block) -> content: `<div class="chapter-footer">End of Chapter 1</div>`
+### C. Output Projection (View Database Tables)
+
+- **`html_blocks`**
+  Stores the final materialized HTML chunk for each content node, indexed by `stream_id` and `sequence_id`. When querying a viewport range, the frontend simply executes:
+  `SELECT content FROM html_blocks WHERE sequence_id >= X LIMIT Y`
+
+- **`block_attributes`**
+  Stores structural metadata (such as titles, headers, etc.) for stream variants. It is mapped by `sequence_id` and `stream_id`. This allows sidebars to quickly pull customized string attributes for container nodes without parsing the compiled views.
+
+## Constraints & Tradeoffs
 
 When loading Chapter 1, the viewer fetches all blocks where `sequence_id` matches the prefix `1:*` and renders them in order. The Chapter 1 Header is naturally rendered first, followed by the verses, and ending with the Chapter 1 Footer.
 
