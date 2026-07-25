@@ -142,3 +142,6 @@ vite.config.ts.timestamp-*
 *.sqlite
 *.catalog.json
 *.zip
+
+# Tenporary snapshot from GH pages
+gh-pages-snapshot/

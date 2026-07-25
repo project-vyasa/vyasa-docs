@@ -32,3 +32,20 @@
 .sl-markdown-content h6 {
     font-size: var(--sl-font-size-h6);
 }
+
+/* Action button styling */
+.sl-link-button {
+    border-radius: 0.25rem !important;
+}
+
+.sl-link-button.primary {
+    background-color: #3b6ca5 !important;
+    border-color: #3b6ca5 !important;
+    color: #ffffff !important;
+}
+
+.sl-link-button.primary:hover {
+    background-color: #2e5786 !important;
+    border-color: #2e5786 !important;
+    color: #ffffff !important;
+}
