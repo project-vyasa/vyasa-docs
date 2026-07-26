@@ -178,3 +178,21 @@ The opening verse sets a fascinating stage.
 When the Svelte Viewer mounts the text, it can cross-reference multiple SQLite packages (e.g., the `vedabase-bg.sqlite` package and the `my-notes.sqlite` package). It queries the `urns` table, identifies any incoming annotations for a specific verse or word, and dynamically injects highlighting spans (e.g., `<mark class="vyasa-annotation">`) over the corresponding HTML fragments at runtime.
 
 This federated approach means external linguists or students can maintain their own Markdown notes repositories, compile them with `vyasac`, and overlay them onto the official publisher's text in the Web Component without ever modifying the publisher's original Vyasa files.
+
+## 11. Update (2026-07): Multi-Stream Grid Layouts & Sideline Gutters
+
+To allow readers to view and compare interlinear streams (e.g., Devanagari primary text vs. English translation and commentary), the Viewer implements a **Dynamic CSS Grid Projection Engine**:
+
+### A. Stream Selection
+Users toggle active streams via checkboxes in the Activity Bar or Reader Settings (e.g., selecting `mula-iast`, `mula-deva`, and `eng-prabhupada`).
+
+### B. Configurable Column Grid & Spanning
+The Viewer renders each composite URN row using a CSS Grid container (`grid-template-columns: repeat(var(--layout-cols, 2), minmax(0, 1fr))`). Sub-blocks carry grid placement rules:
+* Primary text blocks (`shloka` / `verse`) span 1 column each for side-by-side comparison.
+* Heavy commentary blocks (`synonyms`, `purport`, `note`) apply `grid-column: 1 / -1` to span across the full width of the reader layout.
+
+### C. Sideline Gutter Navigation
+To maximize vertical reading space and avoid visual clutter from repetitive headers/footers, URN metadata is placed in sticky **Left and Right Sideline Gutters**:
+* **Left Gutter**: Displays the reference badge (`1:1`) and audio playback controls.
+* **Right Gutter / Inline Badges**: Displays interactive graph badges and manuscript note flags (using localized vocabulary from the stream manifest, e.g., `🗣️ वक्ता: धृतराष्ट्र`, `📝 पाठान्तर`).
+

@@ -131,3 +131,30 @@ We handle this via **Action Attributes** (equivalent to Edge Properties):
 `arjuna `uvacha { addressed_to="Krishna" witness="Sanjaya" location="Kurukshetra" }
 ```
 This effectively "reifies" the `uvacha` action into a rich edge that carries all the contextual metadata to the target Verse nodes.
+
+## 5. Update (2026-07): External Graph Annotations & Editorial Notes
+
+To maintain a strict separation between textual streams and semantic graph construction, graph enrichments can now be serialized externally in a top-level `annotations/` directory (a peer to `content/` and `templates/`).
+
+### A. External Edge Serialization (`annotate`)
+Instead of embedding action attributes inline within text streams, scholars can define external graph edges targeting local URNs or sequence ranges using the `` `annotate `` command:
+
+```vyasa
+// annotations/speakers/dialogue.vy
+`annotate "1:1..1:20" [
+    `( `sanjaya `uvacha `dhritarashtra )
+]
+```
+In accordance with Invariant #5 (URN Relative Paths), local workspace annotations use relative sequence tuples (`"1:1..1:20"`), whereas full global URNs (`"urn:vyasa:rv:..."`) are reserved exclusively for external cross-corpus citations.
+
+### B. Editorial vs. Relational Assertions (`note`)
+We distinguish between relational graph assertions (edges in `graph_edges`) and textual/philological commentaries. The `` `note `` command is introduced specifically for critical apparatus, manuscript damage, and variant readings:
+
+```vyasa
+// annotations/critical/manuscript_notes.vy
+`note "4:1:12#phrase-2" { type="variant" source="Ms-B" } [
+    Alternative reading due to margin wear on folio 4b.
+]
+```
+A `note` is not an external graph relation; it is an editorial gloss that renders directly into the reading UI as a superscript badge, footnote, or marginalia.
+

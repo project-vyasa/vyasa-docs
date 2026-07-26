@@ -186,3 +186,16 @@ Oral traditions often require reciting segments in complex combinatorial pattern
 *   **Example**: If a verse has segments `1 | 2 | 3`:
     *   *Jata*: `1-2-2-1`, `2-3-3-2`.
 *   **Design Implication**: This will likely require a dedicated `transform` pass or a specialized view helper (e.g., `{{#each (permute segments "1-2-2-1") }} ... {{/each}}`) rather than simple static templates.
+
+## 10. Update (2026-07): Composite URN Anchors & Zero-Bloat Projections
+
+When weaving interlinear content across parallel streams (e.g., Devanagari primary text vs. English commentary), a leaf sequence ID (e.g., `bg:1:1`) represents a **Composite URN Anchor** across all streams. However, the internal "shape" (sub-block composition) of that anchor varies by stream:
+* `mula-deva`: Contains a single primary text block (`shloka` or `verse`).
+* `eng-prabhupada`: Contains no `verse` block, but instead contains three distinct sub-blocks: `synonyms`, `translation`, and `purport`.
+
+### A. Zero-Bloat Projections in Compilation
+To strictly adhere to the publication bloat invariant (with a target not exceeding 25% increase over raw source size), we avoid injecting verbose semantic wrapper attributes (e.g., `<div class="vy-subblock vy-synonyms" data-block-type="synonyms">`) into every stored row in `html_blocks`. 
+
+1. **Clean Projection Output**: Each row in `html_blocks` stores only the minimal HTML string output produced by the projection template (e.g., `<div class="set">...</div><div class="verse">...</div>`), preserving structural semantic classes without redundant data attributes.
+2. **Runtime Weaving & Sideline Gutters**: The viewer (via `VyasaViewerRuntime` in WASM) joins fragments across selected streams for `sequence_id = X`. A 3-column grid layout positions the URN sequence anchor in the sticky left gutter, the leaf-block content in the center column, and localized interactive badges (speaker attributions, editorial notes) in the right gutter.
+3. **Graph-Based Discovery**: Standalone metadata (such as speaker events and editorial notes) is extracted from peer `annotations/` directories into `graph_nodes` and `graph_edges` during compilation and localized at runtime using the `vocabulary` table, completely decoupling metadata discovery from textual content storage.

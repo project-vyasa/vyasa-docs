@@ -199,3 +199,63 @@ If the parser encounters `` `Krishna `uvacha `` (without the tuple):
 
 This makes authoring highly repetitive sequences (like the Bhagavad Gita) extremely lightweight while still producing the same rich semantic output as a tuple header.
 
+## 6. Update (2026-07): Standalone Annotations, Notes, & Layered Frames
+
+To allow scholars and domain experts to annotate corpora with semantic metadata (e.g., speaker attributions over verse ranges, spatial/temporal coordinates, or complex Vedic ritual frames) without modifying textual `.vy` stream files, we introduce **Standalone Annotation Overlays**.
+
+### A. Top-Level `annotations/` Directory
+Enrichments and commentaries are placed in a top-level `annotations/` directory, acting as a peer to `content/` and `templates/`:
+
+```
+workspace/
+├── vyasac.toml
+├── context.vy
+├── content/           <-- Textual interlinear streams (mula, translation)
+├── templates/         <-- HTML/View presentation templates
+└── annotations/       <-- Standalone semantic graph overlays & critical notes
+    ├── speakers/
+    │   └── dialogue.vy
+    ├── rituals/
+    │   └── agnicayana.vy
+    └── critical/
+        └── manuscript_notes.vy
+```
+This cleanly separates textual content generation from semantic graph construction (`graph_nodes`/`graph_edges`).
+
+### B. Semantic Annotations vs. Critical Manuscript Notes (`annotate` vs. `note`)
+
+We distinguish between asserting external graph relationships and documenting textual/philological commentary:
+
+1. **`` `annotate `` (Semantic Graph Relations)**:
+   A polymorphic command used for structural, relational, or environmental assertions that map to nodes and edges in `graph_nodes` / `graph_edges`. It accepts single local targets (`"1:1"`), contiguous ranges (`"1:2..1:20"`), or arrays of targets (`["1:21", "1:24"]`):
+   ```vyasa
+   // Single target
+   `annotate "1:1" [ `( `dhritarashtra `uvacha `sanjaya ) ]
+   
+   // Range target (evaluates across sequence IDs with zero bloat)
+   `annotate "1:2..1:20" [ `( `sanjaya `uvacha `dhritarashtra ) ]
+   ```
+   *Note*: In accordance with Invariant #5 (URN Relative Paths), local workspace annotations use relative sequence tuples (`"1:1"`), never global prefixed URNs (`"urn:vyasa:bg:1:1"`).
+
+2. **`` `note `` (Philological & Manuscript Commentary)**:
+   Used for critical apparatus, manuscript damage, variant readings, and alternative interpretations. A `note` is an editorial gloss that renders directly into the reading UI (e.g., as a clickable superscript badge, footnote, or marginalia in the viewer). It can be used inline in stream files or in standalone `annotations/critical/*.vy` overlays:
+   ```vyasa
+   `note "4:1:12#phrase-2" { type="manuscript-damage" severity="high" } [
+       Water damage obscures two syllables; two plausible interpretations exist:
+       1. Ritual invocation to Agni (Sayanacharya commentary).
+       2. Adhvaryu instruction to the assistant (Bhattabhaskara commentary).
+   ]
+   ```
+
+### C. Layered Frames for Nested Events (`frame`)
+For hierarchical rituals (such as the Yajur Veda Agnicayana altar construction), we use scoped `frame` blocks that attach parent-child or situational edges (`PARTICIPATES_IN_FRAME`, `HAPPENS_IN`) to sequence IDs:
+
+```vyasa
+`frame { id="yv-agnicayana-day-1" type="ritual-context" name="Agnicayana (Fire Altar)" } [
+    `annotate "4:1:1..4:1:15" { role="invocation" priest="adhvaryu" }
+    `frame { id="yv-sub-rite-ashadha" type="sub-rite" name="Ashadha Brick Oblation" } [
+        `annotate "4:1:16..4:1:30" { role="oblation" deity="agni" }
+    ]
+]
+```
+

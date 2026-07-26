@@ -58,3 +58,29 @@ When building for `html`:
 1.  Load Global `context.vy`.
 2.  Load `view/html/context.vy` (This overrides or adds to global).
 3.  Templates in `view/html/templates` override default templates.
+
+## 5. Update (2026-07): Stream Vocabulary Localization
+
+To support localized, domain-accurate terminology across interlinear streams, each stream's scoped `context.vy` can declare a `vocabulary` block. This dictionary maps structural container labels, entity display names (`graph_nodes`), and relational action/role labels (`graph_edges`) for viewer UI rendering:
+
+```vyasa
+// content/mula-deva/context.vy
+`vocabulary {
+    structure = [ "skandha" = "स्कन्ध", "adhyaya" = "अध्याय", "shloka" = "श्लोक" ]
+    leaf_default = "shloka"
+    
+    entities = {
+        "arjuna" = "अर्जुन"
+        "dhritarashtra" = "धृतराष्ट्र"
+    }
+    
+    actions = {
+        "uvacha" = "उवाच"
+        "speaker" = "वक्ता"
+        "note" = "टिप्पणी"
+        "variant" = "पाठान्तर"
+    }
+}
+```
+During compilation (`vyasac pack`), these vocabulary maps are serialized into the publication `manifest` (under `stream_vocabularies`) and `graph_dict`, allowing breadcrumb navigation and graph badges to display localized labels without hardcoding.
+
