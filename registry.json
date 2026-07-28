@@ -10,6 +10,11 @@
       "identifier": "muktabodha",
       "title": "Muktabodha Indological Research Institute",
       "catalog_url": "https://project-vyasa.github.io/muktabodha.org/catalog.json"
+    },
+    {
+      "identifier": "sa_wikisource",
+      "title": "Sanskrit Wikisource (विकिस्रोतः)",
+      "catalog_url": "https://project-vyasa.github.io/sa.wikisource.org/catalog.json"
     }
   ]
 }
