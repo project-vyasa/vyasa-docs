@@ -1,15 +1,22 @@
 {
-  "name": "Vyasa Global Publisher Registry",
-  "publishers": [
+  "schemaVersion": "registry:1.0.3",
+  "id": "adi",
+  "title": "Adi Registry",
+  "catalogs": [
     {
-      "identifier": "vysamples",
+      "id": "vysamples",
       "title": "Project Vyasa Samples",
       "catalog_url": "https://project-vyasa.github.io/vyasa-samples/catalog.json"
     },
     {
-      "identifier": "muktabodha",
+      "id": "muktabodha",
       "title": "Muktabodha Indological Research Institute",
       "catalog_url": "https://project-vyasa.github.io/muktabodha.org/catalog.json"
+    },
+    {
+      "id": "sa_wikisource",
+      "title": "Sanskrit Wikisource (विकिस्रोतः)",
+      "catalog_url": "https://project-vyasa.github.io/sa.wikisource.org/catalog.json"
     }
   ]
 }
