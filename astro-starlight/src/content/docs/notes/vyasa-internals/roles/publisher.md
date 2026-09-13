@@ -5,52 +5,46 @@ description: Documentation for packaging and distributing Vyasa content.
 
 # Publisher Guide
 
-As a **Publisher**, your primary role is to compile, package, and distribute Vyasa workspaces to end-users or centralized repositories. You manage the final artifact generation and ensure that your workspace adheres to the global URN ecosystem.
+As a **Publisher**, you compile workspaces into `.vyview` files, style them with CSS, and merge them into a catalog the viewer can load.
 
-## 1. Preparing the Workspace
+The step-by-step workflow is in [Packing and publishing](/guides/publishing). Configuration tables: [Workspace configuration](/reference/workspace-config). Commands: [CLI reference](/reference/cli).
 
-Before packaging your content, ensure your `vyasac.toml` has a properly defined `name` field in the `[workspace]` section.
+## 1. Identity
+
+Set a stable `[workspace] id`. Pack writes `build/<id>.vyview`. Publish copies that file into `[publish] publisher_dir` and updates `catalog.json`. Generic names like `workspace` collide in catalogs.
 
 ```toml
 [workspace]
-name = "vedabase-bg"
-description = "Bhagavad-gita As It Is"
+id = "vedabase-bg"
+name = "Bhagavad-gita As It Is"
 ```
 
-> [!IMPORTANT]
-> The `name` is critical. It acts as the global identity for your Work. When you generate a package, Vyasa will automatically use this name to create the filename (e.g., `vedabase-bg.vypkg`). Using generic names like "workspace" will cause collisions in central registries.
-
-## 2. Packaging the Content
-
-Vyasa provides the `vyasa pack` command to compile the entire workspace into a standard distribution format defined in RFC 006.
-
-### The Source Exchange Format (`.vypkg`)
-
-The `.vypkg` file is a ZIP archive containing your compiled AST nodes as JSON files. This format is ideal for tooling, intermediate storage, and incremental compilers.
-
-To generate a `.vypkg`:
-```bash
-vyasa pack
-```
-This will automatically output a file named after your workspace, such as `vedabase-bg.vypkg`.
-
-### The Application Database (`.db`)
-
-The `.db` format is a monolithic SQLite database optimized for direct consumption by reading apps (like mobile applications or web readers) that require random-access queries.
-
-To generate an Application Database:
-```bash
-vyasa pack --target sqlite
-```
-This will automatically output a file named after your workspace, such as `vedabase-bg.db`.
-
-## 3. Advanced Usage
-
-If you need to override the default naming convention (for example, when experimenting or creating multiple variations), you can manually specify the output path:
+## 2. Pack
 
 ```bash
-vyasa pack --output my-custom-build.vypkg
+vyasac pack
 ```
 
-> [!NOTE]
-> Future releases of Vyasa will support stream-level packaging (e.g., packing only the English translation `translation/en` stream). The dynamic naming architecture lays the foundation for outputting target-specific packages like `vedabase-bg-en.vypkg`.
+Default target is `view` → `.vyview` (SQLite for the reader). This is the artifact apps load. Other `[build.default] target` values (`zip`, `sqlite`, `vyir`) are for tooling, not the hosted viewer.
+
+## 3. Inspect
+
+```bash
+vyasav inspect build/vedabase-bg.vyview
+vyasav inspect --check build/vedabase-bg.vyview
+```
+
+Do not use `sqlite3` as the primary tool. `vyasac inspect` is a deprecated forwarder.
+
+## 4. Publish
+
+```toml
+[publish]
+publisher_dir = "../.."
+```
+
+```bash
+vyasac publish
+```
+
+Requires `publisher.toml` in that directory (`identifier`, `content_themes`, optional `[org]`).

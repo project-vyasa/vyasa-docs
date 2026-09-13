@@ -15,48 +15,74 @@ Vyasa is still in alpha and subject to change. Help shape the future of Vyasa!
 
 ## Project Structure
 
-A Vyasa Project requires a specific directory structure to ensure correct building and URN generation.
+A work is a **workspace**: one `vyasac.toml`, language context, content streams, and HTML templates. Translations, commentary, and other layers are **streams** (sibling folders), not sidecars.
 
-**Required Layout:**
+**Typical layout:**
 ```text
-my_project/
-├── vyasac.toml       # Project Root Configuration (Required)
-├── context.vy        # Global Context (Standard Library, URNs, Entities)
-├── content/          # Source .vy files
-│   ├── vol1/
-│   │   ├── context.vy (Context: volume=1)
-│   │   └── book1.vy
-├── templates/        # Custom HTML templates
-└── sidecar/          # Audio/Translation files
+my_work/
+├── vyasac.toml              # Workspace + streams + pack profile
+├── context.vy               # URN scheme, aliases, entities
+├── content/
+│   ├── mula/                # Spine text ([streams.primary] → packed name `mula`)
+│   │   ├── context.vy       # Optional folder context (e.g. chapter=1)
+│   │   └── 1.vy
+│   └── translation/         # Another stream, aligned by relative path
+│       └── 1.vy
+└── templates/
+    └── html/
+        ├── views/           # Packed viewer layouts (e.g. reading.vy)
+        └── theme.css        # Listed in [build.default] css
 ```
 
--   **`vyasac.toml` (Root)**: Marks the directory as a project. Contains build configuration (Streams, Templates).
--   **`context.vy` (Root)**: The global preamble. Defines the URN scheme, entity registry, and project-wide aliases.
--   **`content/`**: Contains the hierarchy of Vyasa source files.
--   **`context.vy` (Subdirectories)**: Defines context for that folder (e.g., `volume=1`). Files in that folder inherit these settings.
--   **`sidecar/`**: Reserved for sidecar files (alignment/audio).
+-   **`vyasac.toml`**: Hard build config — stream folders, URN spine, CSS lists, pack profile. See the [workspace configuration reference](/reference/workspace-config).
+-   **`context.vy`**: Language preamble (commands, aliases, entities). Nested `context.vy` files add folder context.
+-   **`content/<folder>/`**: One stream per folder. The packed stream id is that folder name (or `stream.name` if you set it).
+-   **`templates/html/`**: Native templates and view layouts. Put styles in `.css` files, not inline in `theme.vy`.
 
-## CLI Usage
+How streams relate to URNs, packed names, and the optional build allow-list: [Streams and the URN spine](/guides/streams). How to pack, inspect, and publish: [Packing and publishing](/guides/publishing).
 
-### Build Project
-To compile the project into JSON ASTs and HTML views:
+## CLI usage
+
+Install the toolchain from this repo (`cargo install --path vyasac` and `cargo install --path vyasav`, or run `cargo run -p …`). Full flags: [CLI reference](/reference/cli).
+
+### Pack for the viewer
+```bash
+vyasac pack
+```
+Writes `build/<workspace-id>.vyview` (SQLite). The default pack target is `view`. Use `[workspace] id` for a stable filename; otherwise the packer falls back to `name`.
+
+### Check source without packing
+```bash
+vyasac check
+```
+
+### Inspect a packed publication
+Packed `.vyview` files are inspected with the **viewer** CLI, not `sqlite3`:
+```bash
+vyasav inspect build/my-work.vyview
+vyasav inspect --table manifest build/my-work.vyview
+vyasav inspect --check build/my-work.vyview
+```
+`vyasac inspect` still forwards, but prints a deprecation warning.
+
+### Publish into a catalog
+```bash
+vyasac publish
+```
+Copies the packed `.vyview` into `[publish] publisher_dir` and updates that publisher’s `catalog.json`. Requires `publisher.toml` in the publisher directory.
+
+### Compile files (debug)
 ```bash
 vyasac build [PROJECT_ROOT] --view <VIEW_NAME>
 ```
-If `PROJECT_ROOT` is omitted, it defaults to the current directory. The command will output JSON ASTs and fully rendered HTML views to the `build/` directory in the project root.
-
-### Pack Workspace
-To create a distributable SQLite package:
-```bash
-vyasac pack [PROJECT_ROOT]
-```
-The packer outputs a `.sqlite` database containing the normalized graphs, streams, and views to the `dist/` directory.
+Writes JSON/HTML under `build/` for debugging templates. Reader apps consume **`.vyview` from `pack`**, not this tree.
 
 ---
 
 ## Core Concepts
 
--   **Streams**: Documents are ordered streams of events (commands and text).
+-   **Streams (language):** Documents are ordered streams of events (commands and text).
+-   **Streams (workspace):** Sibling content folders that share URNs; see [Streams and the URN spine](/guides/streams).
 -   **Context**: Global metadata (like `Work`, `Translation`) defined in configuration.
 -   **State**: Dynamic properties (like `Speaker`, `Scene`) that change as the stream flows.
 -   **Entities**: Semantic objects (people, places, concepts) referenced in the stream.

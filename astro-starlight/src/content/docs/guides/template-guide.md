@@ -23,11 +23,15 @@ Vyasa organizes templates by **Target Format** using a convention-based director
 workspace/
 ├── templates/
 │   ├── html/          <-- Target: "html"
-│   │   ├── default.html   <-- Default Shell
+│   │   ├── default.html   <-- Default Shell (file build)
 │   │   ├── main.vy        <-- Template definitions
-│   │   └── reference.html <-- Optional shell (usage: --template reference)
+│   │   ├── views/         <-- Packed viewer layouts (reading.vy, …)
+│   │   ├── theme.vy       <-- Optional; prefer layout [ {{ body }} ]
+│   │   └── theme.css      <-- List in [build.default] css
 │   └── json/          <-- Target: "json"
 ```
+
+**CSS:** list workspace sheets in `[build.<profile>] css` and shared publisher sheets in `publisher_css`. The packer concatenates them into the HTML shell. Do not author a full `html` / `style` tree in `theme.vy` ([Packing and publishing](/guides/publishing)). View templates may use `` `stream { ref="primary" } ``; pack rewrites `primary` to the packed folder name. Grid `block` ids in layout JSON must already be packed names.
 
 ## 2. Defining a Template
 

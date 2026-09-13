@@ -83,3 +83,9 @@ While the underlying model is "Entity with Attributes", Vyasa supports defining 
 *   **Usage**: `` `sanjaya `spoken ``
 
 This updates the Flow State just like the verbose `` `entity { speaker="Sanjaya" ... } `` command.
+
+## 6. Streams (workspace overlays)
+
+A **stream** is a folder of `.vy` files that share the work’s relative URNs. The spine stream (`[streams.primary]` in `vyasac.toml`) defines which sequence ids exist. Other streams (translation, commentary, recitation) attach to those ids; they do not grow the catalog tree.
+
+After pack, the runtime name is the **folder** (`mula`, `samhita`), not the Toml key `primary`. Layout JSON, CSS (`.vyasa-block-{stream}`), and `vyasav weave --layout` all use that packed name. Why the split exists, and how the optional `[build.default] streams` allow-list works: [Streams and the URN spine](/guides/streams).
