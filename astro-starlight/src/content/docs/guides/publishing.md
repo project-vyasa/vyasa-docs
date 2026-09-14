@@ -119,8 +119,25 @@ vyasac publish
 
 Publish copies `build/<id>.vyview` into the publisher `dist/` tree and merges the work into `catalog.json`. The viewer catalog then points at that file.
 
+### `catalog.json` contract
+
+`vyasac publish` writes (or updates) `[publish] publisher_dir/dist/catalog.json`. Schema version is **`catalog:1.1.0`**. Catalog `id` / `title` come from `publisher.toml` (`identifier`, `title`). Each publication entry:
+
+| Field | Source |
+| :--- | :--- |
+| `id` | `[workspace] id` (else `name`) |
+| `title` | `[workspace] title` (else `id`) |
+| `vyviewUrl` | `<id>/<id>.vyview` relative to `dist/` |
+| `updated` | Unix seconds at publish time (**required**; rewritten every publish) |
+| `description` | `[workspace] description` |
+| `type` / `language` / `license` | `[catalog]` in `vyasac.toml` |
+
+Root-level `description` / `homepage` / `publisher` (`[org]`) come from `publisher.toml`. Missing `build/<id>.vyview` logs a warning and still updates the catalog row.
+
 ## Related
 
 - [Workspace configuration](/reference/workspace-config) — every `vyasac.toml` / `publisher.toml` field
 - [Native templates](/guides/template-guide) — view layouts and `stream { ref="primary" }`
+- [Annotations](/guides/annotations) — graph overlays in the same pack
+- [Dependencies and localization](/guides/dependencies)
 - [Embedding viewers](/guides/embedding-viewer) — URN links in host apps

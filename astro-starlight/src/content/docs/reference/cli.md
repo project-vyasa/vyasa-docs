@@ -68,16 +68,6 @@ Compile to files under `--output` (default `build/`) for template debugging. Rea
 
 Parse one `.vy` file and print the AST (debug).
 
-### `vyasac inspect` (deprecated)
-
-Forwards to `vyasav inspect` and prints:
-
-```text
-warning: `vyasac inspect` has moved to `vyasav inspect`; forwarding.
-```
-
-Use `vyasav inspect` in scripts and docs.
-
 ## `vyasav`
 
 ```text

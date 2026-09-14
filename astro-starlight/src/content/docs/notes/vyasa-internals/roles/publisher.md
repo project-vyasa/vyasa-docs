@@ -34,8 +34,6 @@ vyasav inspect build/vedabase-bg.vyview
 vyasav inspect --check build/vedabase-bg.vyview
 ```
 
-Do not use `sqlite3` as the primary tool. `vyasac inspect` is a deprecated forwarder.
-
 ## 4. Publish
 
 ```toml
@@ -47,4 +45,4 @@ publisher_dir = "../.."
 vyasac publish
 ```
 
-Requires `publisher.toml` in that directory (`identifier`, `content_themes`, optional `[org]`).
+Requires `publisher.toml` in that directory (`identifier`, `content_themes`, optional `[org]`). Catalog fields: [Packing and publishing](/guides/publishing).

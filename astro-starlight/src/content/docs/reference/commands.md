@@ -172,6 +172,28 @@ Defines a shortcut for an existing command with preset attributes.
 `speaking  <-- Equivalent to `state { action="speaking" }`
 ```
 
+### `annotate`
+Attaches graph attributes to relative URNs. Declare it in `context.vy` (`category="metadata"`). Files normally live under `annotations/` so they are packed as graph, not HTML. Guide: [Annotations](/guides/annotations).
+
+**Syntax**: `` `annotate "<urn|range>" { key=value … } ``
+
+Ranges use last-component `..` (e.g. `"1:1..1:20"`). Each attribute except `target` / `urn` / `id` becomes a value node and an uppercase-keyed edge. The viewer shows those keys as facets.
+
+```text
+`annotate "1:24:2" { rishi=vamadeva, devata=agni }
+`annotate "4:5:0:0" { featured=sri_rudram }
+```
+
+### `note`
+Editorial gloss on a URN (variant, damage). Packed as `HAS_NOTE`, not as a content stream.
+
+**Syntax**: `` `note "<urn>" { type="…" } [ gloss ] ``
+
+### `frame`
+Groups nested `annotate` / `note` under a named context (`IN_FRAME`).
+
+**Syntax**: `` `frame { id="…" type="…" } [ … ] ``
+
 ## Syntax Elements
 
 ### Comments

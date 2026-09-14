@@ -10,7 +10,8 @@ description: History of design decisions for the Vyasa workspace model.
 ## 2026-09-13: Packed stream ids, content themes, and the vyasav CLI
 *   **Streams**: `[streams.primary]` is only the URN-spine alias. Packed / runtime ids are content folder names (RV `samhita`, BG `mula`). `[build.<profile>] streams` is an optional packed-name allow-list; listing `primary` or an unknown id is a pack error. `stream { ref="primary" }` remains a pack-time rewrite.
 *   **CSS / themes**: HTML-target styles come from `css` + `publisher_css` files. `publisher.toml` `[publisher] content_themes` is required for view pack (work may override). Manifest stores `content_themes` and packed CSS paths.
-*   **CLI**: Inspect and weave moved to native **`vyasav`** (`inspect`, `weave`). `vyasac inspect` forwards with a warning. Pack output for readers is `build/<id>.vyview`, not `dist/*.sqlite`.
+*   **CLI**: Inspect and weave are native **`vyasav`** commands (`inspect`, `weave`). Pack output for readers is `build/<id>.vyview`, not `dist/*.sqlite`.
+*   **Guides**: In-pack `annotations/`, localization `extend`, `[dependencies]` extra streams, and `catalog.json` `catalog:1.1.0` are documented. Composition that **overrides** base URN content or attaches an SME overlay pack is explicitly out of those guides pending review (`notes/task-annotations-feature-review.md`).
 
 ## 2026-02-14: Build Tooling Cleanup
 *   **Migration**: WASM output directory moved from `src/pkg` to `src/vyasac-wasm` for clarity.

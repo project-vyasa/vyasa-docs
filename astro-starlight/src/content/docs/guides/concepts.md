@@ -75,9 +75,6 @@ This keeps your source text pure while allowing infinite layers of interpretatio
 ### Syntax Patterns
 While the underlying model is "Entity with Attributes", Vyasa supports defining aliases to create natural Subject-Verb syntax.
 
-### Syntax Patterns
-While the underlying model is "Entity with Attributes", Vyasa supports defining aliases to create natural Subject-Verb syntax.
-
 *   **Define Alias**: `` `alias-def { name="sanjaya" target="entity" params="{speaker='Sanjaya'}" } ``
 *   **Define Action**: `` `alias-def { name="spoken" target="entity" params="{action='uvacha'}" } ``
 *   **Usage**: `` `sanjaya `spoken ``
@@ -89,3 +86,5 @@ This updates the Flow State just like the verbose `` `entity { speaker="Sanjaya"
 A **stream** is a folder of `.vy` files that share the work’s relative URNs. The spine stream (`[streams.primary]` in `vyasac.toml`) defines which sequence ids exist. Other streams (translation, commentary, recitation) attach to those ids; they do not grow the catalog tree.
 
 After pack, the runtime name is the **folder** (`mula`, `samhita`), not the Toml key `primary`. Layout JSON, CSS (`.vyasa-block-{stream}`), and `vyasav weave --layout` all use that packed name. Why the split exists, and how the optional `[build.default] streams` allow-list works: [Streams and the URN spine](/guides/streams).
+
+Graph metadata (speakers, anukramani, featured reading spans) is attached with `` `annotate `` in `annotations/`, not by editing the spine HTML. See [Annotations](/guides/annotations).

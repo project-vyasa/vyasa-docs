@@ -74,11 +74,18 @@ Profile name `default` is what `vyasac pack` uses unless `--profile` is set. `ta
 
 ### `[catalog]`
 
-Optional metadata copied onto the catalog item (`type`, `language`, `license`).
+Optional metadata copied onto each `catalog.json` publication (`type`, `language`, `license`). `id`, `title`, `vyviewUrl`, and `updated` are always written; see [Packing and publishing](/guides/publishing#catalogjson-contract).
 
 ### `[dependencies]`
 
-Toml table of pack-time dependency publications (merged `.vyview` inputs). Paths and names follow the packer merge rules.
+Named table of other packed works to merge at pack time:
+
+```toml
+[dependencies.bg]
+package = "vedabase-bg"
+```
+
+`package` is the sibling directory name. vyasac ATTACHes that `.vyview` and copies streams as `dependency.<key>.<stream>` plus their HTML blocks. It does **not** replace this work’s spine content or merge graphs. Details: [Dependencies and localization](/guides/dependencies).
 
 ## `publisher.toml`
 

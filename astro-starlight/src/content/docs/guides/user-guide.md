@@ -28,6 +28,8 @@ my_work/
 │   │   └── 1.vy
 │   └── translation/         # Another stream, aligned by relative path
 │       └── 1.vy
+├── annotations/             # Graph overlays (annotate / note); not HTML streams
+│   └── overlay.vy
 └── templates/
     └── html/
         ├── views/           # Packed viewer layouts (e.g. reading.vy)
@@ -38,6 +40,7 @@ my_work/
 -   **`context.vy`**: Language preamble (commands, aliases, entities). Nested `context.vy` files add folder context.
 -   **`content/<folder>/`**: One stream per folder. The packed stream id is that folder name (or `stream.name` if you set it).
 -   **`templates/html/`**: Native templates and view layouts. Put styles in `.css` files, not inline in `theme.vy`.
+-   **`annotations/`**: Optional graph overlays; see [Annotations](/guides/annotations).
 
 How streams relate to URNs, packed names, and the optional build allow-list: [Streams and the URN spine](/guides/streams). How to pack, inspect, and publish: [Packing and publishing](/guides/publishing).
 
@@ -63,7 +66,6 @@ vyasav inspect build/my-work.vyview
 vyasav inspect --table manifest build/my-work.vyview
 vyasav inspect --check build/my-work.vyview
 ```
-`vyasac inspect` still forwards, but prints a deprecation warning.
 
 ### Publish into a catalog
 ```bash
@@ -148,6 +150,7 @@ For a complete list of **Standard Library** commands and detailed usage, see the
 | **`set`** | Updates config | `` `set context { ... } `` |
 | **`set settings`** | Workspace config | `` `set settings { whitespace="preserve", break_after="।॥" } `` |
 | **`entity`** | Semantic tagging | `` `entity Krishna `` |
+| **`annotate`** | Graph overlay on URNs | `` `annotate "1:1" { rishi=vamadeva } `` |
 
 ## Sample Document
 

@@ -91,6 +91,21 @@ Vyasa supports both line comments and block comments:
 > [!TIP]
 > **Best Practice:** It is highly recommended to use the `//` syntax exclusively in HTML templates for better visibility. For core content source documents (mula, translation, etc.), stick to the backtick-space (`` ` ``) comment syntax or block comments to avoid collisions with standard prose formatting.
 
+Vyasa does **not** have C-style `/* */` comments. That sequence is ordinary text (or CSS inside `style`).
+
+`[` and `]` are Vyasa structure. A bare `` `style [ ... ] `` block **closes at the first `]`**, including `]` inside CSS attribute selectors or inside CSS `/* … ] … */`. The packer must **fail** if the rendered layout looks truncated.
+
+Use a delimited block so `]` in CSS is literal (see [Delimited Blocks](#delimited-blocks-polymorphic-closing)):
+
+```text
+`style;css [
+  html[data-pub-theme="light"] { color: #333; }
+  /* CSS comments are fine here */
+]css
+```
+
+`//` on its own line is still a **Vyasa** line comment and is stripped from the packed CSS.
+
 ## Examples
 
 ### Basic Command
@@ -102,7 +117,7 @@ Vyasa supports both line comments and block comments:
 
 ### Command with Argument
 ```text
-`chapter 1 { title="Obsfervation" }
+`chapter 1 { title="Observation" }
 ```
 
 ### Delimited Blocks (Polymorphic closing)
