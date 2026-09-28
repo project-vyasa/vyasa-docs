@@ -17,6 +17,11 @@
       "id": "sa_wikisource",
       "title": "Sanskrit Wikisource (विकिस्रोतः)",
       "catalog_url": "https://project-vyasa.github.io/sa.wikisource.org/catalog.json"
+    },
+    {
+      "id": "sa_wikisource_new",
+      "title": "Sanskrit Wikisource (विकिस्रोतः) New",
+      "catalog_url": "https://vyasa-sa-wikisource.github.io/publisher/catalog.json"
     }
   ]
 }
